@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Enzzo Cavallo</title>
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css">
+  <script src="https://unpkg.com/vis@4.21.0/dist/vis.min.js"></script>
+</head>
+<body style="display: flex;  flex-direction: column">
+<nav style="display: flex; justify-content: space-around">
+  
+  <a href="/"><-</a>
+  
+</nav>
+<section>
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Hello World!</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-03-01T00:00:00-03:00" itemprop="datePublished">Mar 1, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Starting with <code class="highlighter-rouge">TDB</code>: Testing Driven Blogging</p>
+
+<ul>
+  <li>Code blocks and syntax highlight</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">highlighted</span><span class="w"> </span><span class="p">[</span><span class="no">:clojure</span><span class="w"> </span><span class="s">"code"</span><span class="p">])</span></code></pre></figure>
+
+<ul>
+  <li>Interactive code block</li>
+</ul>
+
+<pre><code class="lang-eval-clojure language-klipse">
+(map inc [1 2 3])
+</code></pre>
+
+<ul>
+  <li>Interactive vis graph</li>
+</ul>
+
+<div id="my-graph"></div>
+<pre><code class="lang-eval-clojure language-klipse">(def target (.getElementById js/document "my-graph"))
+
+(def data 
+  #js {:nodes (new js/vis.DataSet #js [#js{:id 1 :label "1"} #js{:id 2 :label "2"}])
+       :edges (new js/vis.DataSet #js [#js{:from 1 :to 2}])})
+(def options #js {})
+(new js/vis.Network target data options)
+</code></pre>
+
+<p>Now let’s push and see if works!</p>
+
+  </div><a class="u-url" href="/2019/03/01/hello-world.html" hidden></a>
+</article>
+
+</section>
+<footer style="display: flex; justify-content: space-around">
+  <a href="https://twitter.com/souenzzo">twitter</a>
+  <a href="https://github.com/souenzzo">github</a>
+</footer>
+<script>
+    window.klipse_settings = {
+        selector: '.language-klipse'// css selector for the html elements you want to klipsify
+    };
+</script>
+<script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+</body>
+</html>
