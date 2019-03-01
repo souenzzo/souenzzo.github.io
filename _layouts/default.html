@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ site.title }}</title>
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css">
+  <script src="https://unpkg.com/vis@4.21.0/dist/vis.min.js"></script>
+</head>
+<body style="display: flex;  flex-direction: column">
+<nav style="display: flex; justify-content: space-around">
+  {% if page.title %}
+  <a href="/"><-</a>
+  {% endif %}
+</nav>
+<section>
+  {{ content }}
+</section>
+<footer style="display: flex; justify-content: space-around">
+  <a href="https://twitter.com/{{ site.twitter_username }}">twitter</a>
+  <a href="https://github.com/{{ site.github_username }}">github</a>
+</footer>
+<script>
+    window.klipse_settings = {
+        selector: '.language-klipse'// css selector for the html elements you want to klipsify
+    };
+</script>
+<script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+</body>
+</html>
