@@ -17,7 +17,7 @@ docker run --name my-postgres --rm -p 5432:5432 postgres:alpine
 {% endhighlight %}
 
 
-It need to have a name. `my-postgres` in this case. It will be used
+This docker container has to have a name. `my-postgres` in this case. It will be used
 
 To connect a client to postgres, we can run
 
@@ -33,7 +33,7 @@ Then we say to `psql` connect to `my-postgres` host.
 
 Now we can run the `php` container. 
 
-First, go to your working dit 
+First, go to your working dir 
 
 {% highlight bash %}
 
@@ -57,8 +57,7 @@ cat index.php
 
 {% endhighlight %}
 
-See that we are connecting to `mypostgres` host.
-
+See that we are connecting the `pg_connect` to `mypostgres` host.
 
 {% highlight bash %}
 

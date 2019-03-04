@@ -30,7 +30,7 @@
 
 <figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker run <span class="nt">--name</span> my-postgres <span class="nt">--rm</span> <span class="nt">-p</span> 5432:5432 postgres:alpine</code></pre></figure>
 
-<p>It need to have a name. <code class="highlighter-rouge">my-postgres</code> in this case. It will be used</p>
+<p>This docker container has to have a name. <code class="highlighter-rouge">my-postgres</code> in this case. It will be used</p>
 
 <p>To connect a client to postgres, we can run</p>
 
@@ -42,7 +42,7 @@
 
 <p>Now we can run the <code class="highlighter-rouge">php</code> container.</p>
 
-<p>First, go to your working dit</p>
+<p>First, go to your working dir</p>
 
 <figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">cd </span>awesome-php-project
 
@@ -62,7 +62,7 @@
 &lt;/body&gt;
 &lt;/html&gt;</code></pre></figure>
 
-<p>See that we are connecting to <code class="highlighter-rouge">mypostgres</code> host.</p>
+<p>See that we are connecting the <code class="highlighter-rouge">pg_connect</code> to <code class="highlighter-rouge">mypostgres</code> host.</p>
 
 <figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker run <span class="se">\</span>
   <span class="nt">--rm</span> <span class="se">\</span>
