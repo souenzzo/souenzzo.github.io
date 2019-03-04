@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Enzzo Cavallo</title>
+  <link rel="stylesheet" href="/blog/assets/main.css">
+  <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css">
+  <script src="https://unpkg.com/vis@4.21.0/dist/vis.min.js"></script>
+</head>
+<body style="display: flex;  flex-direction: column">
+<nav style="display: flex; justify-content: space-around">
+  
+  <a href="/blog"><- home</a>
+  
+</nav>
+<section>
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">PHP + SQL docker setup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-03-01T00:00:00-03:00" itemprop="datePublished">Mar 1, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Let’s say that it’s 2019 and for some odd reason you need to setup a PHP dev env</p>
+
+<p>First, let’s start a postgres service.</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker run <span class="nt">--name</span> my-postgres <span class="nt">--rm</span> <span class="nt">-p</span> 5432:5432 postgres:alpine</code></pre></figure>
+
+<p>It need to have a name. <code class="highlighter-rouge">my-postgres</code> in this case. It will be used</p>
+
+<p>To connect a client to postgres, we can run</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker run <span class="nt">--link</span> my-postgres <span class="nt">--rm</span> <span class="nt">-it</span> postgres:alpine psql <span class="nt">-U</span> postgres <span class="nt">-h</span> my-postgres</code></pre></figure>
+
+<p><code class="highlighter-rouge">--link my-postgres</code> will make <code class="highlighter-rouge">my-postgres</code> DNS points to the IP of <code class="highlighter-rouge">my-postgres</code> container.</p>
+
+<p>Then we say to <code class="highlighter-rouge">psql</code> connect to <code class="highlighter-rouge">my-postgres</code> host.</p>
+
+<p>Now we can run the <code class="highlighter-rouge">php</code> container.</p>
+
+<p>First, go to your working dit</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">cd </span>awesome-php-project
+
+<span class="nb">cat </span>index.php
+&lt;<span class="o">!</span>DOCTYPE html&gt;
+&lt;html&gt;
+&lt;<span class="nb">head</span><span class="o">&gt;</span>
+&lt;title&gt;PHP Hello!&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php 
+  <span class="nv">$conn</span> <span class="o">=</span> pg_connect<span class="o">(</span><span class="s2">"host=my-postgres port=5432 user=postgres"</span><span class="o">)</span><span class="p">;</span>
+  <span class="nv">$result</span> <span class="o">=</span> pg_query<span class="o">(</span><span class="nv">$conn</span>, <span class="s2">"select * from pg_stat_activity"</span><span class="o">)</span><span class="p">;</span>
+  var_dump<span class="o">(</span>pg_fetch_all<span class="o">(</span><span class="nv">$result</span><span class="o">))</span><span class="p">;</span>
+
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></figure>
+
+<p>See that we are connecting to <code class="highlighter-rouge">mypostgres</code> host.</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker run <span class="se">\</span>
+  <span class="nt">--rm</span> <span class="se">\</span>
+  <span class="nt">--name</span>  my-php <span class="se">\</span>
+  <span class="nt">--link</span> my-postgres:postgres <span class="se">\</span>
+  <span class="nt">-p</span> 8000:8000 <span class="se">\</span>
+  <span class="nt">-v</span><span class="s2">"</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">:/usr/src/myapp"</span> <span class="se">\</span>
+  <span class="nt">-w</span> /usr/src/myapp <span class="se">\</span>
+  php:cli sh <span class="nt">-c</span> <span class="se">\</span>
+  <span class="s1">'apt-get update &amp;&amp; apt-get install -y libpq-dev &amp;&amp; docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql &amp;&amp; docker-php-ext-install pdo pdo_pgsql pgsql &amp;&amp; php -S 0.0.0.0:8000'</span></code></pre></figure>
+
+<p>Now you can connect to <code class="highlighter-rouge">http://localhost:8000</code> and see your awesome app.</p>
+
+<p>For PHP reaons, PHP will not stop with <code class="highlighter-rouge">ctrl+c</code> nor <code class="highlighter-rouge">ctrl+d</code></p>
+
+<p>To stop this container, we need to run <code class="highlighter-rouge">docker kill my-php</code></p>
+
+  </div><a class="u-url" href="/blog/2019/03/01/php+sql-docker-setup.html" hidden></a>
+</article>
+
+</section>
+<footer style="display: flex; justify-content: space-around">
+  <a href="https://twitter.com/souenzzo">twitter</a>
+  <a href="https://github.com/souenzzo">github</a>
+</footer>
+<script>
+    window.klipse_settings = {
+        selector: '.language-klipse'// css selector for the html elements you want to klipsify
+    };
+</script>
+<script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+</body>
+</html>

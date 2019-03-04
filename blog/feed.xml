@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://souenzzo.github.io/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://souenzzo.github.io/blog/" rel="alternate" type="text/html" /><updated>2019-03-01T17:14:45-03:00</updated><id>https://souenzzo.github.io/blog/feed.xml</id><title type="html">Enzzo Cavallo</title><subtitle>A functional developer with advanced unix skill.</subtitle><entry><title type="html">Hello World!</title><link href="https://souenzzo.github.io/blog/2019/03/01/hello-world.html" rel="alternate" type="text/html" title="Hello World!" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>https://souenzzo.github.io/blog/2019/03/01/hello-world</id><content type="html" xml:base="https://souenzzo.github.io/blog/2019/03/01/hello-world.html">&lt;p&gt;Starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;TDB&lt;/code&gt;: Testing Driven Blogging&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://souenzzo.github.io/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://souenzzo.github.io/blog/" rel="alternate" type="text/html" /><updated>2019-03-04T14:12:37-03:00</updated><id>https://souenzzo.github.io/blog/feed.xml</id><title type="html">Enzzo Cavallo</title><subtitle>A functional developer with advanced unix skill.</subtitle><entry><title type="html">Hello World!</title><link href="https://souenzzo.github.io/blog/2019/03/01/hello-world.html" rel="alternate" type="text/html" title="Hello World!" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>https://souenzzo.github.io/blog/2019/03/01/hello-world</id><content type="html" xml:base="https://souenzzo.github.io/blog/2019/03/01/hello-world.html">&lt;p&gt;Starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;TDB&lt;/code&gt;: Testing Driven Blogging&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Code blocks and syntax highlight&lt;/li&gt;
@@ -28,4 +28,58 @@
 (new js/vis.Network target data options)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Now let’s push and see if works!&lt;/p&gt;</content><author><name></name></author><summary type="html">Starting with TDB: Testing Driven Blogging</summary></entry></feed>
+&lt;p&gt;Now let’s push and see if works!&lt;/p&gt;</content><author><name></name></author><summary type="html">Starting with TDB: Testing Driven Blogging</summary></entry><entry><title type="html">PHP + SQL docker setup</title><link href="https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup.html" rel="alternate" type="text/html" title="PHP + SQL docker setup" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup</id><content type="html" xml:base="https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup.html">&lt;p&gt;Let’s say that it’s 2019 and for some odd reason you need to setup a PHP dev env&lt;/p&gt;
+
+&lt;p&gt;First, let’s start a postgres service.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;docker run &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; my-postgres &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 5432:5432 postgres:alpine&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;It need to have a name. &lt;code class=&quot;highlighter-rouge&quot;&gt;my-postgres&lt;/code&gt; in this case. It will be used&lt;/p&gt;
+
+&lt;p&gt;To connect a client to postgres, we can run&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;docker run &lt;span class=&quot;nt&quot;&gt;--link&lt;/span&gt; my-postgres &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; postgres:alpine psql &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; postgres &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; my-postgres&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;--link my-postgres&lt;/code&gt; will make &lt;code class=&quot;highlighter-rouge&quot;&gt;my-postgres&lt;/code&gt; DNS points to the IP of &lt;code class=&quot;highlighter-rouge&quot;&gt;my-postgres&lt;/code&gt; container.&lt;/p&gt;
+
+&lt;p&gt;Then we say to &lt;code class=&quot;highlighter-rouge&quot;&gt;psql&lt;/code&gt; connect to &lt;code class=&quot;highlighter-rouge&quot;&gt;my-postgres&lt;/code&gt; host.&lt;/p&gt;
+
+&lt;p&gt;Now we can run the &lt;code class=&quot;highlighter-rouge&quot;&gt;php&lt;/code&gt; container.&lt;/p&gt;
+
+&lt;p&gt;First, go to your working dit&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;awesome-php-project
+
+&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;index.php
+&amp;lt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;DOCTYPE html&amp;gt;
+&amp;lt;html&amp;gt;
+&amp;lt;&lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+&amp;lt;title&amp;gt;PHP Hello!&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+&amp;lt;?php 
+  &lt;span class=&quot;nv&quot;&gt;$conn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; pg_connect&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;host=my-postgres port=5432 user=postgres&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;$result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; pg_query&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$conn&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;select * from pg_stat_activity&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  var_dump&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;pg_fetch_all&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$result&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+?&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;See that we are connecting to &lt;code class=&quot;highlighter-rouge&quot;&gt;mypostgres&lt;/code&gt; host.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;docker run &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt;  my-php &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;--link&lt;/span&gt; my-postgres:postgres &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 8000:8000 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:/usr/src/myapp&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; /usr/src/myapp &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  php:cli sh &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;s1&quot;&gt;'apt-get update &amp;amp;&amp;amp; apt-get install -y libpq-dev &amp;amp;&amp;amp; docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql &amp;amp;&amp;amp; docker-php-ext-install pdo pdo_pgsql pgsql &amp;amp;&amp;amp; php -S 0.0.0.0:8000'&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Now you can connect to &lt;code class=&quot;highlighter-rouge&quot;&gt;http://localhost:8000&lt;/code&gt; and see your awesome app.&lt;/p&gt;
+
+&lt;p&gt;For PHP reaons, PHP will not stop with &lt;code class=&quot;highlighter-rouge&quot;&gt;ctrl+c&lt;/code&gt; nor &lt;code class=&quot;highlighter-rouge&quot;&gt;ctrl+d&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;To stop this container, we need to run &lt;code class=&quot;highlighter-rouge&quot;&gt;docker kill my-php&lt;/code&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Let’s say that it’s 2019 and for some odd reason you need to setup a PHP dev env</summary></entry></feed>
