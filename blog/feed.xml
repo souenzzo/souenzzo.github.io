@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://souenzzo.github.io/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://souenzzo.github.io/blog/" rel="alternate" type="text/html" /><updated>2019-03-04T14:31:37-03:00</updated><id>https://souenzzo.github.io/blog/feed.xml</id><title type="html">Enzzo Cavallo</title><subtitle>A functional developer with advanced unix skill.</subtitle><entry><title type="html">Hello World!</title><link href="https://souenzzo.github.io/blog/2019/03/01/hello-world.html" rel="alternate" type="text/html" title="Hello World!" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>https://souenzzo.github.io/blog/2019/03/01/hello-world</id><content type="html" xml:base="https://souenzzo.github.io/blog/2019/03/01/hello-world.html">&lt;p&gt;Starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;TDB&lt;/code&gt;: Testing Driven Blogging&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/blog/" rel="alternate" type="text/html" /><updated>2019-03-04T18:47:09-03:00</updated><id>http://localhost:4000/blog/feed.xml</id><title type="html">Enzzo Cavallo</title><subtitle>A functional developer with advanced unix skill.</subtitle><entry><title type="html">Hello World!</title><link href="http://localhost:4000/blog/2019/03/01/hello-world.html" rel="alternate" type="text/html" title="Hello World!" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>http://localhost:4000/blog/2019/03/01/hello-world</id><content type="html" xml:base="http://localhost:4000/blog/2019/03/01/hello-world.html">&lt;p&gt;Starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;TDB&lt;/code&gt;: Testing Driven Blogging&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Code blocks and syntax highlight&lt;/li&gt;
@@ -28,7 +28,69 @@
 (new js/vis.Network target data options)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Now let’s push and see if works!&lt;/p&gt;</content><author><name></name></author><summary type="html">Starting with TDB: Testing Driven Blogging</summary></entry><entry><title type="html">PHP + SQL docker setup</title><link href="https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup.html" rel="alternate" type="text/html" title="PHP + SQL docker setup" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup</id><content type="html" xml:base="https://souenzzo.github.io/blog/2019/03/01/php+sql-docker-setup.html">&lt;p&gt;Let’s say that it’s 2019 and for some odd reason you need to setup a PHP dev env&lt;/p&gt;
+&lt;p&gt;Now let’s push and see if works!&lt;/p&gt;</content><author><name></name></author><summary type="html">Starting with TDB: Testing Driven Blogging</summary></entry><entry><title type="html">How to add react-native in a running cljs project</title><link href="http://localhost:4000/blog/2019/03/01/add-react-native-in-a-running-cljs-project.html" rel="alternate" type="text/html" title="How to add react-native in a running cljs project" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>http://localhost:4000/blog/2019/03/01/add-react-native-in-a-running-cljs-project</id><content type="html" xml:base="http://localhost:4000/blog/2019/03/01/add-react-native-in-a-running-cljs-project.html">&lt;p&gt;This tutorial will cover how to add react-native in a running cljs project.&lt;/p&gt;
+
+&lt;p&gt;I will flow this repo: &lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commits/master&quot;&gt;souenzzo/cljs-rn-tutorial&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;To run this app you need to start the repl with all profiles &lt;code class=&quot;highlighter-rouge&quot;&gt;clj -A:dev:cljs&lt;/code&gt; then call &lt;code class=&quot;highlighter-rouge&quot;&gt;(user/-main)&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commit/3f3ed613a45e6dacfa8b6eee1048749600dfb7e0&quot;&gt;commit&lt;/a&gt; 
+Add the react-native dependencie&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yarn add react-native 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commit/58f4d4850211a21195af15a87d9aebd75f3300fd&quot;&gt;commmit&lt;/a&gt;
+Generate react-native files&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Createa a &lt;code class=&quot;highlighter-rouge&quot;&gt;app.json&lt;/code&gt; file&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cljsrn&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;displayName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cljs+rn&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Append this in your &lt;code class=&quot;highlighter-rouge&quot;&gt;.gitignore&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
+android/.gradle/
+android/app/build/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;run &lt;code class=&quot;highlighter-rouge&quot;&gt;./node_modules/.bin/react-native eject&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;git add ios app.json android&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;I also do not like to commit generated files, but it is necessary &lt;code class=&quot;highlighter-rouge&quot;&gt;:'(&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commit/dd2a3c5f1b50b76d53c58d566b70f19e6171b9cc&quot;&gt;commit&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Create a &lt;code class=&quot;highlighter-rouge&quot;&gt;index.js&lt;/code&gt; this this template.&lt;/p&gt;
+
+&lt;p&gt;Then you can run &lt;code class=&quot;highlighter-rouge&quot;&gt;./node_modules/.bin/react-native start&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;./node_modules/.bin/react-native run-android&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;To make a &lt;code class=&quot;highlighter-rouge&quot;&gt;./node_modules/.bin/react-native run-android&lt;/code&gt;, you need to get a emulator running or a phone in the cabble
+with android dev stuff configured.&lt;/p&gt;
+
+&lt;p&gt;Once you get the app running on android, you can edit the text, save, press &lt;code class=&quot;highlighter-rouge&quot;&gt;r-r&lt;/code&gt; on the emulator and see the reload&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commit/217f4ca775aaf90226c0ce61cd3540524985637d&quot;&gt;commit&lt;/a&gt;
+Configure shadow-cljs
+This commit will configure shadow-cljs and move the hello from js to cljs.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;After do this, you will need to restart the REPL. That shoud be the only one restart.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/souenzzo/cljs-rn-tutorial/commit/3ef0602de20210e9c29942c2580cd68e7f0958b9&quot;&gt;commit&lt;/a&gt;
+Start fulcro app&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I started the fulcro. Coping the code from the web and moving the dom ns to react-native.&lt;/p&gt;
+
+&lt;p&gt;[WIP] - I need to get the remote working.&lt;/p&gt;</content><author><name></name></author><summary type="html">This tutorial will cover how to add react-native in a running cljs project.</summary></entry><entry><title type="html">PHP + SQL docker setup</title><link href="http://localhost:4000/blog/2019/03/01/php+sql-docker-setup.html" rel="alternate" type="text/html" title="PHP + SQL docker setup" /><published>2019-03-01T00:00:00-03:00</published><updated>2019-03-01T00:00:00-03:00</updated><id>http://localhost:4000/blog/2019/03/01/php+sql-docker-setup</id><content type="html" xml:base="http://localhost:4000/blog/2019/03/01/php+sql-docker-setup.html">&lt;p&gt;Let’s say that it’s 2019 and for some odd reason you need to setup a PHP dev env&lt;/p&gt;
 
 &lt;p&gt;First, let’s start a postgres service.&lt;/p&gt;
 
