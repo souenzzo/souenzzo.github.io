@@ -78,3 +78,36 @@ Now you can connect to `http://localhost:8000` and see your awesome app.
 For PHP reaons, PHP will not stop with `ctrl+c` nor `ctrl+d`
 
 To stop this container, we need to run `docker kill my-php`
+-----------------
+
+Conexao Postgres utilizndo pHP
+
+{% highlight bash %}
+<?php
+  $bdcon4 = pg_connect("host=my-postgres dbname='nome_do_banco' port=5432 user=postgres");
+// $**** define uma variavel de conexao
+//coneta a um banco de dados chamado "nome_do_banco" na máquina "my-postgres" com um usuário e senha
+if(!$bdcon4)
+{ print "Falha deu ruim";
+}
+//avisa de a  conexao deu errado "!" é a negativa
+?>
+{% endhighlight %}
+------------------------
+
+Insere um dado em uma tabela
+{% highlight bash %}
+<?php
+include_once("conexao.php");
+//inclui todos os dados de "conexao.php"
+
+$nome = $_POST['nome'];
+$email = $_POST['email'];
+$profissao = $_POST['profissao'];
+$sql =pg_query($bdcon4, "INSERT INTO usuarios(nome, email, profissao) VALUES('$nome','$email','$profissao')");
+// insere dentro da tabela "usuarios" do banco de dados "nome_do_banco" que foi definido na conexao.php acima
+
+pg_close($bdcon4);
+?>
+
+{% endhighlight %}
