@@ -80,6 +80,11 @@
 
 <p>To stop this container, we need to run <code class="highlighter-rouge">docker kill my-php</code></p>
 
+<p>PS1: If you need to run <code class="highlighter-rouge">phpmyadmin</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">--name</span> myadmin <span class="nt">-d</span> <span class="nt">--link</span> mysql_db_server:db <span class="nt">-p</span> 8080:80 phpmyadmin/phpmyadmin 
+</code></pre></div></div>
+
   </div><a class="u-url" href="/blog/2019/03/01/php+sql-docker-setup.html" hidden></a>
 </article>
 

@@ -78,3 +78,10 @@ Now you can connect to `http://localhost:8000` and see your awesome app.
 For PHP reaons, PHP will not stop with `ctrl+c` nor `ctrl+d`
 
 To stop this container, we need to run `docker kill my-php`
+
+
+PS1: If you need to run `phpmyadmin`
+
+```bash
+docker run --name myadmin -d --link mysql_db_server:db -p 8080:80 phpmyadmin/phpmyadmin 
+```
