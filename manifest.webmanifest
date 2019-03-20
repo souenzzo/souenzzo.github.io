@@ -1,7 +1,7 @@
 {
   "name": "Enzzo Cavallo",
   "display": "standalone",
-  "sort_name": "souenzzo",
+  "short_name": "souenzzo",
   "theme_color": "gray",
   "background_color": "gray",
   "manifest_version": 2,
