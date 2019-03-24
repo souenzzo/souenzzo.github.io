@@ -4,7 +4,7 @@
   "short_name": "souenzzo",
   "theme_color": "gray",
   "start_url": "/",
-  "background_color": "gray",
+  "background_color": "white",
   "manifest_version": 2,
   "version": "1",
   "icons": [
