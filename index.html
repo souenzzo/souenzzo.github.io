@@ -104,5 +104,10 @@
         </li>
     </ul>
 </div>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/serviceWorker.js')
+    }
+</script>
 </body>
 </html>
