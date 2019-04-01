@@ -1,10 +1,10 @@
 {
   "name": "Enzzo Cavallo",
   "display": "standalone",
-  "short_name": "souenzzo",
+  "short_name": "Enzzo",
   "theme_color": "#1793d1",
   "start_url": "/",
-  "background_color": "black",
+  "background_color": "#4d4d4d",
   "manifest_version": 2,
   "version": "1",
   "icons": [
