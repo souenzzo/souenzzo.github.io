@@ -76,42 +76,6 @@
     <button>&#x1f5d1;</button>
 
 </div>
-<script>
-    var output = document.getElementById("output");
-    var input = document.getElementById("input");
-    var setOutput = v => output.value = v;
-    var setInput = v => input.value = v;
-    var state = {};
-    const reDigit = RegExp("^[0-9]$");
-    const isDigit = x => reDigit.test(x);
-    const isEq = x => x === "=";
-    const isDel = x => x === "\uD83D\uDDD1";
-    const isString = x => typeof x === typeof "";
-
-    const handler = (state, x) => {
-        var {input = ""} = state;
-        return isEq(x)
-            ? {...state, output: `${eval(input)}`, input: ""}
-            : isDel(x)
-            ? {... state, input: input.substring(0, input.length - 1)}
-            :{...state, input: `${input}${x}`};
-    };
-
-    const handleButton = x => {
-        const newState = handler(state, x);
-        if (isString(newState.output)) {
-            setOutput(newState.output)
-        }
-        if (isString(newState.input)) {
-            setInput(newState.input)
-        }
-        state = newState;
-        return null;
-    };
-    var buttons = document.querySelectorAll("button");
-    for (var button of buttons) {
-        button.addEventListener("click", e => handleButton(e.target.innerHTML))
-    }
-</script>
+<script type="module" src="index.js"></script>
 </body>
 </html>
