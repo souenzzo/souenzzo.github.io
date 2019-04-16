@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+
+    <!--
+    <link rel="apple-touch-icon" href="/me70.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/me152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/me180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/me167.png">
+    <link rel="apple-touch-startup-image" href="/me512.png">
+    <meta property="og:image" content="https://souenzzo.com.br/me.jpg"/>
+    <link rel="icon" href="/me70.png"/>
+    <link rel="manifest" href="manifest.webmanifest"/>
+    -->
+    <!-- TODO: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/pinnedTabs/pinnedTabs.html -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1793d1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+    <meta name="theme-color" content="#1793d1"/>
+
+    <meta property="og:type" content="profile"/>
+    <meta name="twitter:card" content="profile"/>
+
+    <meta property="og:url" content="https://souenzzo.com.br/calc"/>
+
+    <meta name="author" content="Enzzo Cavallo">
+    <meta property="og:title" content="Calc"/>
+    <title>Calc</title>
+
+    <meta name="Description" content="calculator"/>
+    <meta name="description" content="calculator">
+    <meta property="og:description" content="calculator"/>
+
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+
+    <style>
+
+    </style>
+</head>
+<body>
+<div></div>
+<div>
+    <label>
+        <input id="output" readonly>
+    </label>
+    <label>
+        <input id="input" readonly>
+    </label>
+    <div>
+        <button>7</button>
+        <button>8</button>
+        <button>9</button>
+    </div>
+    <div>
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+    </div>
+
+    <div>
+        <button>1</button>
+        <button>2</button>
+        <button>3</button>
+    </div>
+    <button>=</button>
+    <button>+</button>
+    <button>-</button>
+    <button>*</button>
+    <button>/</button>
+    <button>(</button>
+    <button>)</button>
+    <button>&#x1f5d1;</button>
+
+</div>
+<script>
+    var output = document.getElementById("output");
+    var input = document.getElementById("input");
+    var setOutput = v => output.value = v;
+    var setInput = v => input.value = v;
+    var state = {};
+    const reDigit = RegExp("^[0-9]$");
+    const isDigit = x => reDigit.test(x);
+    const isEq = x => x === "=";
+    const isDel = x => x === "\uD83D\uDDD1";
+    const isString = x => typeof x === typeof "";
+
+    const handler = (state, x) => {
+        var {input = ""} = state;
+        return isEq(x)
+            ? {...state, output: `${eval(input)}`, input: ""}
+            : isDel(x)
+            ? {... state, input: input.substring(0, input.length - 1)}
+            :{...state, input: `${input}${x}`};
+    };
+
+    const handleButton = x => {
+        const newState = handler(state, x);
+        if (isString(newState.output)) {
+            setOutput(newState.output)
+        }
+        if (isString(newState.input)) {
+            setInput(newState.input)
+        }
+        state = newState;
+        return null;
+    };
+    var buttons = document.querySelectorAll("button");
+    for (var button of buttons) {
+        button.addEventListener("click", e => handleButton(e.target.innerHTML))
+    }
+</script>
+</body>
+</html>
