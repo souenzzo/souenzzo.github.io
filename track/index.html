@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+
+    <!--
+    <link rel="apple-touch-icon" href="/me70.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/me152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/me180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/me167.png">
+    <link rel="apple-touch-startup-image" href="/me512.png">
+    <meta property="og:image" content="https://souenzzo.com.br/me.jpg"/>
+    <link rel="icon" href="/me70.png"/>
+    <link rel="manifest" href="manifest.webmanifest"/>
+    -->
+    <!-- TODO: https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/pinnedTabs/pinnedTabs.html -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1793d1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+    <meta name="theme-color" content="#1793d1"/>
+
+    <meta property="og:type" content="profile"/>
+    <meta name="twitter:card" content="profile"/>
+
+    <meta property="og:url" content="https://souenzzo.com.br/track"/>
+
+    <meta name="author" content="Enzzo Cavallo">
+    <meta property="og:title" content="Track"/>
+    <title>Track</title>
+
+    <meta name="Description" content="track"/>
+    <meta name="description" content="track">
+    <meta property="og:description" content="track"/>
+
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+
+    <style>
+    </style>
+</head>
+<body>
+<button onClick="startWatch()">start</button>
+<button onClick="stopWatch()">stop</button>
+<button>wipe</button>
+</body>
+<script>
+    var watches = [];
+    var db;
+    var DBOpenRequest = window.indexedDB.open("tacker", 4);
+
+    function onError(err) {
+        console.error(err);
+    }
+
+    function onPosision({coords, timestamp}) {
+        var coord = {...coords, timestamp};
+        var transaction = db.transaction(["tracker"], "readwrite");
+        transaction.oncomplete = function () {
+            console.log(["position", coord]);
+        };
+        transaction.onerror = onError;
+        var obj = transaction.objectStore("tracker");
+        obj.add(coord);
+    }
+
+    DBOpenRequest.onerror = onError;
+    DBOpenRequest.onsuccess = function (event) {
+        db = DBOpenRequest.result;
+        console.log(["success", event])
+    };
+    DBOpenRequest.onupgradeneeded = function(event) {
+        var db = event.target.result;
+
+        db.onerror = onError;
+        var objectStore = db.createObjectStore("tracker", { keyPath: "timestamp" });
+    };
+
+
+    function startWatch() {
+        var watchID = navigator.geolocation.watchPosition(onPosision, onError, {enableHighAccuracy: true});
+        console.log(`started ${watchID} ${watches}`);
+        watches.push(watchID);
+    }
+
+    function stopWatch() {
+        var toStop = [...watches];
+        watches = [];
+        for (var i of toStop) {
+            navigator.geolocation.clearWatch(i);
+            console.log(`stoped ${i}`);
+        }
+    }
+</script>
+</html>
