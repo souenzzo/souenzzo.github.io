@@ -45,6 +45,7 @@
 <button onClick="stopWatch()">stop</button>
 <button onClick="downloadData()">download</button>
 <a id="download" hidden>download</a>
+<div id="last-date"></div>
 </body>
 <script>
     const objectStoreName = `tracker`;
@@ -125,6 +126,8 @@
         };
         // console.log(["~~!", coord]);
         await IDBDatabaseAdd(db, coord);
+        var now = new Date(timestamp);
+        document.getElementById("last-date").innerText = `Last capture: ${now.toISOString()}`
         // console.log(["ok!", coord])
     }
 
