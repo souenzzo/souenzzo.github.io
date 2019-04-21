@@ -43,44 +43,91 @@
 <body>
 <button onClick="startWatch()">start</button>
 <button onClick="stopWatch()">stop</button>
-<button>wipe</button>
+<button onClick="downloadData()">wipe</button>
+<a id="download" hidden>download</a>
 </body>
 <script>
+    const objectStoreName = `tracker`;
     var watches = [];
     var db;
-    var DBOpenRequest = window.indexedDB.open("tacker", 4);
 
-    function onError(err) {
-        console.error(err);
+    function IndexedDBOpen(...args) {
+        var req = window.indexedDB.open(...args);
+        return new Promise((resolve, reject) => {
+            req.onerror = reject;
+            req.onsuccess = function (event) {
+                resolve(event.target.result);
+            };
+            req.onupgradeneeded = function (event) {
+                var db = event.target.result;
+                db.onerror = reject;
+                var objectStore = db.createObjectStore(objectStoreName, {keyPath: "timestamp"});
+            };
+        })
+
     }
 
-    function onPosision({coords, timestamp}) {
-        var coord = {...coords, timestamp};
-        var transaction = db.transaction(["tracker"], "readwrite");
-        transaction.oncomplete = function () {
-            console.log(["position", coord]);
+    function IDBDatabaseAdd(db, value) {
+        var transaction = db.transaction([objectStoreName], "readwrite");
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = resolve;
+            transaction.onerror = reject;
+            var obj = transaction.objectStore(objectStoreName);
+            obj.add(value);
+        })
+    }
+
+    function IDBDatabaseDump(db) {
+        var transaction = db.transaction(objectStoreName).objectStore(objectStoreName);
+        var cursor = transaction.openCursor();
+        var x = [];
+        return new Promise((resolve, reject) => {
+            cursor.onsuccess = (event) => {
+                var cursor = event.target.result;
+                // console.log(cursor);
+                if (cursor) {
+                    x.push(cursor.value);
+                    cursor.continue()
+                } else {
+                    var link = document.getElementById("download");
+                    // console.log(link);
+                    resolve(new Blob([JSON.stringify(x)], {type: "application/json"}))
+                }
+            };
+        })
+    }
+
+    async function downloadData() {
+        var blob = await IDBDatabaseDump(db);
+        var down = document.getElementById("download");
+        down.href = URL.createObjectURL(blob);
+        down.click();
+    }
+
+    IndexedDBOpen(objectStoreName, 4).then((result) => {
+        db = result
+    });
+
+    async function onPosision(position) {
+        const {coords, timestamp} = position;
+        var coord = {
+            timestamp: timestamp,
+            accuracy: coords.accuracy,
+            altitude: coords.altitude,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            altitudeAccuracy: coords.altitudeAccuracy,
+            speed: coords.speed,
+            heading: coords.heading,
         };
-        transaction.onerror = onError;
-        var obj = transaction.objectStore("tracker");
-        obj.add(coord);
+        // console.log(["~~!", coord]);
+        await IDBDatabaseAdd(db, coord);
+        // console.log(["ok!", coord])
     }
-
-    DBOpenRequest.onerror = onError;
-    DBOpenRequest.onsuccess = function (event) {
-        db = DBOpenRequest.result;
-        console.log(["success", event])
-    };
-    DBOpenRequest.onupgradeneeded = function(event) {
-        var db = event.target.result;
-
-        db.onerror = onError;
-        var objectStore = db.createObjectStore("tracker", { keyPath: "timestamp" });
-    };
-
 
     function startWatch() {
-        var watchID = navigator.geolocation.watchPosition(onPosision, onError, {enableHighAccuracy: true});
-        console.log(`started ${watchID} ${watches}`);
+        var watchID = navigator.geolocation.watchPosition(onPosision, console.error);
+        // console.log(`started ${watchID} ${watches}`);
         watches.push(watchID);
     }
 
@@ -89,7 +136,7 @@
         watches = [];
         for (var i of toStop) {
             navigator.geolocation.clearWatch(i);
-            console.log(`stoped ${i}`);
+            // console.log(`stoped ${i}`);
         }
     }
 </script>
