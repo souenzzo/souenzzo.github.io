@@ -91,7 +91,10 @@
                 } else {
                     var link = document.getElementById("download");
                     // console.log(link);
-                    resolve(new Blob([JSON.stringify(x)], {type: "application/json"}))
+                    resolve(new Blob([JSON.stringify(x)], {
+                        // type: "application/json" // opens json "in browser"
+                        type: "application/octet-stream"
+                    }))
                 }
             };
         })
