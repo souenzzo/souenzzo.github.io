@@ -104,6 +104,7 @@
     async function downloadData() {
         var blob = await IDBDatabaseDump(db);
         var down = document.getElementById("download");
+        down.download = `track-${(new Date()).toLocaleDateString()}.json`
         down.href = URL.createObjectURL(blob);
         down.click();
     }
