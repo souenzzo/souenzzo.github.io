@@ -38,10 +38,21 @@
     <meta name="twitter:creator" content="@souenzzo"/>
 
     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            background-color: #c3c7cb;
+            border: none;
+            padding: 7px 20px 5px;
+            height: 30vh;
+            box-shadow: inset 1px 1px 0 1px #ffffff, inset 0 0 0 1px #868a8e, 1px 1px 0 0 #000;
+        }
     </style>
 </head>
 <body>
-<button onClick="startWatch()">start</button>
+<button id="start" onClick="startWatch()">start</button>
 <button onClick="stopWatch()">stop</button>
 <button onClick="downloadData()">download</button>
 <a id="download" hidden>download</a>
@@ -132,9 +143,15 @@
         // console.log(["ok!", coord])
     }
 
-    function startWatch() {
-        var watchID = navigator.geolocation.watchPosition(onPosision, console.error);
-        // console.log(`started ${watchID} ${watches}`);
+    function startWatch(e) {
+        var disable = true;
+        var target = event.target;
+        var watchID = navigator.geolocation.watchPosition(onPosision, e => {
+            console.error(e);
+            disable = false;
+            target.disabled = disable;
+        });
+        target.disabled = disable;
         watches.push(watchID);
     }
 
@@ -145,6 +162,7 @@
             navigator.geolocation.clearWatch(i);
             // console.log(`stoped ${i}`);
         }
+        document.getElementById("start").disabled = false
     }
 </script>
 </html>
