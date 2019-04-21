@@ -41,7 +41,13 @@
         body {
             display: flex;
             flex-direction: column;
+            text-align:  center;
         }
+
+        div {
+            margin-top: 1vh;
+        }
+
         button {
             background-color: #c3c7cb;
             border: none;
@@ -147,7 +153,9 @@
         var disable = true;
         var target = event.target;
         var watchID = navigator.geolocation.watchPosition(onPosision, e => {
-            console.error(e);
+            var el = document.getElementById("last-date");
+            el.innerText = `${e.message}`;
+            el.style = "color: red";
             disable = false;
             target.disabled = disable;
         });
