@@ -1,6 +1,6 @@
 {
   "name": "Enzzo Cavallo",
-  "display": "standalone",
+  "display": "browser",
   "short_name": "Enzzo",
   "theme_color": "#1793d1",
   "start_url": "https://souenzzo.com.br/",
