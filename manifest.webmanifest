@@ -3,7 +3,7 @@
   "display": "standalone",
   "short_name": "Enzzo",
   "theme_color": "#1793d1",
-  "start_url": "/",
+  "start_url": "https://souenzzo.com.br/",
   "background_color": "#4d4d4d",
   "manifest_version": 2,
   "version": "1",
