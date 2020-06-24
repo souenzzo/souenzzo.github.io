@@ -1,0 +1,39 @@
+{
+  "title": "Enzzo Cavallo",
+  "description": "Software Engineer",
+  "url": "https://souenzzo.com.br/",
+  "networks": [
+  {
+    "name": "github",
+    "href": "https://github.com/souenzzo"
+  },
+  {
+    "name": "gitlab",
+    "href": "https://gitlab.com/souenzzo"
+  },
+  {
+    "name": "telegram",
+    "href": "https://t.me/souenzzo"
+  },
+  {
+    "name": "email",
+    "href": "mailto:souenzzo@gmail.com"
+  },
+  {
+    "name": "twitter",
+    "href": "https://twitter.com/souenzzo"
+  },
+  {
+    "name": "blog",
+    "href": "https://souenzzo.com.br/blog"
+  },
+  {
+    "name": "stackoverflow",
+    "href": "https://stackoverflow.com/users/5592612/souenzzo"
+  },
+  {
+    "name": "linkedin",
+    "href": "https://www.linkedin.com/in/souenzzo"
+  }
+  ]
+}

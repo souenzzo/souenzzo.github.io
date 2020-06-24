@@ -22,31 +22,31 @@
     <meta property="og:type" content="profile"/>
     <meta name="twitter:card" content="profile"/>
 
-    <meta property="og:url" content="https://souenzzo.com.br"/>
-    <meta property="og:image" content="https://souenzzo.com.br/me.jpg"/>
+    <meta property="og:url" content="{{ site.url }}"/>
+    <meta property="og:image" content="{{ site.url }}/me.jpg"/>
 
 
-    <meta name="author" content="Enzzo Cavallo">
-    <meta property="og:title" content="Enzzo Cavallo"/>
-    <title>Enzzo Cavallo</title>
+    <meta name="author" content="{{ site.title }}">
+    <meta property="og:title" content="{{ site.title }}"/>
+    <title>{{ site.title }}</title>
 
-    <meta name="Description" content="Software Engineer"/>
-    <meta name="description" content="Software Engineer">
-    <meta property="og:description" content="Software Engineer"/>
+    <meta name="Description" content="{{ site.description }}"/>
+    <meta name="description" content="{{ site.description }}">
+    <meta property="og:description" content="{{ site.description }}"/>
 
     <meta name="twitter:site" content="@souenzzo"/>
     <meta name="twitter:creator" content="@souenzzo"/>
 
     <link rel="manifest" href="/manifest.webmanifest"/>
-    <link rel="canonical" href="https://souenzzo.com.br/"/>
+    <link rel="canonical" href="{{ site.url }}"/>
 
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "Person",
-            "name": "Enzzo Cavallo",
-            "jobTitle": "Software Engineer",
-            "url": "https://souenzzo.com.br",
+            "name": "{{ site.title }}",
+            "jobTitle": "{{ site.description }}",
+            "url": "{{ site.url }}",
             "email": "souenzzo@gmail.com",
             "sameAs": [
                 "https://twitter.com/souenzzo",
@@ -95,6 +95,8 @@
           }
         }
     }
+
+
     </style>
 </head>
 <body>
@@ -103,50 +105,18 @@
         <img src="/me.jpg"
              alt="me">
     </figure>
-    <h1>Enzzo Cavallo</h1>
-    <code>Software Engineer</code>
+    <h1>{{ site.title }}</h1>
+    <code>{{ site.description }}</code>
 </header>
 <main>
     <ul>
+        {% for network in site.networks %}
         <li>
             <a target="_blank"
                rel="noreferrer noopener"
-               href="https://github.com/souenzzo">github</a>
+               href="{{ network.href }}">{{network.name}}</a>
         </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://gitlab.com/souenzzo">gitlab</a>
-        </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://t.me/souenzzo">telegram</a>
-        </li>
-        <li>
-            <a target="_blank"
-               href="mailto:souenzzo@gmail.com">email</a>
-        </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://twitter.com/souenzzo">twitter</a>
-        </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://souenzzo.com.br/blog">blog</a>
-        </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://stackoverflow.com/users/5592612/souenzzo">stackoverflow</a>
-        </li>
-        <li>
-            <a target="_blank"
-               rel="noreferrer noopener"
-               href="https://www.linkedin.com/in/souenzzo">linkedin</a>
-        </li>
+        {% endfor %}
     </ul>
 </main>
 </body>
