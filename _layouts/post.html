@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{%- include head.html -%}
+<body>
+{%- include header.html -%}
+<main>
+    <article itemscope itemtype="http://schema.org/BlogPosting">
+        <header>
+            <h1>{{ page.title | escape }}</h1>
+            <p>
+                {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+                <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
+                    {{ page.date | date: date_format }}
+                </time>
+                {%- if page.modified_date -%}
+                ~
+                {%- assign mdate = page.modified_date | date_to_xmlschema -%}
+                <time class="dt-modified" datetime="{{ mdate }}" itemprop="dateModified">
+                    {{ mdate | date: date_format }}
+                </time>
+                {%- endif -%}
+            </p>
+        </header>
+        {{ content }}
+        <a href="{{ page.url | relative_url }}" hidden></a>
+    </article>
+</main>
+{%- include footer.html -%}
+</body>
+</html>
