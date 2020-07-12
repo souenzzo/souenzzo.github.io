@@ -129,11 +129,21 @@ Com isso, vamos criar um Dockerfile que execute o código.
 
 `Dockerfile`
 ```dockerfile
+## partimos de uma imagem com clojure tool deps.
+## uso alpine apenas por ser menor
 FROM clojure:tools-deps-alpine
+
+## criando um usuário regular dentro do docker
+## evita problemas com o ~/.m2
 RUN adduser -D atemoia
 USER atemoia
+## copiando a pasta inteira.
+## em algum momento vamos fazer um .dockerignore
 ADD --chown=atemoia . /srv/atemoia
 WORKDIR /srv/atemoia
+
+## esse comando vai baixar as dependencias do aplicativo durante
+## o build da aplicação
 RUN clojure -Spath
 CMD clojure -m br.com.souenzzo.atemoia
 ```
@@ -150,9 +160,27 @@ build:
 Basta criar um `git` e colocar tudo dentro 
 
 ```bash 
+## criando um git no a pasta atual
 $ git init .
+## adicionando arquivos relevantes
 $ git add .gitignore Dockerfile deps.edn heroku.yml src/br/com/souenzzo/atemoia.clj
+## commitando tudo
 $ git comm  -am'Commit inicial'
 ```
 
-E subir para o github, e integrar com o heroku
+Após criar o git, precisamos sincronizar ele com o github
+
+```bash 
+$ git remote add origin 'ssh://github.com:souenzzo/atemoia.git'
+$ git push origin master
+```
+
+E então, criamos um aplicativo no Heroku
+
+Ao criar o aplicativo, o heroku irá te perguntar o metodo de deploy.
+
+Ali você deve escolher que quer "integração com github"
+
+Aponte seu repositório
+
+O primeiro deploy (se não me engano) previsa ser manual
