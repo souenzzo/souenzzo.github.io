@@ -184,3 +184,9 @@ Ali você deve escolher que quer "integração com github"
 Aponte seu repositório
 
 O primeiro deploy (se não me engano) previsa ser manual
+
+---
+
+Em caso de duvidas ou comentários, abra uma issue ou entre em contato comigo
+
+https://github.com/souenzzo/souenzzo.github.io/issues
