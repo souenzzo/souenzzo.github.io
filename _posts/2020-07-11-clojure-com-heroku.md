@@ -3,4 +3,102 @@ layout: post
 title:  Clojure no heroku
 ---
 
-# Hello
+Costumo dar nomes de arvores (nesse caso, um fruto) em meus projetos, esse se chama [atemoia](https://pt.wikipedia.org/wiki/Atemoia)
+
+0. Em um diretório vazio, crie o arquivo `deps.edn`
+```bash
+## Criando a pasta vazia
+$ mkdir atemoia
+## Entrando na pasta criada
+$ cd atemoia
+## Criando o arquivo, em branco
+$ > deps.edn
+``` 
+
+Este é o arquivo onde declaramos as dependencias externas do nosso projeto.
+
+`deps.edn`
+```clojure
+{:paths ["src"]
+ :deps  {org.clojure/clojure          {:mvn/version "1.10.1"}
+         org.clojure/tools.deps.alpha {:mvn/version "0.8.695"}
+         io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
+         io.pedestal/pedestal.service {:mvn/version "0.5.8"}
+         hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}}} 
+```
+
+Uma vez declaradas nossas dependencias, podemos abrir nosso REPL, que não precisa ser fechado e vc deve
+sempre fazer as coisas nele.
+
+> Recomendo que vc use um RPEL integrado ao seu editor de texto. Mas vou fazer como se não estivesse.
+
+```bash 
+$ clj 
+Clojure 1.10.1
+user=> 
+```
+
+Vou criar o namespace `br.com.souenzzo.atemoia`. Você pode chamar como preferir.
+
+```bash 
+mkdir -p src/br/com/souenzzo
+> src/br/com/souenzzo/atemoia.clj
+``` 
+
+Neste arquivo, vamos criar um "hello-world" do pedestal
+
+`src/br/com/souenzzo/atemoia.clj`
+```clojure
+(ns br.com.souenzzo.atemoia
+  (:require [io.pedestal.http :as http]
+            [clojure.edn :as edn]))
+
+(defn hello
+  [req]
+  {:body   "ok"
+   :status 200})
+
+(def routes
+  "Aqui é a tabela de rotas do pedestal. Caso um `get` em `/`, então
+chama a função `hello`" 
+  `#{["/" :get hello]})
+
+(def port
+  "Heroku por padrão entrega a porta que a aplicação deve funcionar
+na variavel de ambiente `PORT`. Para desenvolvimento local, vamos usar
+a porta 5000" 
+  (or (edn/read-string (System/getenv "PORT"))
+       5000))
+
+(def service-map
+  "Configurações do pedestal:
+- porta
+- host: para receber requisições de servidores externos
+- routes: tabela de rotas
+- type: pedestal suporta varias plataformas. Vamos usar o jetty, que é bem comum no mundo java.
+- join?: diz se o processo deve continuar após subir o servidor.
+"
+  {::http/port   port
+   ::http/host   "0.0.0.0"
+   ::http/routes routes
+   ::http/type   :jetty
+   ::http/join?  false})
+
+;; Aqui vamos armazenar o "estado" do servidor HTTP.
+;; será util para a poder parar o servidor quando quiser
+(defonce state
+         (atom nil))
+
+(defn -main
+  [& _]
+  (swap! state
+         (fn [st]
+           (when st
+             (http/stop st))
+           (-> service-map
+               http/default-interceptors
+               http/create-server
+               http/start))))
+
+
+```

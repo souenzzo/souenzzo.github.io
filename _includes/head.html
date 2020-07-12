@@ -32,8 +32,12 @@
         }
 
         body {
-            text-align: center;
+            // text-align: center;
             padding: 2vh;
+        }
+
+        p {
+          max-width: 35em;
         }
 
         ul {
@@ -47,6 +51,12 @@
         li {
             padding: 1rem;
         }
+        .no {
+          color: purple;
+        }
+        .s {
+          color: green;
+        }
         @media (prefers-color-scheme: dark) {
           :root {
             background: black;
@@ -57,6 +67,12 @@
           }
           a:visited {
             color: fuchsia;
+          }
+          .no {
+            color: fuchsia;
+          }
+          .s {
+            color: lightgreen;
           }
         }
 </style>
