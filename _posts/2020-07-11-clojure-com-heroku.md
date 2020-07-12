@@ -68,7 +68,7 @@ chama a função `hello`"
 na variavel de ambiente `PORT`. Para desenvolvimento local, vamos usar
 a porta 5000" 
   (or (edn/read-string (System/getenv "PORT"))
-       5000))
+      5000))
 
 (def service-map
   "Configurações do pedestal:
