@@ -99,6 +99,60 @@ a porta 5000"
                http/default-interceptors
                http/create-server
                http/start))))
-
-
 ```
+
+Vamos carregar esse arquivo no REPL
+
+```clojure
+;; seu editor de texto provavelmente tem um comando
+;; "carregar arquivo para o repl"
+;; que executa isso para vc
+user=> (require 'br.com.souenzzo.atemoia :reaload)
+```
+
+E chamar a função main
+
+```clojure
+user=> (br.com.souenzzo.atemoia/-main)
+```
+
+Com isso, devemos ter um servidor HTTP rodando em sua porta 5000
+
+Podemos testar no proprio REPL
+```clojure
+user=> (slurp "http://localhost:5000")
+"ok"
+user=>
+```
+
+Com isso, vamos criar um Dockerfile que execute o código.
+
+`Dockerfile`
+```dockerfile
+FROM clojure:tools-deps-alpine
+RUN adduser -D atemoia
+USER atemoia
+ADD --chown=atemoia . /srv/atemoia
+WORKDIR /srv/atemoia
+RUN clojure -Spath
+CMD clojure -m br.com.souenzzo.atemoia
+```
+
+Já temos tudo pronto para o heroku, basta dizer que o target "web" usa esse dockerfile.
+
+`heroku.yml`
+```yaml
+build:
+  docker:
+    web: Dockerfile
+```
+
+Basta criar um `git` e colocar tudo dentro 
+
+```bash 
+$ git init .
+$ git add .gitignore Dockerfile deps.edn heroku.yml src/br/com/souenzzo/atemoia.clj
+$ git comm  -am'Commit inicial'
+```
+
+E subir para o github, e integrar com o heroku
