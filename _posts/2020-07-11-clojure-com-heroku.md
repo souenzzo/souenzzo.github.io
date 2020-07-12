@@ -8,11 +8,11 @@ Costumo dar nomes de arvores (nesse caso, um fruto) em meus projetos, esse se ch
 0. Em um diretório vazio, crie o arquivo `deps.edn`
 ```bash
 ## Criando a pasta vazia
-$ mkdir atemoia
+mkdir atemoia
 ## Entrando na pasta criada
-$ cd atemoia
+cd atemoia
 ## Criando o arquivo, em branco
-$ > deps.edn
+> deps.edn
 ``` 
 
 Este é o arquivo onde declaramos as dependencias externas do nosso projeto.
@@ -33,9 +33,9 @@ sempre fazer as coisas nele.
 > Recomendo que vc use um RPEL integrado ao seu editor de texto. Mas vou fazer como se não estivesse.
 
 ```bash 
-$ clj 
-Clojure 1.10.1
-user=> 
+clj 
+# Clojure 1.10.1
+# user=> 
 ```
 
 Vou criar o namespace `br.com.souenzzo.atemoia`. Você pode chamar como preferir.
@@ -161,18 +161,18 @@ Basta criar um `git` e colocar tudo dentro
 
 ```bash 
 ## criando um git no a pasta atual
-$ git init .
+git init .
 ## adicionando arquivos relevantes
-$ git add .gitignore Dockerfile deps.edn heroku.yml src/br/com/souenzzo/atemoia.clj
+git add .gitignore Dockerfile deps.edn heroku.yml src/br/com/souenzzo/atemoia.clj
 ## commitando tudo
-$ git comm  -am'Commit inicial'
+git commit  -am'Commit inicial'
 ```
 
 Após criar o git, precisamos sincronizar ele com o github
 
 ```bash 
-$ git remote add origin 'ssh://github.com:souenzzo/atemoia.git'
-$ git push origin master
+git remote add origin 'ssh://github.com:souenzzo/atemoia.git'
+git push origin master
 ```
 
 E então, criamos um aplicativo no Heroku
