@@ -1,5 +1,5 @@
 {:paths   ["src"]
- :deps    {}
+ :deps    {org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}}
  :aliases {:dev  {:extra-paths ["dev" "test"]
                   :extra-deps  {org.clojure/clojure          {:mvn/version "1.10.1"}
                                 io.pedestal/pedestal.service {:mvn/version "0.5.8"}

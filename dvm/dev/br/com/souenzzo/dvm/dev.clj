@@ -4,9 +4,18 @@
             [io.pedestal.http.route :as route]
             [ring.util.mime-type :as mime]))
 
+(def ui-hello
+  (dvm/el "html" {}
+          (dvm/el "head" {}
+                  (dvm/el "title" {}
+                          "hello!"))
+          (dvm/el "body" {}
+                  (dvm/el "p" {}
+                          "hello!"))))
+
 (defn index
   [req]
-  {:body    "<button> ok </button>"
+  {:body    (ui-hello {})
    :status  200
    :headers {"Content-Type" (mime/default-mime-types "html")}})
 
