@@ -1,5 +1,6 @@
 (ns br.com.souenzzo.dvm
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string])
+  (:import (clojure.lang Fn Keyword)))
 
 (defprotocol IEl
   :extend-via-metadata true
@@ -13,28 +14,41 @@
   String
   (-render [this _]
     this)
-  clojure.lang.Fn
+  Fn
   (-render [this ctx]
-    (this ctx)))
+    (-render (this ctx)
+             ctx)))
 
 
 (extend-protocol IEl
+  Keyword
+  (-el [this opts]
+    (-el (name this) opts))
   String
   (-el [this {::keys [children props]}]
     (fn [ctx]
       (str
-        "<" this (when props
+        "<" this (when-not (empty? props)
                    (str " " (string/join " " (for [[k v] props]
-                                               (str (name k) "=" (str v))))))
+                                               (if (boolean? v)
+                                                 (name k)
+                                                 (str (name k) "=" (str v)))))))
         ">"
         (string/join (for [child children]
                        (-render child ctx)))
-        "</" this ">"))))
+        "</" this ">")))
+  Fn
+  (-el [this {::keys [children props]}]
+    (fn [ctx]
+      (apply this ctx props children))))
 
 (defn el
   ([op] (-el op {::op op}))
-  ([op props] (-el op {::op    op
-                       ::props props}))
+  ([op props-or-el] (-el op (if (map? props-or-el)
+                              {::op    op
+                               ::props props-or-el}
+                              {::op       op
+                               ::children [props-or-el]})))
   ([op props & children]
    (-el op {::op       op
             ::props    props
