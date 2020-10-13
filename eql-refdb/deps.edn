@@ -1,0 +1,11 @@
+{:paths   ["src"]
+ :deps    {edn-query-language/eql {:mvn/version "1.0.0"}}
+ :aliases {:dev {:extra-paths ["test" "dev"]
+                 :extra-deps  {com.wsscode/pathom           {:mvn/version "2.3.0-alpha10"}
+                               org.clojure/clojure          {:mvn/version "1.10.1"}
+                               thheller/shadow-cljs         {:mvn/version "2.11.1"}
+                               re-frame/re-frame            {:mvn/version "1.1.1"}
+                               io.pedestal/pedestal.service {:mvn/version "0.5.8"}
+                               io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
+                               hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}
+                               org.clojure/test.check       {:mvn/version "0.10.0"}}}}}
