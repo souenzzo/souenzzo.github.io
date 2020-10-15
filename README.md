@@ -13,3 +13,6 @@ Cada projeto fica em um subdiretório.
 
 [ ] *WIP* Blogpost sobre logging na JVM
  
+[ ] Nomeamento na JVM//nomes qualificados em clojure
+
+[ ] Tipos VS spec
