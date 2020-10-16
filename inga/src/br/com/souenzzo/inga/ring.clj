@@ -6,9 +6,9 @@
   [request {::keys [body]
             :as    response}]
   (if body
-    (->> (ic/hparser request body)
-         (h/html {:mode :html})
-         (str "<!DOCTYPE html>\n"))
+    (assoc response :body (->> (ic/hparser request body)
+                               (h/html {:mode :html})
+                               (str "<!DOCTYPE html>\n")))
     response))
 
 (defn interceptor

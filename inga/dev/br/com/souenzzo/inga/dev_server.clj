@@ -20,10 +20,15 @@
    :status   200})
 
 (pc/defresolver hello [_ _]
-  {::hello [:p "hello!!!"]})
+  {::hello [:div
+            [:p "hello"]
+            [::world]]})
+
+(pc/defresolver world [_ _]
+  {::world [:p "world!"]})
 
 (def indexes
-  (pc/register {} [hello]))
+  (pc/register {} [hello world]))
 
 (def connect (ir/interceptor {::pc/indexes indexes}))
 
