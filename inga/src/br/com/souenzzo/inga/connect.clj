@@ -16,12 +16,24 @@
   (and (coll? v)
        (keyword? (first v))))
 
+
+(defn env-placeholder-reader
+  [{::p/keys [placeholder-prefixes] :as env}]
+  (assert placeholder-prefixes "To use env-placeholder-reader please add ::p/placeholder-prefixes to your environment.")
+  (if (p/placeholder-key? env (-> env :ast :dispatch-key))
+    (let [params (-> env :ast :params)]
+      (p/swap-entity! env (fnil into {})
+                      params)
+      (p/join env))
+    ::p/continue))
+
+
 (def parser
   (p/parser {::p/plugins [(pc/connect-plugin)]
              ::p/env     {::p/reader               [p/map-reader
                                                     pc/reader2
                                                     pc/open-ident-reader
-                                                    p/env-placeholder-reader]
+                                                    env-placeholder-reader]
                           ::p/placeholder-prefixes #{">"}}}))
 
 (s/fdef parser
@@ -32,8 +44,12 @@
 (defn hparser
   [env v]
   (cond
-    (custom-form? v) (hparser env (get (parser env [(seq v)])
-                                       (first v)))
+    (custom-form? v) (let [[k inputs] v
+                           tx `[{(:>/env ~(into {} inputs))
+                                 [~k]}]
+                           result (parser env tx)]
+                       (hparser env (get-in result
+                                            [:>/env k])))
     (tagged-form? v) (let [opts (second v)
                            body (if (map? opts)
                                   (drop 2 v)
