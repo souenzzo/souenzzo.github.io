@@ -16,6 +16,26 @@
   (and (coll? v)
        (keyword? (first v))))
 
+(defn query
+  [hiccup]
+  (let [attrs? (map? (second hiccup))]
+    (if (custom-form? hiccup)
+      (let [child (mapcat query
+                          (drop (if attrs? 2 1)
+                                hiccup))
+            params (when attrs?
+                     (second hiccup))
+            prop (if (empty? params)
+                   (first hiccup)
+                   (list (first hiccup) (second hiccup)))]
+        [(if (empty? child)
+           prop
+           {prop (vec  child)})])
+      (into []
+            (mapcat query)
+            (if attrs?
+              (drop 2 hiccup)
+              (drop 1 hiccup))))))
 
 (defn env-placeholder-reader
   [{::p/keys [placeholder-prefixes] :as env}]
