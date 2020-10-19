@@ -1,0 +1,22 @@
+digraph G {
+    subgraph cluster_browser_eql {
+    dom -> fulcro [label = "events"]
+    fulcro -> remote [label = "EQL query"]
+    remote -> fulcro [label = "result"]
+    remote -> pathom [label = "EQL"]
+    components -> fulcro [label = "EQL Query"]
+    pathom -> remote [label = "result"]
+
+    fulcro -> components [label = "data"]
+    components -> react
+    react -> dom [label = "render"]
+    label = "browser";
+    }
+
+
+    subgraph cluster_server_rest {
+    label = "REST server";
+    pathom -> http [label = "JSON"]
+    http -> pathom [label = "JSON"]
+    }
+}

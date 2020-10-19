@@ -10,6 +10,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.4.32.v20200930</version>
+        </dependency>
+    </dependencies>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
