@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+
+
+    <title>Guia informal do fulcro</title>
+    <meta property="og:title" content="Guia informal do fulcro"/>
+
+    <meta name="Description" content="Guia informal do fulcro"/>
+    <meta name="description" content="Guia informal do fulcro">
+    <meta property="og:description" content="Guia informal do fulcro"/>
+</head>
+<body>
+<pre>
+    # Guia informal do fulcro
+    Fulcro é uma biblioteca de Clojurescript para desenvolver interfaces.
+    Ele agrega algumas ações comuns do desenvolvimento de interfaces
+    - Renderiza a interface (em geral, via React)
+    - Administra o estado
+    - Adminsitra eventos
+    - Administra a obtenção de dados
+
+    Tudo isso de forma muito simples
+    Diferente de outras ferramentas que (prometem) fazer o mesmo, como Relay,
+    o fulcro sempre permite que a qualquer momento você transpasse ele e administre esses elementos manualmente
+
+    Vamos começar conhecendo os Componentes fulcro.
+
+    O componente fulcro tem 3 elementos principais:
+    - `:query`: Descreve com EQL quais dados aquele componente irá precisar
+    - `:ident`: (opcional) Diz qual atributo da `:query` pode ser usado para normalizar o dado
+    - render: O componente React
+
+    Montado na macro `defsc`, fica assim:
+    ```clojure
+    (defsc CardPerfil [app props]
+      {:query [:perfil/id
+               :perfil/nome
+               :perfil/descricao]
+       :ident :perfil/id}
+      (dom/div {:class "card"}
+         (dom/h5 {:class "card-title"}
+           (get props :perfil/nome))
+         (dom/p {:class "card-text"}
+           (get props :perfil/descricao))))
+    ```
+
+    Quando vc escreve um componente, vc não precisa se preocupar com "de onde vem o dado", apenas em "quais dados ele precisa"
+
+    Os dados que vc pediu em `:query` vão chegar em `props`, pode confiar!
+
+    
+
+</pre>
+</body>
+</html>
