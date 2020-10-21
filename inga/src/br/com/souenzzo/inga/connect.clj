@@ -4,6 +4,53 @@
             [clojure.spec.alpha :as s]
             [edn-query-language.core :as eql]))
 
+(declare xf-ast)
+
+(defn xf-ast-tag
+  [[tag x & xs]]
+  (let [attrs? (map? x)
+        append? (and x (not attrs?))
+        children? (or append?
+                      xs)
+        children (vec (concat (when append?
+                                [x])
+                              xs))]
+    [(cond-> {:type :element
+              :tag  tag}
+             attrs? (assoc :attrs x)
+             children? (assoc :children (into []
+                                              xf-ast children)))]))
+
+(def xf-ast
+  (mapcat (fn [el]
+            (cond
+              (and (coll? el)
+                   (keyword? (first el)))
+              (xf-ast-tag el)
+              (coll? el) [{:type     :fragment
+                           :children (into [] xf-ast el)}]
+              :else [{:type  :literal
+                      :value el}]))))
+
+(defn ->ast
+  [hiccup]
+  (first
+    (sequence
+      xf-ast
+      [hiccup])))
+
+(defn ->html
+  [{:keys [tag children value attrs]}]
+  (cond
+    (and tag attrs children) (into [tag attrs]
+                                   (map ->html)
+                                   children)
+    (and tag children) (into [tag]
+                             (map ->html)
+                             children)
+    tag [tag]
+    children (map ->html children)
+    :else value))
 
 (defn custom-form?
   [v]
@@ -16,26 +63,44 @@
   (and (coll? v)
        (keyword? (first v))))
 
-(defn query
-  [hiccup]
-  (let [attrs? (map? (second hiccup))]
-    (if (custom-form? hiccup)
-      (let [child (mapcat query
-                          (drop (if attrs? 2 1)
-                                hiccup))
-            params (when attrs?
-                     (second hiccup))
-            prop (if (empty? params)
-                   (first hiccup)
-                   (list (first hiccup) (second hiccup)))]
-        [(if (empty? child)
-           prop
-           {prop (vec  child)})])
-      (into []
-            (mapcat query)
-            (if attrs?
-              (drop 2 hiccup)
-              (drop 1 hiccup))))))
+(defn ->eql
+  [{:keys [type tag children attrs]}]
+  {:type     :root
+   :children (if (qualified-keyword? tag)
+               [(cond-> {:type         (if children
+                                         :join
+                                         :prop)
+                         :key          tag
+                         :dispatch-key tag}
+                        attrs (assoc :params attrs)
+                        children (assoc :children (into []
+                                                        (comp (map ->eql)
+                                                              (mapcat :children))
+                                                        children)))]
+               (into []
+                     (comp (map ->eql)
+                           (mapcat :children))
+                     children))})
+
+
+(defn xf-place
+  [data]
+  (map (fn [{:keys [tag children]
+             :as   node}]
+         (cond
+           (contains? data tag) (->ast (get data tag))
+           children (assoc node
+                      :children (into []
+                                      (xf-place data)
+                                      children))
+           :else node))))
+
+
+(defn place
+  [ast data]
+  (first (sequence (xf-place data)
+                   [ast])))
+
 
 (defn env-placeholder-reader
   [{::p/keys [placeholder-prefixes] :as env}]
