@@ -2,8 +2,10 @@
   (:require [clojure.test :refer [deftest]]
             [br.com.souenzzo.inga.connect :as ic]
             [midje.sweet :refer [fact =>]]
+            [clojure.spec.test.alpha :as stest]
             [edn-query-language.core :as eql]))
 
+(stest/instrument)
 
 (deftest ast
   (fact

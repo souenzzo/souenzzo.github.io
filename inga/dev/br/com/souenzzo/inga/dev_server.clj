@@ -6,8 +6,7 @@
             [io.pedestal.http.csrf :as csrf]
             [io.pedestal.http.route :as route]
             [io.pedestal.interceptor :as interceptor]
-            [ring.util.mime-type :as mime]
-            [com.wsscode.pathom.core :as p])
+            [ring.util.mime-type :as mime])
   (:import (java.nio.charset StandardCharsets)))
 
 (pc/defresolver form [{::csrf/keys [anti-forgery-token]} {::keys [action inputs]}]
@@ -29,8 +28,8 @@
                 [:ul
                  (for [v @todos]
                    [:li v])]
-                [:>/env {::action "/app/new-todo"
-                         ::inputs ["app/todo"]}
+                [:>/env1 {::action "/app/new-todo"
+                          ::inputs ["app/todo"]}
                  [::form]]]})
 
 
@@ -47,7 +46,7 @@
   {::counter-display [:p (str current-value)]})
 
 (pc/defresolver counter-controls [{::csrf/keys [anti-forgery-token]} _]
-  {::counter-controls [:>/env
+  {::counter-controls [:>/env2
                        {::action "/app/inc"
                         ::inputs []}
                        [::form]]})

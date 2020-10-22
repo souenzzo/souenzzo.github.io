@@ -10,17 +10,17 @@
 (pc/defresolver custom-hello [env input]
   {:custom/hello [:div
                   [:p "hello"]
-                  `(:custom/world {})]})
+                  [:custom/world {}]]})
 
 (def indexes (pc/register {} [custom-hello
                               custom-world]))
 
 (deftest simple
   (fact
-    (ic/hparser {::pc/indexes indexes}
-                [:div
-                 `(:custom/hello {})])
-    => [:div {}
-        [:div {}
-         [:p {} "hello"]
-         [:p {} "world"]]]))
+    (ic/hparser-v2 {::pc/indexes indexes}
+                   [:div
+                    [:custom/hello {}]])
+    => [:div
+        [:div
+         [:p "hello"]
+         [:p "world"]]]))
