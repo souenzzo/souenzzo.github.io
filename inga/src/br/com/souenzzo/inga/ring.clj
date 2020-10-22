@@ -8,7 +8,7 @@
   [request {::keys [body]
             :as    response}]
   (if body
-    (assoc response :body (->> (ic/hparser request body)
+    (assoc response :body (->> (ic/hparser-v2 request body)
                                (h/html {:mode :html})
                                (str "<!DOCTYPE html>\n")))
     response))

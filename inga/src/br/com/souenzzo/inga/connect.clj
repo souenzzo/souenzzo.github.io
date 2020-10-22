@@ -48,6 +48,7 @@
     (and tag children) (into [tag]
                              (map ->html)
                              children)
+    (and tag attrs) [tag attrs]
     tag [tag]
     children (map ->html children)
     :else value))
@@ -130,6 +131,26 @@
         :args (s/cat :env (s/keys :req [::pc/indexes])
                      :tx ::eql/query)
         :ret map?)
+
+(defn hparser-v2-impl
+  [env ast]
+  (let [query (eql/ast->query (->eql ast))]
+    (if (empty? query)
+      ast
+      (let [;; TODO: Fix pathom cache issue
+            result (reduce (fn [acc el]
+                             (parser env [el]))
+                           {}
+                           query)
+            ast (place ast result)]
+        (hparser-v2-impl env ast)))))
+
+(defn hparser-v2
+  [env html]
+  (->> html
+       ->ast
+       (hparser-v2-impl env)
+       ->html))
 
 (defn hparser
   [env v]

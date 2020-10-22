@@ -29,8 +29,9 @@
                 [:ul
                  (for [v @todos]
                    [:li v])]
-                [::form {::action "/app/new-todo"
-                         ::inputs ["app/todo"]}]]})
+                [:>/env {::action "/app/new-todo"
+                         ::inputs ["app/todo"]}
+                 [::form]]]})
 
 
 (pc/defmutation new-todo [{::keys [todos]} {:keys [app/todo]}]
@@ -46,8 +47,10 @@
   {::counter-display [:p (str current-value)]})
 
 (pc/defresolver counter-controls [{::csrf/keys [anti-forgery-token]} _]
-  {::counter-controls [::form {::action "/app/inc"
-                               ::inputs []}]})
+  {::counter-controls [:>/env
+                       {::action "/app/inc"
+                        ::inputs []}
+                       [::form]]})
 
 (pc/defmutation increment [{::keys [counter]} _]
   {::pc/sym 'app/inc}
