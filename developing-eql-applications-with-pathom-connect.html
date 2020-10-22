@@ -15,60 +15,93 @@
     <meta name="Description" content="Developing applications with pathom connect"/>
     <meta name="description" content="Developing applications with pathom connect">
     <meta property="og:description" content="Developing applications with pathom connect"/>
+    <style>
+        section {
+          padding: 1em;
+        }
+        img {
+          border-radius: 50%;
+          width: 2em;
+          height: 2em;
+        }
+        aside {
+          display: flex;
+          align-items: center;
+          border: 1px solid black;
+          width: max-content;
+          border-radius: 1em;
+          padding: 0.5em;
+        }
+        code {
+          background-color: antiquewhite;
+        }
+        p {
+          line-height: 1.3em;
+        }
+
+    </style>
 </head>
 <body>
-<pre>
-    # Developing applications with pathom connect
-    Developing applications with pathom, fulcro and EQL is different to develop
-    Here I will compare how I think about the solution of the same problem, when developing REST, GraphQL and EQL web
-applications.
-
-    # The Problem: Show the "Company name" on the "Tiny user card"
-
-    You are working on a regular web app where there is a UI component called "Tiny user card". It currently show the "user
-name" and a "tiny photo", like this:
-</pre>
-<aside style="display: flex; align-items: center; border: 1px solid black; width: max-content; border-radius: 1em">
-    <img style="border-radius: 50%; width: 2em; height: 2em"
-         src="me.jpg"/>
-    <p>Enzzo Cavallo</p>
-</aside>
-<pre>
-    Your task is add the company name, like this:
-</pre>
-<aside style="display: flex; align-items: center; border: 1px solid black; width: max-content;  border-radius: 1em">
-    <img style="border-radius: 50%; width: 2em; height: 2em"
-         src="me.jpg"/>
-    <p>Enzzo Cavallo</p>
-    <p>(Moleque de ideias)</p>
-</aside>
-<pre>
-    # REST Solution
-
-    If you are using a SPA with a REST API, this component probably get it's data from a endpoint like
-    `GET /user/:id/card` that would return a small JSON payload like `{"id": 42, "name": "Enzzo Cavallo"}`
-    Once you are a "FullStack" developer, you will will end up adding a new attribute on this `GET` to avoid another
-    server interaction to render this tiny component.
-
-    # GraphQL Solution
-
-    In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing the which data it need.
-    To add the "Company name", you will check the "GraphQL Schema" and see how to walk on the graph from User(id) into
-    Company(name), then add this path to the component
-
-    # EQL/Pathom Solution
-
-    Like GraphQL SPA, EQL clients (usually fulcro) should have a Query within the UI Component.
-    On this UI component, you should at first simply add the `:company/name` in the UI query.
-    Pathom will do it's best connecting all resolvers in application and discover itself the "path" from :user/id to
-    :company/name.
-    Once you see that the current resolvers aren't capable to trace a path between these attributes, you can write a new
-    resolver. Probably you will connect :user/id with :company/id, then the path from :company/id to :company/name should
-    already be implemented.
-
-    On the time that you request, in any UI component, a :company/name(or any other company attribute) with a :user/id in
-    context, pathom will already know how to find/connect these attributes.
-</pre>
+<section>
+    <h1>Developing applications with pathom connect</h1>
+    <p><a href="https://github.com/wilkerlucio/pathom">Pathom</a> and it's
+        <a href="https://blog.wsscode.com/pathom/v2/pathom/2.2.0/connect.html">connect</a> engine brings to development
+        a new way to thing about solutions</p>
+    <p>Here I will describe my "problem solving" path, when developing REST, GraphQL and
+        <a href="https://edn-query-language.org/">EQL</a> web applications.</p>
+</section>
+<section>
+    <h1 id="the-problem">The Problem: Show the "Company name" on the "Tiny user card"</h1>
+    <p>You are working on a regular web app where there is a UI component called "Tiny user card". It currently show the
+        "user name" and a "tiny photo", like this:</p>
+    <aside>
+        <img alt="A small profile picture" src="me.jpg"/>
+        <p>Enzzo Cavallo</p>
+    </aside>
+    <p>Your task is add the company name, like this:</p>
+    <aside>
+        <img alt="A small profile picture" src="me.jpg"/>
+        <p>Enzzo Cavallo</p>
+        <p>(Moleque de ideias)</p>
+    </aside>
+</section>
+<section>
+    <h1 id="rest-solution"> REST Solution</h1>
+    <p>
+        If you are using a SPA with a REST API, this component probably get it's data from a endpoint like
+        <code>GET /user/:id/card</code> that would return a small JSON payload like
+        <code>{"id": 42, "name": "Enzzo Cavallo"}</code>
+        Once you are a "FullStack" developer, you will will end up adding a new attribute on this <code>GET</code> to
+        avoid another
+        server interaction to render this tiny component.
+    </p>
+</section>
+<section>
+    <h1 id="graphql-solution">GraphQL Solution</h1>
+    <p>
+        In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing the which data it need.
+        To add the "Company name", you will check the "GraphQL Schema" and see how to walk on the graph from User(id)
+        into Company(name), then add this path to the component
+    </p>
+</section>
+<section>
+    <h1 id="pathom-solution">EQL/Pathom Solution</h1>
+    <p>
+        Like GraphQL SPA, EQL clients (usually fulcro) should have a Query within the UI Component.
+        On this UI component, you should at first simply add the <code>:company/name</code> in the UI query.
+        Pathom will do it's best connecting all resolvers in application and discover itself the "path" from :user/id to
+        :company/name.
+    </p>
+    <p>
+        Once you see that the current resolvers aren't capable to trace a path between these attributes, you can write a
+        new resolver. Probably you will connect :user/id with :company/id, then the path from :company/id to
+        :company/name should already be implemented.
+    </p>
+    <p>
+        On the time that you request, in any UI component, a :company/name(or any other company attribute) with a
+        :user/id in context, pathom will already know how to find/connect these attributes.
+    </p>
+</section>
 <footer>
     In case of doubts or errors, <a href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report a issue</a>
     If you prefer <a href="https://t.me/souenzzo">talk directly with me</a>
