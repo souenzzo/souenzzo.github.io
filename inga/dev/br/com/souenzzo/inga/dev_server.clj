@@ -3,43 +3,16 @@
             [clojure.pprint :as pp]
             [com.wsscode.pathom.connect :as pc]
             [io.pedestal.http :as http]
-            [io.pedestal.http.csrf :as csrf]
             [io.pedestal.http.route :as route]
             [br.com.souenzzo.choc :as choc]
             [io.pedestal.interceptor :as interceptor]
             [ring.util.mime-type :as mime])
   (:import (java.nio.charset StandardCharsets)))
 
-(pc/defresolver form [{::csrf/keys [anti-forgery-token]} {::keys [action inputs]}]
-  {::form [:form
-           {:method "POST"
-            :action action}
-           [:input {:hidden true
-                    :value  anti-forgery-token
-                    :name   csrf/anti-forgery-token-str}]
-           (for [v inputs]
-             [:label
-              v
-              [:input {:name v}]])
-           [:input {:type  "submit"
-                    :value action}]]})
-
 (pc/defresolver all-todos [{::keys [todos]} _]
   {::all-todos (for [[idx todo] (map-indexed vector @todos)]
                  {::todo-id   idx
                   ::todo-text todo})})
-
-(pc/defresolver todo-list [{::keys [todos]} _]
-  {::todo-list [:div
-                [:>/env5
-                 {::choc/join-key           ::all-todos
-                  ::choc/display-properties [::todo-id
-                                             ::todo-text]}
-                 [::choc/vs-table]]
-                [:>/env1 {::action "/app/new-todo"
-                          ::inputs ["app/todo"]}
-                 [::form]]]})
-
 
 (pc/defmutation new-todo [{::keys [todos]} {:keys [app/todo]}]
   {::pc/sym 'app/new-todo}
@@ -52,12 +25,6 @@
 
 (pc/defresolver counter-display [_ {::keys [current-value]}]
   {::counter-display [:p (str current-value)]})
-
-(pc/defresolver counter-controls [{::csrf/keys [anti-forgery-token]} _]
-  {::counter-controls [:>/env2
-                       {::action "/app/inc"
-                        ::inputs []}
-                       [::form]]})
 
 (pc/defmutation increment [{::keys [counter]} _]
   {::pc/sym 'app/inc}
@@ -83,10 +50,7 @@
                    increment
                    mutate
                    new-todo
-                   todo-list
-                   form
                    all-todos
-                   counter-controls
                    choc/register]))
 
 (defn index
@@ -98,8 +62,19 @@
                [:title "ingá!"]]
               [:body
                [::counter-display {}]
-               [::counter-controls {}]
-               [::todo-list {}]]]
+               [:>/env1
+                {::choc/action "/app/inc"
+                 ::choc/inputs []}
+                [::choc/form]]
+               [:div
+                [:>/env2
+                 {::choc/join-key           ::all-todos
+                  ::choc/display-properties [::todo-id
+                                             ::todo-text]}
+                 [::choc/vs-table]]
+                [:>/env3 {::choc/action "/app/new-todo"
+                          ::choc/inputs ["app/todo"]}
+                 [::choc/form]]]]]
    :headers  {"Content-Security-Policy" ""
               "Content-Type"            (mime/default-mime-types "html")}
    :status   200})

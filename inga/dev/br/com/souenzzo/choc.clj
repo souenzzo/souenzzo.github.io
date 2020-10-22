@@ -1,7 +1,8 @@
 (ns br.com.souenzzo.choc
   "Classless Higher-Order Components"
   (:require [com.wsscode.pathom.connect :as pc]
-            [edn-query-language.core :as eql]))
+            [edn-query-language.core :as eql]
+            [io.pedestal.http.csrf :as csrf]))
 
 (pc/defresolver vs-table [{:keys [parser]
                            :as   env}
@@ -26,6 +27,23 @@
                      (for [{:keys [dispatch-key]} display-nodes]
                        [:td {} (get v dispatch-key)])])]]}))
 
+
+(pc/defresolver form [{::csrf/keys [anti-forgery-token]} {::keys [action inputs]}]
+  {::form [:form
+           {:method "POST"
+            :action action}
+           [:input {:hidden true
+                    :value  anti-forgery-token
+                    :name   csrf/anti-forgery-token-str}]
+           (for [v inputs]
+             [:label
+              v
+              [:input {:name v}]])
+           [:input {:type  "submit"
+                    :value action}]]})
+
+
 (def register
-  [vs-table])
+  [form
+   vs-table])
 
