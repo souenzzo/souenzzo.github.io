@@ -93,7 +93,7 @@
         In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing the which data it need.
     </p>
     <details>
-        <summary>Code example</summary>
+        <summary>GraphQL Fragment and JSX Component</summary>
         <code>
 ## The query
 fragment userCard on User {
@@ -114,7 +114,7 @@ function UserCard (props) {
         <code>User(id)</code> into <code>Company(name)</code>, then add this path to the component
     </p>
     <details>
-        <summary>Code example</summary>
+        <summary>GraphQL Fragment and JSX Component with company name</summary>
         <code>
 ## The query
 fragment userCard on User {
@@ -143,7 +143,7 @@ function UserCard (props) {
         Like GraphQL SPA, EQL clients (usually fulcro) should have a Query within the UI Component.
     </p>
     <details>
-        <summary>Code example</summary>
+        <summary>Fulcro component</summary>
         <code>
 (defsc UserCard [this props]
   {:query [:user/name
@@ -159,7 +159,7 @@ function UserCard (props) {
         <code>:company/name</code>.
     </p>
     <details>
-        <summary>Code example</summary>
+        <summary>Fulcro component with company name</summary>
         <code>
 (defsc UserCard [this props]
   {:query [:user/name
@@ -167,8 +167,8 @@ function UserCard (props) {
            :user/photo-url]}
   (aside
     (img {:src (:user/photo-url props)})
-    </code><code class="add">(p (:company/name props)})</code><code>
-    (p (:user/name props))))
+    (p (:user/name props))
+    </code><code class="add">(p (str "(" (:company/name props) ")")))</code><code>)
 </code>
     </details>
     <p>
