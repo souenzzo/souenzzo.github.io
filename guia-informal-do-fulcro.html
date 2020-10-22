@@ -38,22 +38,43 @@
     - render: O componente React
 
     Montado na macro `defsc`, fica assim:
-    ```clojure
-    (defsc CardPerfil [app props]
-      {:query [:perfil/id
-               :perfil/nome
-               :perfil/descricao]
-       :ident :perfil/id}
-      (dom/div {:class "card"}
-         (dom/h5 {:class "card-title"}
-           (get props :perfil/nome))
-         (dom/p {:class "card-text"}
-           (get props :perfil/descricao))))
-    ```
+```clojure
+(defsc LiTodo [app props]
+  {:query [:todo/id
+           :todo/text
+           :todo/done?]
+   :ident :perfil/id}
+  (dom/li
+    (dom/p (:todo/text props))
+    (dom/button (if (:todo/done? props)
+                  "✗""✔"))))
 
-    Quando vc escreve um componente, vc não precisa se preocupar com "de onde vem o dado", apenas em "quais dados ele precisa"
+(def ui-li-todo (comp/factory LiRoot {:keyfn :todo/id}))
+```
 
-    Os dados que vc pediu em `:query` vão chegar em `props`, pode confiar!
+    Quando vc escreve um componente, vc não precisa se preocupar com "de onde vem o dado", apenas em
+    "quais dados ele precisa"
+
+    O defsc retorna uma estrutura de dados do fulcro, com vários metadados e tal
+
+    Quando fazemos `comp/factory` do componente, o retorno é um componente react.
+
+    Para motivos de aprendizado, podemos montar esse componente numa aplicação simples
+
+```clojure
+(defsc Root [this props]
+  {:query []}
+  (dom/div
+    (ui-li-todo {:todo/id 42
+                 :todo/text "Olá!"
+                 :todo/done? false})))
+
+(defn ^:export main
+  []
+  (let [app (app/fulcro-app)]
+    (app/mount! Root "app")))
+```
+
 
 
 
