@@ -5,6 +5,7 @@
             [io.pedestal.http :as http]
             [io.pedestal.http.csrf :as csrf]
             [io.pedestal.http.route :as route]
+            [br.com.souenzzo.choc :as choc]
             [io.pedestal.interceptor :as interceptor]
             [ring.util.mime-type :as mime])
   (:import (java.nio.charset StandardCharsets)))
@@ -23,11 +24,18 @@
            [:input {:type  "submit"
                     :value action}]]})
 
+(pc/defresolver all-todos [{::keys [todos]} _]
+  {::all-todos (for [[idx todo] (map-indexed vector @todos)]
+                 {::todo-id   idx
+                  ::todo-text todo})})
+
 (pc/defresolver todo-list [{::keys [todos]} _]
   {::todo-list [:div
-                [:ul
-                 (for [v @todos]
-                   [:li v])]
+                [:>/env5
+                 {::choc/join-key           ::all-todos
+                  ::choc/display-properties [::todo-id
+                                             ::todo-text]}
+                 [::choc/vs-table]]
                 [:>/env1 {::action "/app/new-todo"
                           ::inputs ["app/todo"]}
                  [::form]]]})
@@ -77,7 +85,9 @@
                    new-todo
                    todo-list
                    form
-                   counter-controls]))
+                   all-todos
+                   counter-controls
+                   choc/register]))
 
 (defn index
   [req]
