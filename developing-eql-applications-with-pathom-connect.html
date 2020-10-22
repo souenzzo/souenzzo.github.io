@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
 
     <meta name="twitter:site" content="@souenzzo"/>
     <meta name="twitter:creator" content="@souenzzo"/>
@@ -35,17 +36,19 @@
           border-radius: 1em;
           padding: 0.5em;
         }
+        details {
+          background-color: antiquewhite;
+        }
         code {
           background-color: antiquewhite;
+          white-space: pre;
         }
         p {
           line-height: 1.3em;
         }
-
-
-
-
-
+        .add {
+          background-color: lime;
+        }
     </style>
 </head>
 <body>
@@ -53,7 +56,7 @@
     <h1>Developing applications with pathom connect</h1>
     <p><a href="https://github.com/wilkerlucio/pathom">Pathom</a> and its
         <a href="https://blog.wsscode.com/pathom/v2/pathom/2.2.0/connect.html">connect</a> engine brings to development
-        a new way to thing about solutions</p>
+        a new way to think about solutions</p>
     <p>Here I will describe my "problem solving" path when I'm working on REST, GraphQL and
         <a href="https://edn-query-language.org/">EQL</a> web applications.</p>
 </section>
@@ -89,19 +92,85 @@
     <p>
         In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing the which data it need.
     </p>
+    <details>
+        <summary>Code example</summary>
+        <code>
+## The query
+fragment userCard on User {
+  name
+  photo_url
+}
+// The component
+function UserCard (props) {
+  return &#x3C;aside>
+            &#x3C;img src={{ props.photo_url }}/>
+            &#x3C;p>{{ props.name }}&#x3C;/p>
+  &#x3C;/aside>
+}
+</code>
+    </details>
     <p>
         To add the Company name, you will check the GraphQL Schema and see how to walk on the graph from
         <code>User(id)</code> into <code>Company(name)</code>, then add this path to the component
     </p>
+    <details>
+        <summary>Code example</summary>
+        <code>
+## The query
+fragment userCard on User {
+  name
+  photo_url</code>
+        <code class="add">
+  company {
+    name
+  }
+</code>
+        <code>}
+// The component
+function UserCard (props) {
+  return &#x3C;aside>
+    &#x3C;img src={{ props.photo_url }}/>
+    &#x3C;p>{{ props.name }}&#x3C;/p>
+    </code><code class="add">&#x3C;p>({{ props.company.name }})&#x3C;/p></code><code>
+  &#x3C;/aside>
+}
+        </code>
+    </details>
 </section>
 <section>
     <h2 id="pathom-solution">EQL/Pathom Solution</h2>
     <p>
         Like GraphQL SPA, EQL clients (usually fulcro) should have a Query within the UI Component.
+    </p>
+    <details>
+        <summary>Code example</summary>
+        <code>
+(defsc UserCard [this props]
+  {:query [:user/name
+           :user/photo-url]}
+  (aside
+    (img {:src (:user/photo-url props)})
+    (p (:user/name props))))
+</code>
+    </details>
+    <p>
         On this UI component, you should at first simply add the <code>:company/name</code> in the UI query.
         Pathom will do its best connecting all resolvers in application and discover itself the "path" from :user/id to
         <code>:company/name</code>.
     </p>
+    <details>
+        <summary>Code example</summary>
+        <code>
+(defsc UserCard [this props]
+  {:query [:user/name
+           </code><code class="add">:company/name</code><code>
+           :user/photo-url]}
+  (aside
+    (img {:src (:user/photo-url props)})
+    </code><code class="add">(p (:company/name props)})</code><code>
+    (p (:user/name props))))
+</code>
+    </details>
     <p>
         Once you see that the current resolvers aren't capable to trace a path between these attributes, you can write a
         new resolver. Probably you will connect <code>:user/id</code> with <code>:company/id</code>, then the path from
