@@ -88,7 +88,12 @@
   (map (fn [{:keys [tag children]
              :as   node}]
          (cond
-           (contains? data tag) (->ast (get data tag))
+           (contains? data tag) (if (= ">" (namespace tag))
+                                  {:type     :fragment
+                                   :children (into []
+                                                   (xf-place (get data tag))
+                                                   children)}
+                                  (->ast (get data tag)))
            children (assoc node
                       :children (into []
                                       (xf-place data)

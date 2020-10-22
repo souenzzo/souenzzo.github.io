@@ -93,5 +93,11 @@
     (place
       [:div [:ui/table]]
       {:ui/table [:table]})
-    => [:div [:table]]))
-
+    => [:div [:table]])
+  (fact
+    (place
+      [:div
+       [:>/env {:a 42}
+        [:ui/table]]]
+      {:>/env {:ui/table [:table]}})
+    => `[:div ([:table])]))

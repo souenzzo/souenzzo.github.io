@@ -24,8 +24,15 @@ record Request(String method, String path, String version,
         return new HashMap<>();
     }
 
-    private static String readVersion(PushbackInputStream pis) {
-        return "ok";
+    private static String readVersion(PushbackInputStream pis) throws IOException {
+        var sb = new StringBuilder();
+        while (true) {
+            var x = pis.read();
+            if (Character.isWhitespace(x)) {
+                return sb.toString();
+            }
+            sb.append(x);
+        }
     }
 
     private static String readMethod(PushbackInputStream pis) throws IOException {
@@ -37,40 +44,16 @@ record Request(String method, String path, String version,
             }
             sb.append(x);
         }
-
     }
 
     private static String readPath(PushbackInputStream pis) throws IOException {
-        // EOL in HTTP: \r\n
-        // \return  = 13 = 0x0D
-        // \newline = 10 = 0x0A
-        // \space   = 32 = 0x20
         var sb = new StringBuilder();
         while (true) {
             var x = pis.read();
-            if (x == 13) {
-                var y = pis.read();
-                if (y == 10) {
-                    var idx = sb.lastIndexOf(" ");
-                    var buff = new byte[idx];
-                    if (idx < 0) {
-                        // no version
-                        pis.unread(y);
-                        pis.unread(x);
-                        return sb.toString();
-                    }
-
-                    sb.getChars(idx, sb.length(), buff, 0);
-                    pis.unread(buff);
-                    pis.unread(y);
-                    pis.unread(x);
-                    return sb.toString();
-                }
-                sb.append(x);
-                sb.append(y);
-            } else {
-                sb.append(x);
+            if (Character.isWhitespace(x)) {
+                return sb.toString();
             }
+            sb.append(x);
         }
     }
 }
