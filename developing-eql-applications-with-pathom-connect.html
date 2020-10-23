@@ -12,14 +12,18 @@
     <meta name="twitter:creator" content="@souenzzo"/>
     <meta name="author" content="Enzzo Cavallo">
     <!-- Title metadata -->
-    <title>Developing applications with pathom connect</title>
-    <meta name="twitter:title" content="Developing applications with pathom connect"/>
-    <meta property="og:title" content="Developing applications with pathom connect"/>
+    <title>Developing applications with Pathom connect</title>
+    <meta name="twitter:title" content="Developing applications with Pathom connect"/>
+    <meta property="og:title" content="Developing applications with Pathom connect"/>
     <!-- Description metadata -->
-    <meta name="twitter:description" content="Pathom and its connect engine brings to development a new way to think about solutions"/>
-    <meta name="Description" content="Pathom and its connect engine brings to development a new way to think about solutions"/>
-    <meta name="description" content="Pathom and its connect engine brings to development a new way to think about solutions">
-    <meta property="og:description" content="Pathom and its connect engine brings to development a new way to think about solutions"/>
+    <meta name="twitter:description"
+          content="Pathom and its connect engine brings to development a new way to think about solutions"/>
+    <meta name="Description"
+          content="Pathom and its connect engine brings to development a new way to think about solutions"/>
+    <meta name="description"
+          content="Pathom and its connect engine brings to development a new way to think about solutions">
+    <meta property="og:description"
+          content="Pathom and its connect engine brings to development a new way to think about solutions"/>
     <!-- https://jrl.ninja/etc/1 -->
     <style>
         section {
@@ -54,13 +58,11 @@
           background-color: lime;
         }
 
-
-
     </style>
 </head>
 <body>
 <section>
-    <h1>Developing applications with pathom connect</h1>
+    <h1>Developing applications with Pathom connect</h1>
     <p><a href="https://github.com/wilkerlucio/pathom">Pathom</a> and its
         <a href="https://blog.wsscode.com/pathom/v2/pathom/2.2.0/connect.html">connect</a> engine brings to development
         a new way to think about solutions</p>
@@ -69,13 +71,13 @@
 </section>
 <section>
     <h2 id="the-problem">The Problem: Show the "Company name" on the "user card"</h2>
-    <p>You are working on a regular web app where there is a UI component called "user card". It currently show the
+    <p>You are working on a regular web app where there is a UI component called "user card". It currently shows the
         "user name" and a "photo", like this:</p>
     <aside>
         <img alt="A small profile picture" src="me.jpg"/>
         <p>Enzzo Cavallo</p>
     </aside>
-    <p>Your task is add the company name, like this:</p>
+    <p>Your task is to add the company name, like this:</p>
     <aside>
         <img alt="A small profile picture" src="me.jpg"/>
         <p>Enzzo Cavallo</p>
@@ -85,19 +87,19 @@
 <section>
     <h2 id="rest-solution"> REST Solution</h2>
     <p>
-        If you are using a SPA with a REST API, this component probably get its data from a endpoint like
+        If you are using a SPA with a REST API, this component probably get its data from an endpoint like
         <code>GET /user/42/card</code> that would return a small JSON payload like
         <code>{"id": 42, "name": "Enzzo Cavallo" "photo_url": "..."}</code>.
     </p>
     <p>
-        Once you are a ✨FullStack✨ developer, you will will end up adding a new attribute on this <code>GET</code> to
+        Once you are a ✨FullStack✨ developer, you will end up adding a new attribute on this <code>GET</code> to
         avoid another server interaction to render this tiny component.
     </p>
 </section>
 <section>
     <h1 id="graphql-solution">GraphQL Solution</h1>
     <p>
-        In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing the which data it need.
+        In a GraphQL SPA, this UI component should contain a GraphQL fragment, describing which data it needs.
     </p>
     <details>
         <summary>GraphQL Fragment and JSX Component</summary>
@@ -147,7 +149,8 @@ function UserCard (props) {
 <section>
     <h2 id="pathom-solution">EQL/Pathom Solution</h2>
     <p>
-        Like GraphQL SPA, EQL clients (usually fulcro) should have a Query within the UI Component.
+        Like GraphQL SPA, EQL clients (usually <a href="https://github.com/fulcrologic">Fulcro</a>) should have a Query
+        within the UI Component.
     </p>
     <details>
         <summary>Fulcro component</summary>
@@ -162,8 +165,8 @@ function UserCard (props) {
     </details>
     <p>
         On this UI component, you should at first simply add the <code>:company/name</code> in the UI query.
-        Pathom will do its best connecting all resolvers in application and discover itself the "path" from :user/id to
-        <code>:company/name</code>.
+        Pathom will do its best connecting all resolvers in the application and discover itself the "path" from :user/id
+        to <code>:company/name</code>.
     </p>
     <details>
         <summary>Fulcro component with company name</summary>
@@ -185,12 +188,15 @@ function UserCard (props) {
     </p>
     <p>
         On the time that you request, in any UI component, a <code>:company/name</code> (or any other company attribute)
-        with a <code>:user/id</code> in context, pathom will already know how to find and connect these attributes.
+        with am <code>:user/id</code> in context, pathom will already know how to find and connect these attributes.
     </p>
 </section>
 <footer>
-    In case of doubts or errors, <a href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report a issue</a>
-    If you prefer <a href="https://t.me/souenzzo">talk directly with me</a>
+    <p>
+        In case of doubts or errors,
+        <a href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report an issue</a>
+    </p>
+    <p>If you prefer <a href="https://t.me/souenzzo">talk directly with me</a></p>
 </footer>
 </body>
 </html>
