@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <!-- Static Metadata -->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
+    <meta property="og:type" content="article"/>
+    <meta name="twitter:card" content="summary"/>
+    <!-- Metadata about me -->
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+    <!-- Title metadata -->
+    <title>Creating a Clojure project</title>
+    <meta name="twitter:title" content="Creating a Clojure project"/>
+    <meta property="og:title" content="Creating a Clojure project"/>
+    <!-- Description metadata -->
+    <meta name="twitter:description"
+          content="How to create a Clojure project, main files, paths and dirs"/>
+    <meta name="Description"
+          content="How to create a Clojure project, main files, paths and dirs"/>
+    <meta name="description"
+          content="How to create a Clojure project, main files, paths and dirs">
+    <meta property="og:description"
+          content="How to create a Clojure project, main files, paths and dirs"/>
+    <!-- https://jrl.ninja/etc/1 -->
+    <style>
+        section {
+          max-width: 38em;
+          padding: 1em;
+          margin: auto;
+        }
+    </style>
+</head>
+<body>
+<pre>
+    # Creating a Clojure project
+    > How to create a Clojure project, main files, paths and dirs
+    For this tutorial I will suppose that you know unix command line.
+
+    First things first, get the <a href="https://clojure.org/guides/getting_started">clojure command line</a> tool.
+    You should be able to run <code>clj -e "(prn :hello-world!)"</code> in anywhere.
+
+    > For didatic proposes, I will give a name for my exmaple project. This project will be called `pinheiro`.
+
+    Let's create a empty directory to work:
+    ```
+    mkdir pinheiro
+    cd pinheiro
+    ```
+
+    Now let's create the `deps.edn` file.
+    ```
+    {:paths   ["src"]
+     :deps    {org.clojure/clojure {:mvn/version "1.10.1"}}}
+    ```
+    There is 2 main keys in `deps.edn`:
+    - `:paths` is a vector of strings, that say "in which dirs my code is"
+    - `:deps` is a map of maven(or git) dependencies.
+
+    You can search other deps in
+    <a href="https://mvnrepository.com/artifact/org.clojure/clojure/1.10.1">maven repository</a>
+
+    Clojure, as java, use the notion of "namespaces" to organize code.
+    It not a good pattern use single-segment namespaces.
+    We will start by creating the namespace `pinheiro.main`.
+    It need to be in `src/pinheiro/main.clj` from project root.
+    Once you declared in `deps.edn` that `src` is where your "classpath" starts, we say that it's `pinheiro/main.clj` in your classpath.
+
+    Ok, at this moment you should have a structure like this:
+
+    ```
+.
+├── deps.edn
+└── src
+    └── pinheiro
+        └── main.clj
+    ```
+    The `src/pinheiro/main.clj` shoud contain something like this:
+    ```
+(ns pinheiro.main)
+
+(defn -main
+  [& argv]
+  (prn ["Hello, here my args: " argv]))
+    ```
+
+    Now, we can call `clj -M -m pinheiro.main hello world`
+
+    ```
+    $ clj -M -m pinheiro.main hello world
+    ... some downloading here ...
+    ["Hello, here my args:" ["hello" "world"]]
+    $
+    ```
+
+    These file/dirs you should not commit:
+    - .cpcache: Just cache
+    - *.iml: intellij config file
+    - .idea/: intellij config dir
+    - target: some build tools create classfiles here
+    - classes: some build tools create classfiles here
+
+    As mvn and pom.xml, clj and deps.edn is a deterministic package manager. Given a deps.edn, it will ALWAYS use the
+    same tree of dependencies, so it DO NOT NEED A LOCK FILE.
+
+    Another cool ways to run clojure:
+
+    ## Direct from java
+    ```
+    ## Know your classpath
+    $ clj -Spath > classpath.txt
+    ## Run java with that classpath, calling clojure.main, then your main
+    $ java -cp "$(cat classpath.txt)" clojure.main -m pinheiro.main hello world
+    ```
+
+    ## Direct from java, with AoT (10x fasther then "direct from java")
+    ```
+    ## Know your classpath
+    $ clj -Spath > classpath.txt
+    ## Compile clojure with AOT. It will generate classfiles to all clojure files.
+    $ mkdir classes
+    $ clj -e "(compile 'pinheiro.main)"
+    ## Append classes directory to your classpath and call your main directily
+    $ java -cp "classes:$(cat classpath.txt)" pinheiro.main hello world
+    ```
+
+</pre>
+</body>
+</html>
