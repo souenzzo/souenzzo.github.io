@@ -1,90 +1,133 @@
 package br.com.souenzzo.inter;
 
-import java.io.*;
-import java.net.ServerSocket;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-record Request(String method, String path, String version,
-               Map<String, List<String>> headers,
-               InputStream body) {
-    public static Request from(InputStream is) throws IOException {
-        var pis = new PushbackInputStream(is);
-        return new Request(
-                readMethod(pis),
-                readPath(pis),
-                readVersion(pis),
-                readHeaders(pis),
-                is
-        );
-    }
+class Request extends OutputStream {
+    public String method;
+    public String path;
+    public String version;
+    public Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-    private static Map<String, List<String>> readHeaders(InputStream is) {
-        return new HashMap<>();
-    }
+    public boolean withinCR = false;
+    public String currentHeaderKey;
 
-    private static String readVersion(PushbackInputStream pis) throws IOException {
-        var sb = new StringBuilder();
-        while (true) {
-            var x = pis.read();
-            if (Character.isWhitespace(x)) {
-                return sb.toString();
-            }
-            sb.append(x);
+    public enum STATE {METHOD, PATH, VERSION, HEADERS, BODY}
+
+    public STATE currentState = STATE.METHOD;
+    public OutputStream baos = new ByteArrayOutputStream();
+
+    public void writeMethod(int b) throws IOException {
+        if (Character.isWhitespace(b)) {
+            method = baos.toString();
+            baos = new ByteArrayOutputStream();
+            currentState = STATE.PATH;
+        } else {
+            baos.write(b);
         }
     }
 
-    private static String readMethod(PushbackInputStream pis) throws IOException {
-        var sb = new StringBuilder();
-        while (true) {
-            var x = pis.read();
-            if (Character.isWhitespace(x)) {
-                return sb.toString();
-            }
-            sb.append(x);
+    public void writePath(int b) throws IOException {
+        if (Character.isWhitespace(b)) {
+            path = baos.toString();
+            baos = new ByteArrayOutputStream();
+            currentState = STATE.VERSION;
+        } else {
+            baos.write(b);
         }
     }
 
-    private static String readPath(PushbackInputStream pis) throws IOException {
-        var sb = new StringBuilder();
-        while (true) {
-            var x = pis.read();
-            if (Character.isWhitespace(x)) {
-                return sb.toString();
+    public void writeVersion(int b) throws IOException {
+        switch (b) {
+            case '\r' -> {
+                withinCR = true;
+                baos.write(b);
             }
-            sb.append(x);
+            case '\n' -> {
+                if (withinCR) {
+                    withinCR = false;
+                    version = baos.toString();
+                    baos = new ByteArrayOutputStream();
+                    currentState = STATE.HEADERS;
+                } else {
+                    baos.write(b);
+                }
+            }
+            default -> {
+                withinCR = false;
+                baos.write(b);
+            }
         }
     }
-}
 
-class EchoHttpServer {
-    void start() throws IOException {
-        try (final var ss = new ServerSocket(8080)) {
-            while (true) {
-                final var sc = ss.accept();
-                final var is = sc.getInputStream();
-                final var os = sc.getOutputStream();
-                // final var request = new String(is.readAllBytes());
-                // System.out.println(request);
-                os.write(String.join("\r\n",
-                        "HTTP/1.1 200 OK",
-                        "Date: Tue, 20 Oct 2020 21:16:08 GMT",
-                        "Server: dshttp/0",
-                        "",
-                        "ok!").getBytes());
-                os.close();
-                is.close();
-                sc.close();
+    private void writeHeaders(int b) throws IOException {
+        switch (b) {
+            case '\r' -> {
+                withinCR = true;
+                baos.write(b);
             }
+            case '\n' -> {
+                if (withinCR) {
+                    withinCR = false;
+                    if (Objects.isNull(currentHeaderKey)) {
+                        currentState = STATE.BODY;
 
+                    } else {
+                        if (headers.containsKey(currentHeaderKey)) {
+                            headers.get(currentHeaderKey).add(baos.toString());
+                        } else {
+                            headers.put(currentHeaderKey, List.of(baos.toString()));
+                        }
+                    }
+                    baos = new ByteArrayOutputStream();
+                    currentHeaderKey = null;
+                } else {
+                    baos.write(b);
+                }
+            }
+            case ':' -> {
+                currentHeaderKey = baos.toString();
+                baos = new ByteArrayOutputStream();
+            }
+            default -> {
+                withinCR = false;
+                baos.write(b);
+            }
+        }
+    }
+
+    public void write(int b) throws IOException {
+        switch (currentState) {
+            case METHOD -> writeMethod(b);
+            case PATH -> writePath(b);
+            case VERSION -> writeVersion(b);
+            case HEADERS -> writeHeaders(b);
+            default -> throw new IllegalStateException();
         }
     }
 }
 
 public class Main {
     public static void main(String[] argv) throws IOException {
-        (new EchoHttpServer()).start();
+        var req = new Request();
+        req.write(String.join("\r\n",
+                "GET /foo HTTP/1.1",
+                "Content-Length: 123",
+                "\r\n").getBytes());
+        System.out.println("method");
+        System.out.println(req.method);
+        System.out.println("path");
+        System.out.println(req.path);
+        System.out.println("version");
+        System.out.println(req.version);
+        System.out.println("headers");
+        System.out.println(req.headers);
+        System.out.println(req.currentState);
     }
 }
 
