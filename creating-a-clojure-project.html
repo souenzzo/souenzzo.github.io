@@ -49,12 +49,16 @@
     <p>How to create a Clojure project, main files, paths and dirs</p>
     <main>
         <aside>
-            In this tutorial, I will suppose that you know the <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix
+            In this tutorial, I will suppose that you know the <a target="_blank"
+                                                                  rel="noreferrer noopener"
+                                                                  href="https://en.wikipedia.org/wiki/Unix_shell">Unix
             command-line.</a>
         </aside>
         <p>
-            First things first, get the <a href="https://clojure.org/guides/getting_started">Clojure command-line</a>
-            tool. You should be able to run <code>clj -e "(prn :hello-world!)"</code> anywhere.
+            First things first, get the <a target="_blank"
+                                           rel="noreferrer noopener"
+                                           href="https://clojure.org/guides/getting_started">Clojure command-line</a>
+            tool. You should be able to run <code>clj -M -e "(prn :hello-world!)"</code> anywhere.
         </p>
         <aside>
             For didactic proposes, I will give a name for my example project.
@@ -69,37 +73,52 @@
 ~/pinheiro $
         </pre>
         <p>
-            Now let's create the <code>deps.edn</code> file.
+            Now let's create the
+            <a target="_blank"
+               rel="noreferrer noopener"
+               href="https://clojure.org/reference/deps_and_cli#_deps_edn"><code>deps.edn</code></a> file.
         </p>
         <pre>
-    {:paths   ["src"]
-     :deps    {org.clojure/clojure {:mvn/version "1.10.1"}}}
+{:paths   ["src"]
+ :deps    {org.clojure/clojure {:mvn/version "1.10.1"}}}
         </pre>
         <p>
             There are 2 main keys in <code>deps.edn</code>:
         </p>
         <ul>
             <li>
-                <a href="https://clojure.org/reference/deps_and_cli#_paths"><code>:paths</code></a>
+                <a target="_blank"
+                   rel="noreferrer noopener"
+                   href="https://clojure.org/reference/deps_and_cli#_paths"><code>:paths</code></a>
                 is a vector of strings, that says "in which dirs my code is"
             </li>
             <li>
-                <a href="https://clojure.org/reference/deps_and_cli#_dependencies"><code>:deps</code></a>
-                is a map of maven(or <a href="https://clojure.org/reference/deps_and_cli#_dependencies">git</a>)
+                <a target="_blank"
+                   rel="noreferrer noopener"
+                   href="https://clojure.org/reference/deps_and_cli#_dependencies"><code>:deps</code></a>
+                is a map of maven(or <a target="_blank"
+                                        rel="noreferrer noopener"
+                                        href="https://clojure.org/reference/deps_and_cli#_dependencies">git</a>)
                 dependencies.
             </li>
         </ul>
         <aside>
             <p>
-                You can search other deps in <a href="https://mvnrepository.com/">mvnrepository.com</a>
+                You can search other deps in <a target="_blank"
+                                                rel="noreferrer noopener"
+                                                href="https://mvnrepository.com/">mvnrepository.com</a>
             </p>
             <p>
                 Just copy the "artifact name" (in Clojure case, <code>org.clojure/clojure</code>) into maven
-                repository URL: <a href="https://mvnrepository.com/artifact/org.clojure/clojure"><code>mvnrepository.com/artifact/org.clojure/clojure</code></a>
+                repository URL: <a target="_blank"
+                                   rel="noreferrer noopener"
+                                   href="https://mvnrepository.com/artifact/org.clojure/clojure"><code>mvnrepository.com/artifact/org.clojure/clojure</code></a>
             </p>
         </aside>
         <p>
-            Clojure, like java, uses the notion of <a href="https://clojure.org/reference/namespaces">namespaces</a> to
+            Clojure, like java, uses the notion of <a target="_blank"
+                                                      rel="noreferrer noopener"
+                                                      href="https://clojure.org/reference/namespaces">namespaces</a> to
             organize code. It isn't a good pattern to use single-segment namespaces, for example, just
             <code>pinheiro</code>.
         </p>
@@ -111,7 +130,7 @@
             Once you declared in <code>deps.edn</code> that <code>src</code> is where your <code>classpath</code>
             starts, we say that it's <code>pinheiro/main.clj</code> in your classpath.
         </p>
-        <p>Ok, at this moment you should have a structure like this:</p>
+        <p>At this moment you should have a structure like this:</p>
         <pre>
 ~/pinheiro $ tree
 .
@@ -144,8 +163,8 @@ Downloading: org/clojure/core.specs.alpha/0.2.44/core.specs.alpha-0.2.44.jar fro
 ~/pinheiro $
         </pre>
         <p>
-            All deps downloads will be cached, in general, in <code>.m2</code> directory.
-            If you run again, it will just run.
+            All deps downloads will be cached, in general, in <code>~/.m2</code> directory. If you run again, it will
+            just run.
         </p>
         <pre>
 ~/pinheiro $ clj -M -m pinheiro.main hello world
@@ -200,5 +219,16 @@ Downloading: org/clojure/core.specs.alpha/0.2.44/core.specs.alpha-0.2.44.jar fro
 ~/pinheiro $ java -cp "$(cat classpath.txt)" pinheiro.main hello world
     </pre>
 </section>
+<footer>
+    <p>
+        In case of doubts or errors,
+        <a target="_blank"
+           rel="noreferrer noopener"
+           href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report an issue</a>
+    </p>
+    <p>If you prefer <a target="_blank"
+                        rel="noreferrer noopener"
+                        href="https://t.me/souenzzo">talk directly with me</a></p>
+</footer>
 </body>
 </html>

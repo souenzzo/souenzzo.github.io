@@ -44,6 +44,7 @@
     <code>{{ site.description }}</code>
 </header>
 <main>
+    <p>networks</p>
     <ul>
         {% for network in site.networks %}
         <li>
@@ -52,6 +53,37 @@
                href="{{ network.href }}">{{network.name}}</a>
         </li>
         {% endfor %}
+    </ul>
+    <p>articles</p>
+    <ul>
+        <li>
+            <a target="_blank"
+               rel="noreferrer noopener"
+               href="/creating-a-clojure-project.html">
+                Creating a Clojure project
+            </a>
+        </li>
+        <li>
+            <a target="_blank"
+               rel="noreferrer noopener"
+               href="/developing-eql-applications-with-pathom-connect.html">
+                Developing EQL applications with Pathom connect
+            </a>
+        </li>
+        <li>
+            <a target="_blank"
+               rel="noreferrer noopener"
+               href="/guia-informal-do-fulcro.html">
+                Guia informal do fulcro
+            </a>
+        </li>
+        <li>
+            <a target="_blank"
+               rel="noreferrer noopener"
+               href="/energia-do-planeta-terra.html">
+                Energia do planeta terra
+            </a>
+        </li>
     </ul>
 </main>
 </body>
