@@ -49,14 +49,15 @@
     <p>How to create a Clojure project, main files, paths and dirs</p>
     <main>
         <aside>
-            In this tutorial I will suppose that you know unix command line.
+            In this tutorial, I will suppose that you know the <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix
+            command-line.</a>
         </aside>
         <p>
-            First things first, get the <a href="https://clojure.org/guides/getting_started">clojure command
-            line</a> tool. You should be able to run <code>clj -e "(prn :hello-world!)"</code> in anywhere.
+            First things first, get the <a href="https://clojure.org/guides/getting_started">Clojure command-line</a>
+            tool. You should be able to run <code>clj -e "(prn :hello-world!)"</code> anywhere.
         </p>
         <aside>
-            For didatic proposes, I will give a name for my exmaple project.
+            For didactic proposes, I will give a name for my example project.
             This project will be called <code>pinheiro</code>.
         </aside>
         <p>
@@ -75,16 +76,17 @@
      :deps    {org.clojure/clojure {:mvn/version "1.10.1"}}}
         </pre>
         <p>
-            There is 2 main keys in `deps.edn`:
+            There are 2 main keys in <code>deps.edn</code>:
         </p>
         <ul>
             <li>
                 <a href="https://clojure.org/reference/deps_and_cli#_paths"><code>:paths</code></a>
-                is a vector of strings, that say "in which dirs my code is"
+                is a vector of strings, that says "in which dirs my code is"
             </li>
             <li>
                 <a href="https://clojure.org/reference/deps_and_cli#_dependencies"><code>:deps</code></a>
-                is a map of maven(or git) dependencies.
+                is a map of maven(or <a href="https://clojure.org/reference/deps_and_cli#_dependencies">git</a>)
+                dependencies.
             </li>
         </ul>
         <aside>
@@ -92,19 +94,20 @@
                 You can search other deps in <a href="https://mvnrepository.com/">mvnrepository.com</a>
             </p>
             <p>
-                Just copy the "artifact name" (in clojure case, <code>org.clojure/clojure</code>) into maven
-                repository url: <a href="https://mvnrepository.com/artifact/org.clojure/clojure"><code>mvnrepository.com/artifact/org.clojure/clojure</code></a>
+                Just copy the "artifact name" (in Clojure case, <code>org.clojure/clojure</code>) into maven
+                repository URL: <a href="https://mvnrepository.com/artifact/org.clojure/clojure"><code>mvnrepository.com/artifact/org.clojure/clojure</code></a>
             </p>
         </aside>
         <p>
-            Clojure, as java, use the notion of <a href="https://clojure.org/reference/namespaces">namespaces</a> to
-            organize code. It not a good pattern use single-segment namespaces, for example, just <code>pinheiro</code>.
+            Clojure, like java, uses the notion of <a href="https://clojure.org/reference/namespaces">namespaces</a> to
+            organize code. It isn't a good pattern to use single-segment namespaces, for example, just
+            <code>pinheiro</code>.
         </p>
         <p>
             We will start by creating the namespace <code>pinheiro.main</code>.
         </p>
         <p>
-            It need to be in <code>src/pinheiro/main.clj</code> from project root.
+            It needs to be in <code>src/pinheiro/main.clj</code> from the project root.
             Once you declared in <code>deps.edn</code> that <code>src</code> is where your <code>classpath</code>
             starts, we say that it's <code>pinheiro/main.clj</code> in your classpath.
         </p>
@@ -118,7 +121,7 @@
         └── main.clj
 ~/pinheiro $
         </pre>
-        <p>The <code>src/pinheiro/main.clj</code> shoud contain something like this:</p>
+        <p>The <code>src/pinheiro/main.clj</code> should contain something like this:</p>
         <pre>
 (ns pinheiro.main)
 
@@ -152,10 +155,10 @@ Downloading: org/clojure/core.specs.alpha/0.2.44/core.specs.alpha-0.2.44.jar fro
     </main>
 </section>
 <section>
-    <h1>APENDIX: git</h1>
+    <h1>APPENDIX: git</h1>
     <p>These file/dirs you should not commit:</p>
     <ul>
-        <li><code>.cpcache</code>: Cache dir created by clojure command line tool</li>
+        <li><code>.cpcache</code>: Cache dir created by Clojure command-line tool</li>
         <li><code>*.iml</code>: Intellij config file</li>
         <li><code>.idea/</code>: Intellij config dir</li>
         <li><code>target</code>: Build tools like maven and lein may create this dir to store java class files</li>
@@ -164,27 +167,27 @@ Downloading: org/clojure/core.specs.alpha/0.2.44/core.specs.alpha-0.2.44.jar fro
     <p>
         As <code>mvn</code> and <code>pom.xml</code>, <code>clj</code> and <code>deps.edn</code> is a deterministic
         package manager. Given a <code>deps.edn</code>, it will <strong>ALWAYS</strong> use the same tree of
-        dependencies, so it <strong>DO
-        NOT NEED A LOCK FILE</strong>.
+        dependencies, so it <strong>DOES NOT NEED A LOCK FILE</strong>.
     </p>
 </section>
 <section>
-    <h2>APENDIX: Clojure direct from java</h2>
+    <h2>APPENDIX: Clojure direct from java</h2>
     <p>
-        You do not need any of clojure command line to run clojure programs.
+        You do not need any Clojure command-line to run Clojure programs.
         If you know your classpath, you can run it directly from java
     </p>
     <p>
-        You can use <code>clj -Spath</code> store your classpath in a file, then run java using this classpath.
-        You need to call <code>clojure.main</code> class, will build and run <code>pinheiro.main</code> for you.
+        You can use <code>clj -Spath</code> and save your classpath from stdout into a file, then run java using this
+        classpath.
+        You need to call <code>clojure.main</code> class will build and run <code>pinheiro.main</code> for you.
     </p>
     <pre>
 ~/pinheiro $ clj -Spath > classpath.txt
 ~/pinheiro $ java -cp "$(cat classpath.txt)" clojure.main -m pinheiro.main hello world
     </pre>
     <p>
-        You can also build clojure in AoT. <code>compile</code> is a clojure function that receive a namespace as symbom
-        and compile all classes needed to run that namespace, saving it's classes in <code>classes</code> dir.
+        You can also build Clojure in AoT. <code>compile</code> is a Clojure function that receives a namespace as a
+        symbol and compiles all classes needed to run that namespace, saving its classes in <code>classes</code> dir.
     </p>
     <p>
         Then you need to include that <code>classes</code> directory into classpath.
