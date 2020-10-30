@@ -16,6 +16,7 @@ class Request extends OutputStream {
 
     public boolean withinCR = false;
     public String currentHeaderKey;
+    public Integer contentLength;
 
     public enum STATE {METHOD, PATH, VERSION, HEADERS, BODY}
 
@@ -65,6 +66,15 @@ class Request extends OutputStream {
         }
     }
 
+    private void gotoBody () {
+        currentState = STATE.BODY;
+        try {
+            contentLength = Integer.parseInt(headers.get("Content-Length").iterator().next());
+        } catch (Throwable ex) {
+            contentLength = null;
+        }
+    }
+
     private void writeHeaders(int b) throws IOException {
         switch (b) {
             case '\r' -> {
@@ -75,8 +85,7 @@ class Request extends OutputStream {
                 if (withinCR) {
                     withinCR = false;
                     if (Objects.isNull(currentHeaderKey)) {
-                        currentState = STATE.BODY;
-
+                        gotoBody();
                     } else {
                         if (headers.containsKey(currentHeaderKey)) {
                             headers.get(currentHeaderKey).add(baos.toString());
