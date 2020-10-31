@@ -213,17 +213,39 @@
                                     children (if (contains? meta :index)
                                                (let [index (:index meta)
                                                      tree' (get tree dispatch-key)
-                                                     ref (find tree' index)
-                                                     db' (get-in db ref)
-                                                     db-after (reduce
-                                                                (fn [db node]
-                                                                  (merge-tree db tree'
-                                                                              node))
-                                                                db'
-                                                                children)]
-                                                 (-> db
-                                                     (assoc dispatch-key ^:ref (find tree' index))
-                                                     (assoc-in ref db-after)))
+                                                     many? (and (coll? tree')
+                                                                (not (map? tree')))]
+                                                 (if many?
+                                                   (let [els (map (fn [tree]
+                                                                    {:tree tree
+                                                                     :ref  (with-meta (vec (find tree index))
+                                                                                      {:ref true})})
+                                                                  tree')]
+                                                     (reduce (fn [db {:keys [ref tree]}]
+                                                               (let [db' (get-in db ref)
+                                                                     db-after (reduce
+                                                                                (fn [db node]
+                                                                                  (merge-tree db tree
+                                                                                              node))
+                                                                                db'
+                                                                                children)]
+                                                                 (-> db
+                                                                     (update dispatch-key (fnil conj []) ref)
+                                                                     (assoc-in ref db-after))))
+                                                             db
+                                                             els))
+                                                   (let [ref (with-meta (vec (find tree' index))
+                                                                        {:ref true})
+                                                         db' (get-in db ref)
+                                                         db-after (reduce
+                                                                    (fn [db node]
+                                                                      (merge-tree db tree'
+                                                                                  node))
+                                                                    db'
+                                                                    children)]
+                                                     (-> db
+                                                         (assoc dispatch-key ref)
+                                                         (assoc-in ref db-after)))))
                                                (let [db' (get db dispatch-key)
                                                      tree' (get tree dispatch-key)
                                                      db-after (reduce
@@ -279,6 +301,14 @@
          (merge-tree {}
                      `{:a {:b 33
                            :c 22}}
+                     (eql/query->ast [^{:index :b} {:a [:b
+                                                        :c]}]))))
+  (is (= {:a [^:ref [:b 33]]
+          :b {33 {:b 33
+                  :c 22}}}
+         (merge-tree {}
+                     `{:a [{:b 33
+                            :c 22}]}
                      (eql/query->ast [^{:index :b} {:a [:b
                                                         :c]}])))))
 
