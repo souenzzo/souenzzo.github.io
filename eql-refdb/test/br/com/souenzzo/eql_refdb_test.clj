@@ -197,118 +197,52 @@
            {::tx    [:a]
             ::value {:a 42}}))))
 
-
-(defn merge-tree
-  [db tree {:keys [dispatch-key children meta]
-            :as   node}]
-  (cond
-    (contains? tree dispatch-key) (cond
-                                    (symbol? dispatch-key) (let [tree (get tree dispatch-key)]
-                                                             (reduce
-                                                               (fn [db node]
-                                                                 (merge-tree db tree
-                                                                             node))
-                                                               db
-                                                               children))
-                                    children (if (contains? meta :index)
-                                               (let [index (:index meta)
-                                                     tree' (get tree dispatch-key)
-                                                     many? (and (coll? tree')
-                                                                (not (map? tree')))]
-                                                 (if many?
-                                                   (let [els (map (fn [tree]
-                                                                    {:tree tree
-                                                                     :ref  (with-meta (vec (find tree index))
-                                                                                      {:ref true})})
-                                                                  tree')]
-                                                     (reduce (fn [db {:keys [ref tree]}]
-                                                               (let [db' (get-in db ref)
-                                                                     db-after (reduce
-                                                                                (fn [db node]
-                                                                                  (merge-tree db tree
-                                                                                              node))
-                                                                                db'
-                                                                                children)]
-                                                                 (-> db
-                                                                     (update dispatch-key (fnil conj []) ref)
-                                                                     (assoc-in ref db-after))))
-                                                             db
-                                                             els))
-                                                   (let [ref (with-meta (vec (find tree' index))
-                                                                        {:ref true})
-                                                         db' (get-in db ref)
-                                                         db-after (reduce
-                                                                    (fn [db node]
-                                                                      (merge-tree db tree'
-                                                                                  node))
-                                                                    db'
-                                                                    children)]
-                                                     (-> db
-                                                         (assoc dispatch-key ref)
-                                                         (assoc-in ref db-after)))))
-                                               (let [db' (get db dispatch-key)
-                                                     tree' (get tree dispatch-key)
-                                                     db-after (reduce
-                                                                (fn [db node]
-                                                                  (merge-tree db tree'
-                                                                              node))
-                                                                db'
-                                                                children)]
-                                                 (assoc db dispatch-key db-after)))
-                                    :else (assoc db dispatch-key (get tree dispatch-key)))
-    children (reduce
-               (fn [db node]
-                 (merge-tree db tree node))
-               db
-               children)
-    :else db))
-
 (deftest merge-tree-test
   (is (= {:a 33}
-         (merge-tree {:a 42}
-                     {:a 33}
-                     (eql/query->ast [:a]))))
+         (refdb/merge-tree {:a 42}
+                           {:a 33}
+                           (eql/query->ast [:a]))))
   (is (= {:a 42}
-         (merge-tree {:a 42}
-                     {:a 33}
-                     (eql/query->ast [:b]))))
+         (refdb/merge-tree {:a 42}
+                           {:a 33}
+                           (eql/query->ast [:b]))))
   (is (= {:a 33}
-         (merge-tree {:a 42}
-                     `{inc {:a 33}}
-                     (eql/query->ast `[{(inc {}) [:a]}]))))
+         (refdb/merge-tree {:a 42}
+                           `{inc {:a 33}}
+                           (eql/query->ast `[{(inc {}) [:a]}]))))
   (is (= {:a {:b 33}}
-         (merge-tree {:a {:b 42}}
-                     `{:a {:b 33}}
-                     (eql/query->ast `[{:a [:b]}]))))
+         (refdb/merge-tree {:a {:b 42}}
+                           `{:a {:b 33}}
+                           (eql/query->ast `[{:a [:b]}]))))
   (is (= {:a {:b 33}}
-         (merge-tree {}
-                     `{:a {:b 33}}
-                     (eql/query->ast `[{:a [:b]}]))))
+         (refdb/merge-tree {}
+                           `{:a {:b 33}}
+                           (eql/query->ast `[{:a [:b]}]))))
   (is (= {:a {:b 33
               :c 22}}
-         (merge-tree {:a {:b 42
-                          :c 22}}
-                     `{:a {:b 33}}
-                     (eql/query->ast `[{:a [:b]}]))))
+         (refdb/merge-tree {:a {:b 42
+                                :c 22}}
+                           `{:a {:b 33}}
+                           (eql/query->ast `[{:a [:b]}]))))
   (is (= {:a {:b 33}}
-         (merge-tree {:a {:b 42
-                          :c 22}}
-                     `{:a {:b 33}}
-                     (eql/query->ast `[:a]))))
+         (refdb/merge-tree {:a {:b 42
+                                :c 22}}
+                           `{:a {:b 33}}
+                           (eql/query->ast `[:a]))))
   (is (= {:a ^:ref [:b 33]
           :b {33 {:b 33
                   :c 22}}}
-         (merge-tree {}
-                     `{:a {:b 33
-                           :c 22}}
-                     (eql/query->ast [^{:index :b} {:a [:b
-                                                        :c]}]))))
+         (refdb/merge-tree {}
+                           `{:a {:b 33
+                                 :c 22}}
+                           (eql/query->ast [^{:index :b} {:a [:b
+                                                              :c]}]))))
   (is (= {:a [^:ref [:b 33]]
           :b {33 {:b 33
                   :c 22}}}
-         (merge-tree {}
-                     `{:a [{:b 33
-                            :c 22}]}
-                     (eql/query->ast [^{:index :b} {:a [:b
-                                                        :c]}])))))
+         (refdb/merge-tree {}
+                           `{:a [{:b 33
+                                  :c 22}]}
+                           (eql/query->ast [^{:index :b} {:a [:b
+                                                              :c]}])))))
 

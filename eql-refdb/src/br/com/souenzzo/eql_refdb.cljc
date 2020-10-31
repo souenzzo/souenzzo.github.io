@@ -111,3 +111,71 @@
     (-> query eql/query->ast :children)))
 
 
+
+
+(defn merge-tree
+  [db tree {:keys [dispatch-key children meta]
+            :as   node}]
+  (cond
+    (contains? tree dispatch-key) (cond
+                                    (symbol? dispatch-key) (let [tree (get tree dispatch-key)]
+                                                             (reduce
+                                                               (fn [db node]
+                                                                 (merge-tree db tree
+                                                                             node))
+                                                               db
+                                                               children))
+                                    children (if (contains? meta :index)
+                                               (let [index (:index meta)
+                                                     tree' (get tree dispatch-key)
+                                                     many? (and (coll? tree')
+                                                                (not (map? tree')))]
+                                                 (if many?
+                                                   (let [els (map (fn [tree]
+                                                                    {:tree tree
+                                                                     :ref  (with-meta (vec (find tree index))
+                                                                                      {:ref true})})
+                                                                  tree')]
+                                                     (reduce (fn [db {:keys [ref tree]}]
+                                                               (let [db' (get-in db ref)
+                                                                     db-after (reduce
+                                                                                (fn [db node]
+                                                                                  (merge-tree db tree
+                                                                                              node))
+                                                                                db'
+                                                                                children)]
+                                                                 (-> db
+                                                                     (update dispatch-key conj ref)
+                                                                     (assoc-in ref db-after))))
+                                                             (assoc db dispatch-key [])
+                                                             els))
+                                                   (let [ref (with-meta (vec (find tree' index))
+                                                                        {:ref true})
+                                                         db' (get-in db ref)
+                                                         db-after (reduce
+                                                                    (fn [db node]
+                                                                      (merge-tree db tree'
+                                                                                  node))
+                                                                    db'
+                                                                    children)]
+                                                     (-> db
+                                                         (assoc dispatch-key ref)
+                                                         (assoc-in ref db-after)))))
+                                               (let [db' (get db dispatch-key)
+                                                     tree' (get tree dispatch-key)
+                                                     db-after (reduce
+                                                                (fn [db node]
+                                                                  (merge-tree db tree'
+                                                                              node))
+                                                                db'
+                                                                children)]
+                                                 (assoc db dispatch-key db-after)))
+                                    :else (assoc db dispatch-key (get tree dispatch-key)))
+    children (reduce
+               (fn [db node]
+                 (merge-tree db tree node))
+               db
+               children)
+    :else db))
+
+
