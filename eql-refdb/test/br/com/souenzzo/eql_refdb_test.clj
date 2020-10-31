@@ -1,6 +1,8 @@
 (ns br.com.souenzzo.eql-refdb-test
   (:require [br.com.souenzzo.eql-refdb :as refdb]
-            [clojure.test :refer [deftest is testing]]))
+            [clojure.test :refer [deftest is testing]]
+            [clojure.pprint :as pp]
+            [edn-query-language.core :as eql]))
 
 (deftest db->tree
   (is (= {:user/contatcs [{:user/name "refdb"}]
@@ -194,3 +196,89 @@
          (refdb/tree->db
            {::tx    [:a]
             ::value {:a 42}}))))
+
+
+(defn merge-tree
+  [db tree {:keys [dispatch-key children meta]
+            :as   node}]
+  (cond
+    (contains? tree dispatch-key) (cond
+                                    (symbol? dispatch-key) (let [tree (get tree dispatch-key)]
+                                                             (reduce
+                                                               (fn [db node]
+                                                                 (merge-tree db tree
+                                                                             node))
+                                                               db
+                                                               children))
+                                    children (if (contains? meta :index)
+                                               (let [index (:index meta)
+                                                     tree' (get tree dispatch-key)
+                                                     ref (find tree' index)
+                                                     db' (get-in db ref)
+                                                     db-after (reduce
+                                                                (fn [db node]
+                                                                  (merge-tree db tree'
+                                                                              node))
+                                                                db'
+                                                                children)]
+                                                 (-> db
+                                                     (assoc dispatch-key ^:ref (find tree' index))
+                                                     (assoc-in ref db-after)))
+                                               (let [db' (get db dispatch-key)
+                                                     tree' (get tree dispatch-key)
+                                                     db-after (reduce
+                                                                (fn [db node]
+                                                                  (merge-tree db tree'
+                                                                              node))
+                                                                db'
+                                                                children)]
+                                                 (assoc db dispatch-key db-after)))
+                                    :else (assoc db dispatch-key (get tree dispatch-key)))
+    children (reduce
+               (fn [db node]
+                 (merge-tree db tree node))
+               db
+               children)
+    :else db))
+
+(deftest merge-tree-test
+  (is (= {:a 33}
+         (merge-tree {:a 42}
+                     {:a 33}
+                     (eql/query->ast [:a]))))
+  (is (= {:a 42}
+         (merge-tree {:a 42}
+                     {:a 33}
+                     (eql/query->ast [:b]))))
+  (is (= {:a 33}
+         (merge-tree {:a 42}
+                     `{inc {:a 33}}
+                     (eql/query->ast `[{(inc {}) [:a]}]))))
+  (is (= {:a {:b 33}}
+         (merge-tree {:a {:b 42}}
+                     `{:a {:b 33}}
+                     (eql/query->ast `[{:a [:b]}]))))
+  (is (= {:a {:b 33}}
+         (merge-tree {}
+                     `{:a {:b 33}}
+                     (eql/query->ast `[{:a [:b]}]))))
+  (is (= {:a {:b 33
+              :c 22}}
+         (merge-tree {:a {:b 42
+                          :c 22}}
+                     `{:a {:b 33}}
+                     (eql/query->ast `[{:a [:b]}]))))
+  (is (= {:a {:b 33}}
+         (merge-tree {:a {:b 42
+                          :c 22}}
+                     `{:a {:b 33}}
+                     (eql/query->ast `[:a]))))
+  (is (= {:a ^:ref [:b 33]
+          :b {33 {:b 33
+                  :c 22}}}
+         (merge-tree {}
+                     `{:a {:b 33
+                           :c 22}}
+                     (eql/query->ast [^{:index :b} {:a [:b
+                                                        :c]}])))))
+

@@ -32,9 +32,19 @@
            ::db     db
            ::entity (get-in db key)})))))
 
+(defn tree->db-node
+  [{::keys [db node value]}]
+  (let [{:keys [dispatch-key children]} node]
+    (cond
+      (nil? dispatch-key) db
+      :else db)))
 
 (defn tree->db
-  [{::keys []}])
+  [{::keys [db tx result]}]
+  (let [node (eql/query->ast tx)]
+    (tree->db-node {::db    db
+                    ::node  node
+                    ::value result})))
 
 (defn tree->db'
   [{::keys [db value query attribute->index]}]
