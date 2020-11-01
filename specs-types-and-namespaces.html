@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <!-- Static Metadata -->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
+    <meta property="og:type" content="article"/>
+    <meta name="twitter:card" content="summary"/>
+    <!-- Metadata about me -->
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+    <!-- Title metadata -->
+    <title>Spec, types and namespaces</title>
+    <meta name="twitter:title" content="Spec, types and namespaces"/>
+    <meta property="og:title" content="Spec, types and namespaces"/>
+    <!-- Description metadata -->
+    <meta name="twitter:description"
+          content="DRAFT"/>
+    <meta name="Description"
+          content="DRAFT"/>
+    <meta name="description"
+          content="DRAFT">
+    <meta property="og:description"
+          content="DRAFT"/>
+    <!-- https://jrl.ninja/etc/1 -->
+    <style>
+        section {
+          max-width: 38em;
+          padding: 1em;
+          margin: auto;
+        }
+        aside {
+          background-color: lightcyan;
+          padding: 1em;
+        }
+        code {
+          color: darkred;
+        }
+        pre {
+          color: darkred;
+        }
+    </style>
+</head>
+<body>
+<pre>
+    ## DRAFT ##
+
+
+
+    ```clojure
+    (ns myApp.account
+      (:require [clojure.spec.alpha :as s]
+                [clojure.string :as string]))
+    (s/def ::firstName string?)
+    (s/def ::lastName string?)
+    (s/def ::pronoun string?)
+    (defn fullName
+      [{::keys [firstName lastName]}]
+      (string/join " " [firstName lastName]))
+    (s/fdef fullName
+      :args (s/cat :account (s/keys :req [::firstName ::lastName]))
+      :ref string?)
+    (defn greet
+      [{::keys [firstName pronoun]}]
+      (string/join " " [pronoun firstName]))
+    (s/fdef greet
+      :args (s/cat :account (s/keys :req [::firstName ::pronoun]))
+      :ref string?)
+    ```
+    ```java-like
+    package myApp;
+
+    class account {
+      String firstName;
+      String lastName;
+      String pronoun;
+      String fullName() {
+        return " ".join(firstName, lastName)
+      }
+      String greet() {
+        return " ".join(pronoun, firstName)
+      }
+    }
+    ```
+
+    Both codes are saying:
+    - Exists a field, named `myApp.account.firstName` that should be a string
+    - Exists a field, named `myApp.account.lastName` that should be a string
+    - Exists a field, named `myApp.account.pronoun` that should be a string
+    - Exists a method, named `myApp.account.fullName` that within a context containing
+    `myApp.account.firstName` and `myApp.account.lastName`, will return a string.
+    - Exists a method, named `myApp.account.greet` that within a context containing
+    `myApp.account.firstName` and `myApp.account.pronoun`, will return a string.
+
+    Many java-like force you to aways thing about "a group of fields", that is usually called a "class"
+    
+
+
+</pre>
+</body>
+</html>

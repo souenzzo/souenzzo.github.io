@@ -66,7 +66,7 @@ class Request extends OutputStream {
         }
     }
 
-    private void gotoBody () {
+    private void gotoBody() {
         currentState = STATE.BODY;
         try {
             contentLength = Integer.parseInt(headers.get("Content-Length").iterator().next());
@@ -121,22 +121,40 @@ class Request extends OutputStream {
     }
 }
 
+interface IAccount {
+    public String getFirstName();
+}
+
+abstract class AAccount implements IAccount {
+    public abstract String getFirstName();
+
+    public abstract String getLastName();
+
+    public String getFullName() {
+        return String.join(" ", getFirstName(), getLastName());
+    }
+}
+
+record Account2(String firstName,
+                String lastName) {
+    public String getFullName() {
+        return String.join(" ", firstName, lastName);
+    }
+}
+
+
 public class Main {
-    public static void main(String[] argv) throws IOException {
-        var req = new Request();
-        req.write(String.join("\r\n",
-                "GET /foo HTTP/1.1",
-                "Content-Length: 123",
-                "\r\n").getBytes());
-        System.out.println("method");
-        System.out.println(req.method);
-        System.out.println("path");
-        System.out.println(req.path);
-        System.out.println("version");
-        System.out.println(req.version);
-        System.out.println("headers");
-        System.out.println(req.headers);
-        System.out.println(req.currentState);
+    public static void main(String[] argv) {
+        System.out.println((new AAccount () {
+            public String getFirstName () {
+                return "a";
+            }
+
+            public String getLastName () {
+                return "b";
+            }
+        }).getFullName());
+        System.out.println((new Account2("a", "b")).getFullName());
     }
 }
 
