@@ -1,0 +1,9 @@
+{:paths   ["src"]
+ :deps    {clj-kondo/clj-kondo          {:mvn/version "2020.07.29"}
+           hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}
+           io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
+           io.pedestal/pedestal.service {:mvn/version "0.5.8"}
+           org.clojure/clojure          {:mvn/version "1.10.1"}
+           org.clojure/tools.cli        {:mvn/version "1.0.194"}}
+ :aliases {:dev {:extra-paths ["sample"]
+                 :extra-deps  {}}}}
