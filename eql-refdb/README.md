@@ -6,7 +6,18 @@ Inspirated by [Fulcro Client Database](http://book.fulcrologic.com/#_fulcro_clie
 
 # hacking 
 
-Clone the repo and run `clj -A:cljs:dev -M -m sample.dev-server`
+
+1. Clone the repo
+``bash
+$ git clone git@github.com:souenzzo/souenzzo.github.io.git
+$ cd souenzzo.github.io/eql-refdb
+``
+
+1. Run `npm install` for JS stuff
+
+1. Run `clj -A:cljs:dev -M -m sample.dev-server`
+ 
+1. Wait a bit and connect to [localhost:8080](http://localhost:8080)
 
 # Examples
 
