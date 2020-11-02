@@ -9,91 +9,82 @@
 ;; ui
 (defn ui
   []
-  [:<>
-   [:main
-    [:h1
-     (pr-str @(rf/subscribe [:counter]))]
-    [:button {:on-click #(rf/dispatch [:dec])}
-     "-"]
-    [:button {:on-click #(rf/dispatch [:inc])}
-     "+"]
-    [:div
-     [:form
-      {:onSubmit (fn [e]
-                   (let [txt (-> e .-target .-elements first .-value)]
-                     (.preventDefault e)
-                     (rf/dispatch [:new-todo txt])))}
-      [:input]]
-     [:ul
-      (for [{:keys [text]} @(rf/subscribe [:todos])]
-        [:li {:key text}
-         text])]]]
-   [:footer
-    [:pre (with-out-str (pp/pprint @re-frame.db/app-db))]]])
+  (let [{::keys [counter todos]} @(rf/subscribe [:select [::counter
+                                                          {::todos [:text]}]])]
+    [:<>
+     [:main
+      [:h1
+       (pr-str counter)]
+      [:button {:on-click #(rf/dispatch [:tx! `[{(decrement {})
+                                                 [::counter]}]])}
+       "-"]
+      [:button {:on-click #(rf/dispatch [:tx! `[{(increment {})
+                                                 [::counter]}]])}
+       "+"]
+      [:div
+       [:form
+        {:onSubmit (fn [e]
+                     (let [txt (-> e .-target .-elements first .-value)]
+                       (.preventDefault e)
+                       (rf/dispatch [:tx! `[{(new-todo ~{:text txt})
+                                             [^{:index :text}
+                                              {::todos [:text]}]}]])))}
+        [:input]]
+       [:ul
+        (for [{:keys [text]} todos]
+          [:li {:key text}
+           text])]]]
+     [:footer
+      [:pre (with-out-str (pp/pprint @re-frame.db/app-db))]]]))
 
-;; app
+;; register
 
+(pc/defmutation increment [{::keys [counter]} _params]
+  {}
+  {::counter (swap! counter inc)})
 
-(def register
-  [(pc/mutation `increment
-                {}
-                (fn [{::keys [counter]} {}]
-                  {::counter (swap! counter inc)}))
-   (pc/mutation `decrement
-                {}
-                (fn [{::keys [counter]} {}]
-                  {::counter (swap! counter dec)}))
-   (pc/resolver `counter
-                {::pc/output [::counter]}
-                (fn [{::keys [counter]} {}]
-                  {::counter @counter}))
-   (pc/mutation `new-todo
-                {::pc/output []}
-                (fn [{::keys [todos]} {:keys [text]}]
-                  (let [todos (swap! todos conj text)]
-                    {::todos (for [todo todos]
-                               {:text todo})})))])
+(pc/defmutation decrement [{::keys [counter]} _params]
+  {}
+  {::counter (swap! counter inc)})
 
-;; Events
-
-(rf/reg-event-fx :inc
-                 (fn [_ _]
-                   {:eql `[{(increment {})
-                            [::counter]}]}))
+(pc/defmutation new-todo [{::keys [todos]} {:keys [text]}]
+  {::pc/params [:text]}
+  (let [todos (swap! todos conj text)]
+    {::todos (for [todo todos]
+               {:text todo})}))
 
 
-(rf/reg-event-fx :dec
-                 (fn [_ _]
-                   {:eql `[{(decrement {})
-                            [::counter]}]}))
+(pc/defresolver counter [{::keys [counter]} _input]
+  {::counter @counter})
 
-(rf/reg-event-fx :new-todo
-                 (fn [_ [_ text]]
-                   {:eql `[{(new-todo ~{:text text})
-                            [^{:index :text}
-                             {::todos [:text]}]}]}))
+(pc/defresolver todos [{::keys [todos]} _input]
+  {::todos (for [todo @todos]
+             {:text todo})})
 
+;; Connect pathom with re-frame
 
-;; Subs
+(defonce app-state
+         {::pc/indexes        (pc/register {} [increment decrement counter todos new-todo])
+          ::redbeql/on-result ::on-result
+          ::redbeql/parser-fx ::parser
+          ::todos             (atom #{"a1" "a2"})
+          ::counter           (atom 3)})
 
-(rf/reg-sub :counter (fn [{::keys [counter]} _] counter))
-(rf/reg-sub :todos (fn [{::keys [todos]
-                         :as    db} _]
-                     (for [todo todos]
-                       (get-in db todo))))
-
-
-(defonce app-state (redbeql/eql {::pc/indexes        (pc/register {} register)
-                                 ::redbeql/on-result ::on-result
-                                 ::todos             (atom #{"a1" "a2"})
-                                 ::counter           (atom 3)}))
-
-(rf/reg-fx :eql app-state)
+;; should be ::redbeql/parser-fx
+(rf/reg-fx ::parser (redbeql/parser-fx app-state))
+;; should be ::redbeql/on-result
 (rf/reg-event-db ::on-result redbeql/on-result)
+
+;; will be used to send queries/mutations to remote
+(rf/reg-event-fx :tx! (redbeql/parser-event-fx app-state))
+;; will be used to select normalized data from current state
+(rf/reg-sub :select redbeql/select-sub)
 
 
 (defn ^:export start
   [target]
   (let [el (gdom/getElement target)]
-    ;; (rf/dispatch-sync [:initialize])
+    (rf/dispatch [:tx! `[::counter
+                         ^{:index :text}
+                         {::todos [:text]}]])
     (rd/render [ui] el)))

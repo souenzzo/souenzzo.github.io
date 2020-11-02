@@ -23,97 +23,14 @@
                                                   ::entity (get-in db ref)
                                                   ::query  (eql/ast->query {:type :root :children children})}))))]
                 [dispatch-key value]))))
-    (let [{:keys [key children]} (-> (eql/query->ast query)
-                                     :children
-                                     first)]
+    (let [{:keys [children]} (-> (eql/query->ast query))]
       (if children
         (db->tree
           {::query  (eql/ast->query {:type :root :children children})
            ::db     db
-           ::entity (get-in db key)})))))
+           ::entity db})))))
 
-(defn tree->db-node
-  [{::keys [db node value]}]
-  (let [{:keys [dispatch-key children]} node]
-    (cond
-      (nil? dispatch-key) db
-      :else db)))
-
-(defn tree->db
-  [{::keys [db tx result]}]
-  (let [node (eql/query->ast tx)]
-    (tree->db-node {::db    db
-                    ::node  node
-                    ::value result})))
-
-(defn tree->db'
-  [{::keys [db value query attribute->index]}]
-  (reduce
-    (fn [db {:keys [key children query]}]
-      (cond
-        (ref? key) (if children
-                     (let [current-value (get value key)
-                           final-value (into {}
-                                             (map (fn [{:keys [dispatch-key children] :as node}]
-                                                    (let [final-value (get current-value dispatch-key)
-                                                          index-key (or (get attribute->index dispatch-key)
-                                                                        (-> node :meta :ident)
-                                                                        (-> final-value meta :ident))]
-                                                      [dispatch-key (if children
-                                                                      (if (sequential? final-value)
-                                                                        (mapv #(find % index-key)
-                                                                              final-value)
-                                                                        (find final-value index-key))
-                                                                      final-value)])))
-                                             children)
-                           db (reduce
-                                (fn [db {:keys [dispatch-key children]
-                                         :as   node}]
-                                  (let [final-value (get current-value dispatch-key)
-                                        index-key (or (get attribute->index dispatch-key)
-                                                      (-> node :meta :ident)
-                                                      (-> final-value meta :ident))]
-                                    (if children
-                                      (if (sequential? final-value)
-                                        (reduce (fn [db final-value]
-                                                  (when-not index-key
-                                                    (throw (ex-info "aa" {})))
-                                                  (tree->db {::db               db
-                                                             ::value            {(find final-value index-key) final-value}
-                                                             ::query            (eql/ast->query {:type     :root
-                                                                                                 :children [{:type         :join
-                                                                                                             :key          (find final-value index-key)
-                                                                                                             :dispatch-key index-key
-                                                                                                             :children     children}]})
-                                                             ::attribute->index attribute->index}))
-                                                db final-value)
-                                        (tree->db {::db               db
-                                                   ::value            {(find final-value index-key) final-value}
-                                                   ::query            (eql/ast->query {:type     :root
-                                                                                       :children [{:type         :join
-                                                                                                   :key          (find final-value index-key)
-                                                                                                   :dispatch-key index-key
-                                                                                                   :children     children}]})
-                                                   ::attribute->index attribute->index}))
-                                      db)))
-
-                                db
-                                children)]
-                       (update-in db key merge final-value))
-                     #_todo db)
-        (contains? value key) (tree->db {::db               db
-                                         ::value            (get value key)
-                                         ::query            query
-                                         ::attribute->index attribute->index})
-        :else db))
-
-    db
-    (-> query eql/query->ast :children)))
-
-
-
-
-(defn merge-tree
+(defn merge-tree-node
   [db tree {:keys [dispatch-key children meta]
             :as   node}]
   (cond
@@ -121,8 +38,8 @@
                                     (symbol? dispatch-key) (let [tree (get tree dispatch-key)]
                                                              (reduce
                                                                (fn [db node]
-                                                                 (merge-tree db tree
-                                                                             node))
+                                                                 (merge-tree-node db tree
+                                                                                  node))
                                                                db
                                                                children))
                                     children (if (contains? meta :index)
@@ -140,8 +57,8 @@
                                                                (let [db' (get-in db ref)
                                                                      db-after (reduce
                                                                                 (fn [db node]
-                                                                                  (merge-tree db tree
-                                                                                              node))
+                                                                                  (merge-tree-node db tree
+                                                                                                   node))
                                                                                 db'
                                                                                 children)]
                                                                  (-> db
@@ -154,8 +71,8 @@
                                                          db' (get-in db ref)
                                                          db-after (reduce
                                                                     (fn [db node]
-                                                                      (merge-tree db tree'
-                                                                                  node))
+                                                                      (merge-tree-node db tree'
+                                                                                       node))
                                                                     db'
                                                                     children)]
                                                      (-> db
@@ -165,17 +82,19 @@
                                                      tree' (get tree dispatch-key)
                                                      db-after (reduce
                                                                 (fn [db node]
-                                                                  (merge-tree db tree'
-                                                                              node))
+                                                                  (merge-tree-node db tree'
+                                                                                   node))
                                                                 db'
                                                                 children)]
                                                  (assoc db dispatch-key db-after)))
                                     :else (assoc db dispatch-key (get tree dispatch-key)))
     children (reduce
                (fn [db node]
-                 (merge-tree db tree node))
+                 (merge-tree-node db tree node))
                db
                children)
     :else db))
 
-
+(defn tree->db
+  [{::keys [db tree tx]}]
+  (merge-tree-node db tree (eql/query->ast tx)))

@@ -1,12 +1,26 @@
 package br.com.souenzzo.inter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
+import org.msgpack.io.Output;
+
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+record HTTPResponse(Number status,
+                    Map<String, List<String>> headers,
+                    InputStream body) {
+    public static Map<String, List<String>> EMPTY_HEADERS = new HashMap<String, List<String>>();
+
+    public HTTPResponse(Number status) {
+        this(status, EMPTY_HEADERS, ByteArrayInputStream.nullInputStream());
+    }
+
+    public HTTPResponse(Number status, String body) {
+        this(status, EMPTY_HEADERS, new ByteArrayInputStream(body.getBytes()));
+    }
+}
 
 class Request extends OutputStream {
     public String method;
@@ -142,19 +156,7 @@ record Account2(String firstName,
     }
 }
 
-
 public class Main {
     public static void main(String[] argv) {
-        System.out.println((new AAccount () {
-            public String getFirstName () {
-                return "a";
-            }
-
-            public String getLastName () {
-                return "b";
-            }
-        }).getFullName());
-        System.out.println((new Account2("a", "b")).getFullName());
     }
 }
-

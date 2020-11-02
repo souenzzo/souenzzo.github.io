@@ -20,10 +20,8 @@
                [:script
                 {:src "/sample/client.js"}]]]]
     {:body    (->> html
-                   (h/html
-                     {:mode :html}
-                     (h/raw "<!DOCTYPE html>"))
-                   str)
+                   (h/html {:mode :html})
+                   (str "<!DOCTYPE html>\n"))
      :headers {"Content-Type"            (mime/default-mime-types "html")
                "Content-Security-Policy" ""}
      :status  200}))

@@ -4,17 +4,14 @@
             [re-frame.core :as rf]
             [clojure.core.async :as async]
             [com.wsscode.pathom.connect :as pc]
-            [clojure.spec.alpha :as s]
-            [edn-query-language.core :as eql]))
+            [clojure.spec.alpha :as s]))
 
 
 (defn on-result
   [db [_ tx tree]]
-  (prn [:db db :tx tx :tree tree])
-  (refdb/merge-tree
-    db
-    tree
-    (eql/query->ast tx)))
+  (refdb/tree->db {::refdb/db   db
+                   ::refdb/tree tree
+                   ::refdb/tx   tx}))
 
 
 (defn env-placeholder-reader-v2
@@ -45,7 +42,16 @@
                                                              env-placeholder-reader-v2]
                                    ::p/placeholder-prefixes #{">"}}}))
 
-(defn eql
+(defn select-sub
+  [db [_ query]]
+  (let [tree (refdb/db->tree {::refdb/db    db
+                              ::refdb/query query})]
+    tree))
+(defn parser-event-fx [{::keys [parser-fx]}]
+  (fn [_ [_ tx]]
+    {parser-fx tx}))
+
+(defn parser-fx
   [{::keys [on-result]
     :as    env}]
   (fn [tx]
@@ -53,5 +59,5 @@
       (async/go
         (rf/dispatch [on-result tx (async/<! tree)])))))
 
-(s/fdef eql
+(s/fdef parser-fx
         :args (s/cat :env (s/keys :req [::on-result])))

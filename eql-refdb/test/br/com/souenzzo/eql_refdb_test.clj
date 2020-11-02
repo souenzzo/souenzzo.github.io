@@ -199,50 +199,50 @@
 
 (deftest merge-tree-test
   (is (= {:a 33}
-         (refdb/merge-tree {:a 42}
-                           {:a 33}
-                           (eql/query->ast [:a]))))
+         (refdb/tree->db {::refdb/db   {:a 42}
+                          ::refdb/tree {:a 33}
+                          ::refdb/tx   [:a]})))
   (is (= {:a 42}
-         (refdb/merge-tree {:a 42}
-                           {:a 33}
-                           (eql/query->ast [:b]))))
+         (refdb/tree->db {::refdb/db   {:a 42}
+                          ::refdb/tree {:a 33}
+                          ::refdb/tx   [:b]})))
   (is (= {:a 33}
-         (refdb/merge-tree {:a 42}
-                           `{inc {:a 33}}
-                           (eql/query->ast `[{(inc {}) [:a]}]))))
+         (refdb/tree->db {::refdb/db   {:a 42}
+                          ::refdb/tree `{inc {:a 33}}
+                          ::refdb/tx   `[{(inc {}) [:a]}]})))
   (is (= {:a {:b 33}}
-         (refdb/merge-tree {:a {:b 42}}
-                           `{:a {:b 33}}
-                           (eql/query->ast `[{:a [:b]}]))))
+         (refdb/tree->db {::refdb/db   {:a {:b 42}}
+                          ::refdb/tree `{:a {:b 33}}
+                          ::refdb/tx   `[{:a [:b]}]})))
   (is (= {:a {:b 33}}
-         (refdb/merge-tree {}
-                           `{:a {:b 33}}
-                           (eql/query->ast `[{:a [:b]}]))))
+         (refdb/tree->db {::refdb/db   {}
+                          ::refdb/tree `{:a {:b 33}}
+                          ::refdb/tx   `[{:a [:b]}]})))
   (is (= {:a {:b 33
               :c 22}}
-         (refdb/merge-tree {:a {:b 42
-                                :c 22}}
-                           `{:a {:b 33}}
-                           (eql/query->ast `[{:a [:b]}]))))
+         (refdb/tree->db {::refdb/db   {:a {:b 42
+                                            :c 22}}
+                          ::refdb/tree `{:a {:b 33}}
+                          ::refdb/tx   `[{:a [:b]}]})))
   (is (= {:a {:b 33}}
-         (refdb/merge-tree {:a {:b 42
-                                :c 22}}
-                           `{:a {:b 33}}
-                           (eql/query->ast `[:a]))))
+         (refdb/tree->db {::refdb/db   {:a {:b 42
+                                            :c 22}}
+                          ::refdb/tree `{:a {:b 33}}
+                          ::refdb/tx   `[:a]})))
   (is (= {:a ^:ref [:b 33]
           :b {33 {:b 33
                   :c 22}}}
-         (refdb/merge-tree {}
-                           `{:a {:b 33
-                                 :c 22}}
-                           (eql/query->ast [^{:index :b} {:a [:b
-                                                              :c]}]))))
+         (refdb/tree->db {::refdb/db   {}
+                          ::refdb/tree `{:a {:b 33
+                                             :c 22}}
+                          ::refdb/tx   [^{:index :b} {:a [:b
+                                                          :c]}]})))
   (is (= {:a [^:ref [:b 33]]
           :b {33 {:b 33
                   :c 22}}}
-         (refdb/merge-tree {}
-                           `{:a [{:b 33
-                                  :c 22}]}
-                           (eql/query->ast [^{:index :b} {:a [:b
-                                                              :c]}])))))
+         (refdb/tree->db {::refdb/db    {}
+                          ::refdb/tree  `{:a [{:b 33
+                                               :c 22}]}
+                          ::refdb/query [^{:index :b} {:a [:b
+                                                           :c]}]}))))
 

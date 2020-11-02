@@ -4,6 +4,10 @@ Normalize and merge trees using [EQL](https://edn-query-language.org/) queries
 
 Inspirated by [Fulcro Client Database](http://book.fulcrologic.com/#_fulcro_client_database) format, but relaxed. 
 
+# hacking 
+
+Clone the repo and run `clj -A:cljs:dev -M -m sample.dev-server`
+
 # Examples
 
 ```clojure
