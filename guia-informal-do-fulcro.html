@@ -43,7 +43,7 @@
   {:query [:todo/id
            :todo/text
            :todo/done?]
-   :ident :perfil/id}
+   :ident :todo/id}
   (dom/li
     (dom/p (:todo/text props))
     (dom/button (if (:todo/done? props)
@@ -74,6 +74,43 @@
   (let [app (app/fulcro-app)]
     (app/mount! Root "app")))
 ```
+
+
+    # Ident's
+
+    Os ident's do fulcro servem para normalizar o banco.
+
+    Quando vc faz um `(df/load app :todos/my-todos LiTodo)` será enviado uma query para o servidor no seguinte formato:
+
+    ```
+    [{:todos/my-todos [:todo/id
+                       :todo/text
+                       :todo/done?]}]
+    ```
+    Essa query deve retornar um dado com formato parecido com
+    ```
+    {:todos/my-todos [{:todo/id    1
+                       :todo/text  "a"
+                       :todo/done? false}
+                      {:todo/id    2
+                       :todo/text  "b"
+                       :todo/done? true}]}
+    ```
+
+    Uma vez que  `LiTodo` possui `:ident :todo/id`, o fulcro irá normalizar seus elementos via `:todo/id`
+
+    No "app-db", ficará assim:
+
+    ```
+    :todos/my-todos [[:todo/id 1]
+                     [:todo/id 2]]
+    :todo/id {1 {:todo/id    1
+                 :todo/text  "a"
+                 :todo/done? false}
+              2 {:todo/id    2
+                 :todo/text  "b"
+                 :todo/done? true}}
+    ```
 
 
 
