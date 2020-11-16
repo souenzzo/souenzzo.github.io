@@ -22,6 +22,9 @@
                                  offset length
                                  StandardCharsets/UTF_8)})))
 
+(defn send-mag
+  [{::keys [msg]}])
+
 (comment
   ;; cliente
   (future (pp/pprint (create-server {::port 8888 ::max-size 1e3})))
