@@ -1,3 +1,9 @@
 [submodule "todo-demo"]
 	path = todo-demo
 	url = git@github.com:souenzzo/todo-demo.git
+
+[submodule "realworld"]
+	path = openapi-connect/resources/realworld
+	url = git@github.com:gothinkster/realworld.git
+
+
