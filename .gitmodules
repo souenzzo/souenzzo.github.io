@@ -5,5 +5,3 @@
 [submodule "realworld"]
 	path = openapi-connect/resources/realworld
 	url = git@github.com:gothinkster/realworld.git
-
-
