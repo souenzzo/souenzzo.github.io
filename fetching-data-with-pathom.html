@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <!-- Static Metadata -->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
+    <meta property="og:type" content="article"/>
+    <meta name="twitter:card" content="summary"/>
+    <!-- Metadata about me -->
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+    <!-- Title metadata -->
+    <title>Fetching data with pathom</title>
+    <meta name="twitter:title" content="Fetching data with pathom"/>
+    <meta property="og:title" content="Fetching data with pathom"/>
+    <!-- Description metadata -->
+    <meta name="twitter:description"
+          content="Fetching data with pathom"/>
+    <meta name="Description"
+          content="Fetching data with pathom"/>
+    <meta name="description"
+          content="Fetching data with pathom">
+    <meta property="og:description"
+          content="Fetching data with pathom"/>
+    <!-- https://jrl.ninja/etc/1 -->
+    <style>
+        section {
+          max-width: 38em;
+          padding: 0.3em;
+          margin: auto;
+        }
+        p {
+          padding: 0.3em;
+          line-height: 1.3em;
+        }
+        img {
+          border-radius: 50%;
+          width: 2em;
+          padding: 1em;
+          height: 2em;
+        }
+        aside {
+          display: flex;
+          align-items: center;
+          border: 1px solid black;
+          width: max-content;
+          border-radius: 1em;
+          padding: 0.5em;
+        }
+        details {
+          background-color: antiquewhite;
+        }
+        code {
+          background-color: antiquewhite;
+          white-space: pre;
+        }
+        .add {
+          background-color: lime;
+        }
+    </style>
+</head>
+<body>
+<pre>
+    # Fetching data with pathom
+    - Naive resolver
+    (pc/defresolver feed [env input]
+       {::pc/output [:conduit.feed/]})
+</pre>
+<footer>
+    <p>
+        In case of doubts or errors,
+        <a href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report an issue</a>
+    </p>
+    <p>If you prefer <a href="https://t.me/souenzzo">talk directly with me</a></p>
+</footer>
+</body>
+</html>
