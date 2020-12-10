@@ -1,15 +1,24 @@
 (ns br.com.souenzzo.conduit.ssr
-  (:require [io.pedestal.http :as http]
-            [hiccup2.core :as h]
-            [ring.util.mime-type :as mime]
+  (:require [cheshire.core :as json]
+            [clojure.instant :as instant]
+            [clojure.java.io :as io]
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.interface.smart-map :as psm]
-            [io.pedestal.http.route :as route])
-  (:import (java.net URI)
+            [hiccup2.core :as h]
+            [io.pedestal.http :as http]
+            [io.pedestal.http.route :as route]
+            [ring.util.mime-type :as mime])
+  (:import (java.net URI URLEncoder)
            (java.nio.charset StandardCharsets)))
 
-(def utf-8 (str (StandardCharsets/UTF_8)))
+(def ^String utf-8 (str (StandardCharsets/UTF_8)))
+
+(set! *warn-on-reflection* true)
+
+(defn encode-uri-component
+  [x]
+  (URLEncoder/encode (str x) utf-8))
 
 (defn href
   [route-name & opts]
@@ -33,7 +42,8 @@
   [_]
   [:nav.navbar.navbar-light
    [:div.container
-    [:a.navbar-brand {:href "index.html"} "conduit"]
+    [:a.navbar-brand {:href (href :conduit.page/home)}
+     "conduit"]
     [:ul.nav.navbar-nav.pull-xs-right
      [:li.nav-item
       [:a.nav-link.active {:href (href :conduit.page/home)}
@@ -61,6 +71,41 @@
      [:a {:href "https://thinkster.io"} "Thinkster"]
      ". Code &amp; design licensed under MIT."]]])
 
+(defn ui-register
+  [req]
+  {:html   [:html
+            (ui-head req)
+            [:body
+             (ui-nav req)
+             [:div.auth-page
+              [:div.container.page
+               [:div.row
+                [:div.col-md-6.offset-md-3.col-xs-12
+                 [:h1.text-xs-center "Sign up"]
+                 [:p.text-xs-center
+                  [:a {:href (href :conduit.page/login)}
+                   "Have an account?"]]
+                 #_[:ul.error-messages
+                    [:li "That email is already taken"]]
+                 [:form
+                  {:method "POST"
+                   :action (href :conduit.api/mutation
+                                 :params {:sym 'conduit.operation/register})}
+                  [:fieldset.form-group
+                   [:input.form-control.form-control-lg
+                    {:type        "text"
+                     :placeholder "Your Name"}]]
+                  [:fieldset.form-group
+                   [:input.form-control.form-control-lg
+                    {:type        "text"
+                     :placeholder "Email"}]]
+                  [:fieldset.form-group
+                   [:input.form-control.form-control-lg
+                    {:type        "password"
+                     :placeholder "Password"}]]
+                  [:button.btn.btn-lg.btn-primary.pull-xs-right "Sign up"]]]]]]
+             (ui-footer req)]]
+   :status 200})
 
 (defn ui-home
   [req]
@@ -80,37 +125,33 @@
                    [:div.feed-toggle
                     [:ul.nav.nav-pills.outline-active
                      [:li.nav-item
-                      [:a.nav-link.disabled {:href ""}
+                      [:a.nav-link.disabled {:href  (href :conduit.page/home)}
                        "Your Feed"]]
                      [:li.nav-item
-                      [:a.nav-link.active {:href ""}
+                      [:a.nav-link.active {:href (href :conduit.page/home)}
                        "Global Feed"]]]]
-                   (for [{:conduit.profile/keys [username image]
-                          :conduit.article/keys [tagList
-                                                 title
-                                                 description
-                                                 slug
-                                                 favoritesCount
-                                                 favorited
-                                                 createdAt]} articles]
+                   (for [{:conduit.article/keys [tags title description slug favorites-count
+                                                 author created-at]} articles
+                         :let [{:conduit.profile/keys [username image]} author]]
                      [:div.article-preview
                       [:div.article-meta
-                       [:a {:href "profile.html"}
+                       [:a {:href (href :conduit.page/profile
+                                        :params {:username username})}
                         [:img {:src image}]]
                        [:div.info
                         [:a.author {:href (href :conduit.page/profile
                                                 :params {:username username})}
                          username]
-                        [:span.date (str createdAt)]]
+                        [:span.date (str created-at)]]
                        [:button.btn.btn-outline-primary.btn-sm.pull-xs-right
-                        [:i.ion-heart] favoritesCount]]
+                        [:i.ion-heart] favorites-count]]
                       [:a.preview-link {:href (href :conduit.page/article
                                                     :params {:slug slug})}
                        [:h1 title]
                        [:p description]
                        [:span "Read more..."]
                        [:ul.tag-list
-                        (for [tag tagList]
+                        (for [{:conduit.tag/keys [tag]} tags]
                           [:li.tag-default.tag-pill.tag-outline.ng-binding.ng-scope
                            tag])]]])]
                   [:div.col-md-3
@@ -124,24 +165,52 @@
                (ui-footer req)]]
      :status 200}))
 
+(pco/defresolver operation:GetArticles []
+  {::pco/output [{:conduit.feed/articles [{:conduit.article/author [:conduit.profile/username
+                                                                    :conduit.profile/bio
+                                                                    :conduit.profile/image
+                                                                    :conduit.profile/following?]}
+                                          {:conduit.article/tags [:conduit.tag/tag]}
+                                          :conduit.article/body
+                                          :conduit.article/created-at
+                                          :conduit.article/description
+                                          :conduit.article/favorited?
+                                          :conduit.article/favorites-count
+                                          :conduit.article/slug
+                                          :conduit.article/title
+                                          :conduit.article/updated-at]}
+                 :conduit.feed/articles-count]}
+  (let [{:keys [articlesCount articles]} (-> "https://conduit.productionready.io/api/articles"
+                                             io/reader
+                                             (json/parse-stream true))]
+    {:conduit.feed/articles       (for [{:keys [description slug updatedAt createdAt title author favoritesCount body favorited tagList]} articles]
+                                    {:conduit.article/slug            slug
+                                     :conduit.article/description     description
+                                     :conduit.article/title           title
+                                     :conduit.article/favorites-count favoritesCount
+                                     :conduit.article/updated-at      (instant/read-instant-date updatedAt)
+                                     :conduit.article/body            body
+                                     :conduit.article/favorited?      favorited
+                                     :conduit.article/created-at      (instant/read-instant-date createdAt)
+                                     :conduit.article/author          (let [{:keys [username bio image following]} author]
+                                                                        {:conduit.profile/username   username
+                                                                         :conduit.profile/bio        bio
+                                                                         :conduit.profile/image      image
+                                                                         :conduit.profile/following? following})
+                                     :conduit.article/tags            (for [tag tagList]
+                                                                        {:conduit.tag/tag tag})})
+     :conduit.feed/articles-count articlesCount}))
 
-(pco/defresolver feed:articles []
-  {:conduit.feed/articles [{:conduit.profile/username       "Eric Simons"
-                            :conduit.profile/image          "http://i.imgur.com/Qr71crq.jpg"
-                            :conduit.article/createdAt      "January 20th"
-                            :conduit.article/tagList        ["a" "b"]
-                            :conduit.article/favorited      false
-                            :conduit.article/favoritesCount 29
-                            :conduit.article/title          "How to build webapps that scale"
-                            :conduit.article/slug           "1"
-                            :conduit.article/description    "This is the description for the post."}]})
-(pco/defresolver feed:tags []
-  {:conduit.feed/tags [{:conduit.tag/tag "abc"}]})
+(pco/defresolver operation:GetTags []
+  {::pco/output [{:conduit.feed/tags [:conduit.tag/tag]}]}
+  (let [{:keys [tags]} (-> "https://conduit.productionready.io/api/tags"
+                           io/reader
+                           (json/parse-stream true))]
+    {:conduit.feed/tags (for [tag tags]
+                          {:conduit.tag/tag tag})}))
 
 (def env
-  (pci/register [feed:articles
-                 feed:tags]))
-
+  (pci/register [operation:GetTags operation:GetArticles]))
 
 (def merge-env
   {:name  ::merge-env
@@ -166,13 +235,13 @@
       :route-name :conduit.page/editor]
      ["/settings" :get [merge-env render-hiccup ui-home]
       :route-name :conduit.page/settings]
-     ["/register" :get [merge-env render-hiccup ui-home]
+     ["/register" :get [merge-env render-hiccup ui-register]
       :route-name :conduit.page/register]
      ["/login" :get [merge-env render-hiccup ui-home]
       :route-name :conduit.page/login]
      ["/article/:slug" :get [merge-env render-hiccup ui-home]
       :route-name :conduit.page/article]
-     ["/@:username" :get [merge-env render-hiccup ui-home]
+     ["/profile/:username" :get [merge-env render-hiccup ui-home]
       :route-name :conduit.page/profile]})
 
 (def service
