@@ -5,10 +5,14 @@
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.interface.smart-map :as psm]
+            [com.wsscode.pathom3.interface.eql :as p.eql]
             [hiccup2.core :as h]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
-            [ring.util.mime-type :as mime])
+            [ring.util.mime-type :as mime]
+            [io.pedestal.http.body-params :as body-params]
+            [io.pedestal.http.ring-middlewares :as middlewares]
+            [io.pedestal.http.csrf :as csrf])
   (:import (java.net URI URLEncoder)
            (java.nio.charset StandardCharsets)))
 
@@ -23,6 +27,13 @@
 (defn href
   [route-name & opts]
   (URI. (apply route/url-for route-name opts)))
+
+(defn action
+  [{::csrf/keys [anti-forgery-token]} sym]
+  {:method "POST"
+   :action (href :conduit.api/mutation
+                 :params {:sym                                  sym
+                          (keyword csrf/anti-forgery-token-str) anti-forgery-token})})
 
 (defn ui-head
   [_]
@@ -72,7 +83,8 @@
      ". Code &amp; design licensed under MIT."]]])
 
 (defn ui-register
-  [req]
+  [{::csrf/keys [anti-forgery-token]
+    :as         req}]
   {:html   [:html
             (ui-head req)
             [:body
@@ -88,9 +100,7 @@
                  #_[:ul.error-messages
                     [:li "That email is already taken"]]
                  [:form
-                  {:method "POST"
-                   :action (href :conduit.api/mutation
-                                 :params {:sym 'conduit.operation/register})}
+                  (action req 'conduit.operation/register)
                   [:fieldset.form-group
                    [:input.form-control.form-control-lg
                     {:type        "text"
@@ -125,7 +135,7 @@
                    [:div.feed-toggle
                     [:ul.nav.nav-pills.outline-active
                      [:li.nav-item
-                      [:a.nav-link.disabled {:href  (href :conduit.page/home)}
+                      [:a.nav-link.disabled {:href (href :conduit.page/home)}
                        "Your Feed"]]
                      [:li.nav-item
                       [:a.nav-link.active {:href (href :conduit.page/home)}
@@ -209,6 +219,11 @@
     {:conduit.feed/tags (for [tag tags]
                           {:conduit.tag/tag tag})}))
 
+(defn std-mutation
+  [req]
+  {:status  303
+   :headers {"Location" "/"}})
+
 (def env
   (pci/register [operation:GetTags operation:GetArticles]))
 
@@ -228,21 +243,31 @@
                   (assoc-in [:response :headers "Content-Type"] (mime/default-mime-types "html")))
               ctx))})
 
+(def auth
+  [(body-params/body-params)
+   (middlewares/session)
+   (csrf/anti-forgery {:read-token (fn [{:keys [query-params]}]
+                                     (get query-params (keyword csrf/anti-forgery-token-str)))})])
+
 (def routes
-  `#{["/" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/home]
-     ["/editor" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/editor]
-     ["/settings" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/settings]
-     ["/register" :get [merge-env render-hiccup ui-register]
-      :route-name :conduit.page/register]
-     ["/login" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/login]
-     ["/article/:slug" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/article]
-     ["/profile/:username" :get [merge-env render-hiccup ui-home]
-      :route-name :conduit.page/profile]})
+  #{["/" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/home]
+    ["/editor" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/editor]
+    ["/settings" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/settings]
+    ["/register" :get (conj auth merge-env render-hiccup ui-register)
+     :route-name :conduit.page/register]
+    ["/login" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/login]
+    ["/article/:slug" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/article]
+    ["/profile/:username" :get (conj auth merge-env render-hiccup ui-home)
+     :route-name :conduit.page/profile]
+    ["/api/*sym" :post (conj auth
+                             merge-env
+                             std-mutation)
+     :route-name :conduit.api/mutation]})
 
 (def service
   (-> {::http/join?  false
