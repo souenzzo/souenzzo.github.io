@@ -12,7 +12,8 @@
             [ring.util.mime-type :as mime]
             [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.ring-middlewares :as middlewares]
-            [io.pedestal.http.csrf :as csrf])
+            [io.pedestal.http.csrf :as csrf]
+            [clojure.string :as string])
   (:import (java.net URI URLEncoder)
            (java.nio.charset StandardCharsets)))
 
@@ -224,13 +225,6 @@
   {:status  303
    :headers {"Location" "/"}})
 
-(def env
-  (pci/register [operation:GetTags operation:GetArticles]))
-
-(def merge-env
-  {:name  ::merge-env
-   :enter (fn [ctx]
-            (update ctx :request merge env))})
 (def render-hiccup
   {:name  ::render-hiccup
    :leave (fn [{:keys [response]
@@ -243,41 +237,64 @@
                   (assoc-in [:response :headers "Content-Type"] (mime/default-mime-types "html")))
               ctx))})
 
-(def auth
-  [(body-params/body-params)
-   (middlewares/session)
-   (csrf/anti-forgery {:read-token (fn [{:keys [query-params]}]
-                                     (get query-params (keyword csrf/anti-forgery-token-str)))})])
 
-(def routes
-  #{["/" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/home]
-    ["/editor" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/editor]
-    ["/settings" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/settings]
-    ["/register" :get (conj auth merge-env render-hiccup ui-register)
-     :route-name :conduit.page/register]
-    ["/login" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/login]
-    ["/article/:slug" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/article]
-    ["/profile/:username" :get (conj auth merge-env render-hiccup ui-home)
-     :route-name :conduit.page/profile]
-    ["/api/*sym" :post (conj auth
-                             merge-env
-                             std-mutation)
-     :route-name :conduit.api/mutation]})
+(pco/defresolver routes [{::keys [operations]}]
+  {::pco/output [::routes]}
+  (let [auth [(body-params/body-params)
+              (middlewares/session)
+              (csrf/anti-forgery {:read-token (fn [{:keys [query-params]}]
+                                                (get query-params (keyword csrf/anti-forgery-token-str)))})]
+        idx (pci/register operations)
+        merge-env {:name  ::merge-env
+                   :enter (fn [ctx]
+                            (update ctx :request merge idx))}
+        routes #{["/" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/home]
+                 ["/editor" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/editor]
+                 ["/settings" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/settings]
+                 ["/register" :get (conj auth merge-env render-hiccup ui-register)
+                  :route-name :conduit.page/register]
+                 ["/login" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/login]
+                 ["/article/:slug" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/article]
+                 ["/profile/:username" :get (conj auth merge-env render-hiccup ui-home)
+                  :route-name :conduit.page/profile]
+                 ["/api/*sym" :post (conj auth
+                                          merge-env
+                                          std-mutation)
+                  :route-name :conduit.api/mutation]}]
+    {::routes routes}))
 
-(def service
-  (-> {::http/join?  false
-       ::http/port   8080
-       ::http/routes (fn []
-                       (route/expand-routes @#'routes))
-       ::http/type   :jetty}
-      http/default-interceptors
-      http/dev-interceptors))
+(pco/defresolver service [{::keys [operations]}]
+  {::pco/output [::service]}
+  (let [routes (fn []
+                 (-> (p.eql/process (pci/register operations)
+                                    [::routes])
+                     ::routes
+                     route/expand-routes))]
+    {::service (-> {::http/join?  false
+                    ::http/port   8080
+                    ::http/routes routes
+                    ::http/type   :jetty}
+                   http/default-interceptors
+                   http/dev-interceptors)}))
 
+
+(defn operations
+  []
+  [service
+   routes
+   operation:GetTags
+   operation:GetArticles
+   (pco/resolver `operations
+                 {::pco/output [::operations]}
+                 (fn [_ _]
+                   {::operations (operations)}))])
+
+(defonce -env (atom nil))
 
 (defonce state (atom nil))
 
@@ -286,6 +303,8 @@
   (swap! state
          (fn [st]
            (some-> st http/stop)
-           (-> service
+           (-> (reset! -env (pci/register (operations)))
+               (p.eql/process [::service])
+               ::service
                http/create-server
                http/start))))
