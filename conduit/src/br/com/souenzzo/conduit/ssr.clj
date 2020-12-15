@@ -4,42 +4,19 @@
             [clojure.java.io :as io]
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
-            [com.wsscode.pathom3.interface.smart-map :as psm]
             [com.wsscode.pathom3.interface.eql :as p.eql]
-            [hiccup2.core :as h]
+            [com.wsscode.pathom3.interface.smart-map :as psm]
             [io.pedestal.http :as http]
-            [io.pedestal.http.route :as route]
-            [ring.util.mime-type :as mime]
             [io.pedestal.http.body-params :as body-params]
-            [io.pedestal.http.ring-middlewares :as middlewares]
+            [br.com.souenzzo.hiete :as hiete]
             [io.pedestal.http.csrf :as csrf]
-            [clojure.string :as string])
-  (:import (java.net URI URLEncoder)
-           (java.nio.charset StandardCharsets)))
-
-(def ^String utf-8 (str (StandardCharsets/UTF_8)))
-
-(set! *warn-on-reflection* true)
-
-(defn encode-uri-component
-  [x]
-  (URLEncoder/encode (str x) utf-8))
-
-(defn href
-  [route-name & opts]
-  (URI. (apply route/url-for route-name opts)))
-
-(defn action
-  [{::csrf/keys [anti-forgery-token]} sym]
-  {:method "POST"
-   :action (href :conduit.api/mutation
-                 :params {:sym                                  sym
-                          (keyword csrf/anti-forgery-token-str) anti-forgery-token})})
+            [io.pedestal.http.ring-middlewares :as middlewares]
+            [io.pedestal.http.route :as route]))
 
 (defn ui-head
   [_]
   [:head
-   [:meta {:charset utf-8}]
+   [:meta {:charset hiete/utf-8}]
    [:title "Conduit"]
    [:link {:href "https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
            :rel  "stylesheet"
@@ -51,32 +28,34 @@
            :href "https://demo.productionready.io/main.css"}]])
 
 (defn ui-nav
-  [_]
+  [req]
   [:nav.navbar.navbar-light
    [:div.container
-    [:a.navbar-brand {:href (href :conduit.page/home)}
+    [:a.navbar-brand {:href (hiete/href :conduit.page/home)}
      "conduit"]
     [:ul.nav.navbar-nav.pull-xs-right
-     [:li.nav-item
-      [:a.nav-link.active {:href (href :conduit.page/home)}
-       "Home"]]
-     [:li.nav-item
-      [:a.nav-link {:href (href :conduit.page/editor)}
-       [:i.ion-compose]
-       (str " " "New Post")]]
-     [:li.nav-item
-      [:a.nav-link {:href (href :conduit.page/settings)}
-       [:i.ion-gear-a]
-       (str " " "Settings")]]
-     [:li.nav-item
-      [:a.nav-link {:href (href :conduit.page/register)}
-       "Sign up"]]]]])
+     (for [[label route-name] [["Home" :conduit.page/home]
+                               ["Sign in" :conduit.page/login]
+                               ["Sign up" :conduit.page/register]]]
+       [:li.nav-item
+        {:class (when (= route-name (:route-name hiete/*route*))
+                  "active")}
+        [:a.nav-link {:href (hiete/href route-name)}
+         label]])
+     #_[:li.nav-item
+        [:a.nav-link {:href (hiete/href :conduit.page/editor)}
+         [:i.ion-compose]
+         (str " " "New Post")]]
+     #_[:li.nav-item
+        [:a.nav-link {:href (hiete/href :conduit.page/settings)}
+         [:i.ion-gear-a]
+         (str " " "Settings")]]]]])
 
 (defn ui-footer
   [_]
   [:footer
    [:div.container
-    [:a.logo-font {:href (href :conduit.page/home)}
+    [:a.logo-font {:href (hiete/href :conduit.page/home)}
      "conduit"]
     [:span.attribution
      "An interactive learning project from"
@@ -84,8 +63,7 @@
      ". Code &amp; design licensed under MIT."]]])
 
 (defn ui-register
-  [{::csrf/keys [anti-forgery-token]
-    :as         req}]
+  [req]
   {:html   [:html
             (ui-head req)
             [:body
@@ -96,12 +74,12 @@
                 [:div.col-md-6.offset-md-3.col-xs-12
                  [:h1.text-xs-center "Sign up"]
                  [:p.text-xs-center
-                  [:a {:href (href :conduit.page/login)}
+                  [:a {:href (hiete/href :conduit.page/login)}
                    "Have an account?"]]
                  #_[:ul.error-messages
                     [:li "That email is already taken"]]
                  [:form
-                  (action req 'conduit.operation/register)
+                  (hiete/mutation req 'conduit.operation/register)
                   [:fieldset.form-group
                    [:input.form-control.form-control-lg
                     {:type        "text"
@@ -117,6 +95,38 @@
                   [:button.btn.btn-lg.btn-primary.pull-xs-right "Sign up"]]]]]]
              (ui-footer req)]]
    :status 200})
+
+
+(defn ui-login
+  [req]
+  {:html   [:html
+            (ui-head req)
+            [:body
+             (ui-nav req)
+             [:div.auth-page
+              [:div.container.page
+               [:div.row
+                [:div.col-md-6.offset-md-3.col-xs-12
+                 [:h1.text-xs-center "Sign in"]
+                 [:p.text-xs-center
+                  [:a {:href (hiete/href :conduit.page/register)}
+                   "Need an account?"]]
+                 #_[:ul.error-messages
+                    [:li "That email is already taken"]]
+                 [:form
+                  (hiete/mutation req 'conduit.operation/login)
+                  [:fieldset.form-group
+                   [:input.form-control.form-control-lg
+                    {:type        "text"
+                     :placeholder "Email"}]]
+                  [:fieldset.form-group
+                   [:input.form-control.form-control-lg
+                    {:type        "password"
+                     :placeholder "Password"}]]
+                  [:button.btn.btn-lg.btn-primary.pull-xs-right "Sign in"]]]]]]
+             (ui-footer req)]]
+   :status 200})
+
 
 (defn ui-home
   [req]
@@ -136,28 +146,28 @@
                    [:div.feed-toggle
                     [:ul.nav.nav-pills.outline-active
                      [:li.nav-item
-                      [:a.nav-link.disabled {:href (href :conduit.page/home)}
+                      [:a.nav-link.disabled {:href (hiete/href :conduit.page/home)}
                        "Your Feed"]]
                      [:li.nav-item
-                      [:a.nav-link.active {:href (href :conduit.page/home)}
+                      [:a.nav-link.active {:href (hiete/href :conduit.page/home)}
                        "Global Feed"]]]]
                    (for [{:conduit.article/keys [tags title description slug favorites-count
                                                  author created-at]} articles
                          :let [{:conduit.profile/keys [username image]} author]]
                      [:div.article-preview
                       [:div.article-meta
-                       [:a {:href (href :conduit.page/profile
-                                        :params {:username username})}
+                       [:a {:href (hiete/href :conduit.page/profile
+                                              :params {:username username})}
                         [:img {:src image}]]
                        [:div.info
-                        [:a.author {:href (href :conduit.page/profile
-                                                :params {:username username})}
+                        [:a.author {:href (hiete/href :conduit.page/profile
+                                                      :params {:username username})}
                          username]
                         [:span.date (str created-at)]]
                        [:button.btn.btn-outline-primary.btn-sm.pull-xs-right
                         [:i.ion-heart] favorites-count]]
-                      [:a.preview-link {:href (href :conduit.page/article
-                                                    :params {:slug slug})}
+                      [:a.preview-link {:href (hiete/href :conduit.page/article
+                                                          :params {:slug slug})}
                        [:h1 title]
                        [:p description]
                        [:span "Read more..."]
@@ -170,8 +180,8 @@
                     [:p "Popular Tags"]
                     [:div.tag-list
                      (for [{:conduit.tag/keys [tag]} tags]
-                       [:a.tag-pill.tag-default {:href (href :conduit.page/home
-                                                             :params {:tag tag})}
+                       [:a.tag-pill.tag-default {:href (hiete/href :conduit.page/home
+                                                                   :params {:tag tag})}
                         tag])]]]]]]
                (ui-footer req)]]
      :status 200}))
@@ -200,9 +210,9 @@
                                      :conduit.article/title           title
                                      :conduit.article/favorites-count favoritesCount
                                      :conduit.article/updated-at      (instant/read-instant-date updatedAt)
+                                     :conduit.article/created-at      (instant/read-instant-date createdAt)
                                      :conduit.article/body            body
                                      :conduit.article/favorited?      favorited
-                                     :conduit.article/created-at      (instant/read-instant-date createdAt)
                                      :conduit.article/author          (let [{:keys [username bio image following]} author]
                                                                         {:conduit.profile/username   username
                                                                          :conduit.profile/bio        bio
@@ -221,64 +231,48 @@
                           {:conduit.tag/tag tag})}))
 
 (defn std-mutation
-  [req]
-  {:status  303
-   :headers {"Location" "/"}})
-
-(def render-hiccup
-  {:name  ::render-hiccup
-   :leave (fn [{:keys [response]
-                :as   ctx}]
-            (if-let [body (:html response)]
-              (-> ctx
-                  (assoc-in [:response :body] (->> body
-                                                   (h/html {:mode :html})
-                                                   (str "<!DOCTYPE html>\n")))
-                  (assoc-in [:response :headers "Content-Type"] (mime/default-mime-types "html")))
-              ctx))})
-
+  [{:keys []
+    :as   env}]
+  (let [tx []
+        result (p.eql/process env tx)]
+    {:status  303
+     :headers {"Location" "/"}}))
 
 (pco/defresolver routes [{::keys [operations]}]
   {::pco/output [::routes]}
   (let [auth [(body-params/body-params)
               (middlewares/session)
-              (csrf/anti-forgery {:read-token (fn [{:keys [query-params]}]
-                                                (get query-params (keyword csrf/anti-forgery-token-str)))})]
+              (csrf/anti-forgery {:read-token hiete/read-token})]
         idx (pci/register operations)
         merge-env {:name  ::merge-env
                    :enter (fn [ctx]
                             (update ctx :request merge idx))}
-        routes #{["/" :get (conj auth merge-env render-hiccup ui-home)
+        routes #{["/" :get (conj auth merge-env hiete/render-hiccup ui-home)
                   :route-name :conduit.page/home]
-                 ["/editor" :get (conj auth merge-env render-hiccup ui-home)
+                 ["/editor" :get (conj auth merge-env hiete/render-hiccup ui-home)
                   :route-name :conduit.page/editor]
-                 ["/settings" :get (conj auth merge-env render-hiccup ui-home)
+                 ["/settings" :get (conj auth merge-env hiete/render-hiccup ui-home)
                   :route-name :conduit.page/settings]
-                 ["/register" :get (conj auth merge-env render-hiccup ui-register)
+                 ["/register" :get (conj auth merge-env hiete/render-hiccup ui-register)
                   :route-name :conduit.page/register]
-                 ["/login" :get (conj auth merge-env render-hiccup ui-home)
+                 ["/login" :get (conj auth merge-env hiete/render-hiccup ui-login)
                   :route-name :conduit.page/login]
-                 ["/article/:slug" :get (conj auth merge-env render-hiccup ui-home)
+                 ["/article/:slug" :get (conj auth merge-env hiete/render-hiccup ui-home)
                   :route-name :conduit.page/article]
-                 ["/profile/:username" :get (conj auth merge-env render-hiccup ui-home)
+                 ["/profile/:username" :get (conj auth merge-env hiete/render-hiccup ui-home)
                   :route-name :conduit.page/profile]
-                 ["/api/*sym" :post (conj auth
-                                          merge-env
-                                          std-mutation)
+                 ["/api/*sym" :post (conj auth merge-env std-mutation)
                   :route-name :conduit.api/mutation]}]
     {::routes routes}))
 
 (pco/defresolver service [{::keys [operations]}]
   {::pco/output [::service]}
   (let [routes (fn []
-                 (-> (p.eql/process (pci/register operations)
-                                    [::routes])
+                 (-> (pci/register operations)
+                     (p.eql/process [::routes])
                      ::routes
                      route/expand-routes))]
-    {::service (-> {::http/join?  false
-                    ::http/port   8080
-                    ::http/routes routes
-                    ::http/type   :jetty}
+    {::service (-> {::http/routes routes}
                    http/default-interceptors
                    http/dev-interceptors)}))
 
@@ -306,5 +300,8 @@
            (-> (reset! -env (pci/register (operations)))
                (p.eql/process [::service])
                ::service
+               (assoc ::http/join? false
+                      ::http/port 8080
+                      ::http/type :jetty)
                http/create-server
                http/start))))
