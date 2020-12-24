@@ -240,9 +240,10 @@
 
 (pco/defresolver routes [{::keys [operations]}]
   {::pco/output [::routes]}
-  (let [auth [(body-params/body-params)
-              (middlewares/session)
-              (csrf/anti-forgery {:read-token hiete/read-token})]
+  (let [auth [(middlewares/session)
+              (csrf/anti-forgery {:read-token hiete/read-token})
+              (body-params/body-params)]
+
         idx (pci/register operations)
         merge-env {:name  ::merge-env
                    :enter (fn [ctx]

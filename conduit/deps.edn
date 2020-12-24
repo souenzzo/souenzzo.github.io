@@ -4,6 +4,7 @@
            hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}
            io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
            io.pedestal/pedestal.service {:mvn/version "0.5.8"}
+           lambdaisland/uri             {:mvn/version "1.4.54"}
            org.clojure/clojure          {:mvn/version "1.10.2-alpha4"}}
  :aliases {:dev {:extra-paths ["test" "dev"]
                  :extra-deps  {midje/midje            {:mvn/version "1.9.9"}

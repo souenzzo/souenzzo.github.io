@@ -3,8 +3,7 @@
             [hiccup2.core :as h]
             [io.pedestal.http.csrf :as csrf]
             [ring.util.mime-type :as mime])
-  (:import (java.nio.charset StandardCharsets)
-           (java.net URI)))
+  (:import (java.nio.charset StandardCharsets)))
 
 (def ^String utf-8 (str (StandardCharsets/UTF_8)))
 
@@ -13,11 +12,11 @@
 
 (defn href
   [route-name & opts]
-  #_(URI. (apply route/url-for route-name opts))
   (apply route/url-for route-name opts))
 
 (defn mutation
   [{::csrf/keys [anti-forgery-token]} sym]
+  (prn anti-forgery-token)
   {:method "POST"
    :action (href :conduit.api/mutation
                  :params {:sym                                  sym
@@ -25,11 +24,12 @@
 
 (defn read-token
   [{:keys [query-params]}]
+  (prn query-params)
   (get query-params (keyword csrf/anti-forgery-token-str)))
 
 (def render-hiccup
   {:name  ::render-hiccup
-   :enter (fn [{:keys [bindings route]
+   :enter (fn [{:keys [route]
                 :as   ctx}]
             (assoc-in ctx [:bindings #'*route*] route))
    :leave (fn [{:keys [response]
