@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <!-- Static Metadata -->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
+    <meta property="og:type" content="article"/>
+    <meta name="twitter:card" content="summary"/>
+    <!-- Metadata about me -->
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+    <!-- Title metadata -->
+    <title>Creating a Clojure project</title>
+    <meta name="twitter:title" content="Clojure ssr app with Pedestal and Hiccup"/>
+    <meta property="og:title" content="Clojure ssr app with Pedestal and Hiccup"/>
+    <!-- Description metadata -->
+    <meta name="twitter:description"
+          content="Clojure ssr app with Pedestal and Hiccup"/>
+    <meta name="Description"
+          content="Clojure ssr app with Pedestal and Hiccup"/>
+    <meta name="description"
+          content="Clojure ssr app with Pedestal and Hiccup">
+    <meta property="og:description"
+          content="Clojure ssr app with Pedestal and Hiccup"/>
+    <!-- https://jrl.ninja/etc/1 -->
+    <style>
+        section {
+          max-width: 38em;
+          padding: 1em;
+          margin: auto;
+        }
+
+    </style>
+</head>
+<body>
+<pre>
+    # Clojure ssr app with Pedestal and Hiccup
+
+    # Project setup
+    In an empty dir, create a `deps.edn` with these content:
+    ```
+{:paths ["src" "resources"]
+ :deps  {org.clojure/clojure          {:mvn/version "1.10.1"}
+         io.pedestal/pedestal.service {:mvn/version "0.5.8"}
+         io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
+         hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}}}
+    ```
+    Let's understand these names:
+    - :paths: A list of dirs that will be availble on the JVM classpath. Read more about that here: ()
+    - :deps: A map of dependencies and it's versions
+    - org.clojure/clojure: the clojure that we will use
+    - io.pedestal/pedestal.service: the pedestal core
+    - io.pedestal/pedestal.jetty: the adaptor that expose the pedestal core into a jetty http interface
+    - hiccup/hiccup: an cool way to generate HTML in clojure
+
+
+    
+</pre>
+<footer>
+    <p>
+        In case of doubts or errors,
+        <a target="_blank"
+           rel="noreferrer noopener"
+           href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report an issue</a>
+    </p>
+    <p>If you prefer <a target="_blank"
+                        rel="noreferrer noopener"
+                        href="https://t.me/souenzzo">talk directly with me</a></p>
+</footer>
+</body>
+</html>
