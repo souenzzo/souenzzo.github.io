@@ -1,1 +1,7 @@
-{}
+{:deps   true
+ :builds {:website {:target     :browser
+                    :output-dir "target/website"
+                    :asset-path "/website"
+                    :modules    {:main {:entries [br.com.souenzzo.website]}}
+                    :devtools   {:preloads   [br.com.souenzzo.website]
+                                 :after-load br.com.souenzzo.website/after-load}}}}
