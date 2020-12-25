@@ -99,8 +99,8 @@ nil
 ;; our first handler
 (defn hello
   [req]
-  {:body "Hello world!"}
-  :status 200)
+  {:body "Hello world!"
+   :status 200})
 
 ;; our route table
 ;; each route is an array with the fileds
@@ -230,28 +230,28 @@ nil
     <p>This section will be done in code comments</p>
     <pre>
 ;; add [io.pedestal.route :as route] to your namespace
-
 (defn hello
   [req]
-  {:html [:html
-          [:head
-           [:title "Hello world!"
-            [:body
-             [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
-             ;; let's add a link to yellow page here
-             [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]
-            :status 200]]]})
+  {:html   [:html
+            [:head
+             [:title "Hello world!"
+              [:body
+               [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
+               ;; let's add a link to yellow page here
+               [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]]]]
+   :status 200})
 
-;; Create this new handler
+;; Create this new handler for :hello-yellow page
 (defn hello-yellow
   [req]
-  {:html [:html
-          [:head
-           [:title "Hello world!"
-            [:body
-             [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
-             [:a {:href (route/url-for :hello)} "go to green"]]
-            :status 200]]]})
+  {:html   [:html
+            [:head
+             [:title "Hello world!"
+              [:body
+               [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
+               [:a {:href (route/url-for :hello)} "go to green"]]]]]
+   :status 200})
+
 (def routes
   #{["/" :get [html-response hello] :route-name :hello]
     ;; and add to your routes
