@@ -31,8 +31,6 @@
           padding: 1em;
           margin: auto;
         }
-
-
     </style>
 </head>
 <body>
@@ -215,7 +213,40 @@
        :status 200})
     ```
 
-    After call that `require/reload/dev-main` stuff, you should see no difference.
+    After call that `require/reload/dev-main` stuff, you should see no difference.z
+
+    # Rotes
+
+    Let's add a new route and links between them
+    ```
+    ;; add [io.pedestal.route :as route] to your namespace
+
+    (defn hello
+      [req]
+      {:html [:html
+               [:head
+                 [:title "Hello world!"]]
+               [:body
+                [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
+                ;; let's add a link to yellow page here
+                [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]]
+       :status 200})
+
+    ;; Create this new handler
+    (defn hello-yellow
+      [req]
+      {:html [:html
+               [:head
+                 [:title "Hello world!"]]
+               [:body
+                [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
+                [:a {:href (route/url-for :hello)} "go to green"]]]
+       :status 200})
+    (def routes
+      #{["/" :get [html-response hello] :route-name :hello]
+        ;; and add to your routes
+        ["/yellow" :get [html-response hello-yellow] :route-name :hello-yellow]})
+    ```
 
 </pre>
 <footer>
