@@ -12,7 +12,7 @@
     <meta name="twitter:creator" content="@souenzzo"/>
     <meta name="author" content="Enzzo Cavallo">
     <!-- Title metadata -->
-    <title>Creating a Clojure project</title>
+    <title>Clojure ssr app with Pedestal and Hiccup</title>
     <meta name="twitter:title" content="Clojure ssr app with Pedestal and Hiccup"/>
     <meta property="og:title" content="Clojure ssr app with Pedestal and Hiccup"/>
     <!-- Description metadata -->
@@ -84,106 +84,106 @@ nil
 :hello-world
 nil
     </pre>
+    <p>Ok, everything working.</p>
 </section>
-<pre>
-    Ok, everything working.
+<section>
+    <h1>Setup pedestal</h1>
+    <p>Here I will explain in code comments</p>
+    <pre>
+(ns clj-ssr-app.main
+  (:require [io.pedestal.http :as http]))
 
+;; our first handler
+(defn hello
+  [req]
+  {:body "Hello world!"}
+  :status 200)
 
-    # Setup pedestal
+;; our route table
+;; each route is an array with the fileds
+;; - the path
+;; - the method
+;; - the handler function
+;; - the keyword :route-name (we will se more about this in a moment)
+;; - a unique name for this route
+(def routes
+  #{["/" :get hello :route-name :hello]})
 
-    ```
-    (ns clj-ssr-app.main
-      (:require [io.pedestal.http :as http])
+(defonce http-state (atom nil))
+(defn dev-start
+  [& _]
+  (swap! http-state (fn [st]
+                      ;; if there is something running, stop it
+                      (some-> st http/stop)
+                      (-> {::http/routes routes
+                           ::http/port   8080
+                           ::http/join?  false
+                           ::http/type   :jetty}
+                          http/default-interceptors
+                          http/dev-interceptors
+                          http/create-server
+                          http/start))))
+    </pre>
+    <p>Now back on our repl</p>
+    <pre>
+;; reload your changes
+(require 'clj-ssr-app.main :reload)
+nil
+;; call start again
+(clj-ssr-app.main/dev-start)
+    </pre>
+    <p>
+        Now, if you connect your browser on <a href="http://localhost">localhost:8080</a> your should see a "hello
+        world" message.
+    </p>
+</section>
+<section>
+    <h1>HTML response</h1>
+    <p>Let's work on make `hello` function into a HTML response</p>
+    <pre>
+(ns clj-ssr-app.main
+  (:require [io.pedestal.http :as http]
+    ;; add hiccup
+            [hiccup2.core :as h]))
 
-    ;; our first handler
-    (defn hello
-      [req]
-      {:body "Hello world!"
-       :status 200})
-
-    ;; our route table
-    ;; each route is an array with the fileds
-    ;; - the path
-    ;; - the method
-    ;; - the handler function
-    ;; - the keyword :route-name (we will se more about this in a moment)
-    ;; - a unique name for this route
-    (def routes
-      #{["/" :get hello :route-name :hello]})
-    (defonce http-state (atom nil))
-    (defn dev-start
-      [& _]
-      (swap! http-state (fn [st]
-                          ;; if there is something running, stop it
-                          (some-> st http/stop)
-                          (-> {::http/routes routes
-                               ::http/port   8080
-                               ::http/join?  false
-                               ::http/type   :jetty}
-                              http/default-interceptors
-                              http/dev-interceptors
-                              http/create-server
-                              http/start))))
-    ```
-    Now back on our repl
-
-    ```
-    ;; reload your changes
-    (require 'clj-ssr-app.main :reload)
-    nil
-    ;; call start again
-    (clj-ssr-app.main/dev-start)
-    ```
-
-    Now, if you connect your browser on localhost:8080 your should see a "hello world" message.
-
-    # HTML response
-
-    Let's work on make `hello` function into a HTML response
-
-    ```
-    (ns clj-ssr-app.main
-      (:require [io.pedestal.http :as http]
-                ;; add hiccup
-                [hiccup2.core :as h])
-
-    (defn hello
-      [req]
-      {:body   (->> [:html
-                      [:head
-                        [:title "Hello world!"]]
-                      [:body
-                        [:p {:style {:background-color "lightgeen"}} "Hello from HTML"]]]
-                    ;; hiccup2 by default generates xhtml.
-                    (h/html {:mode :html})
-                    ;; we need to manually prepend this to make the document valid
-                    (str "<!DOCTYPE html>\n"))
-       ;; we need this headers to talk to the browser that it's a HTML response
-       :headers {"Content-Type" "text/html"}
-       :status 200})
-    ```
-
-    Ok, now back on REPL
-
-    ```
-    ;; reload your changes
-    (require 'clj-ssr-app.main :reload)
-    nil
-    ;; restart the HTTP server (we will have hot-reload in a near future)
-    (clj-ssr-app.main/dev-start)
-    ```
-
-    Then connect your browser into `https://localhost:8080`
-
-
-    # Interceptors
-
-    Pedestal has the concept of "interceptor", that is similar to "middlewares": help you to transform requests/responses.
-
-    Let's create a interceptor that handles HTML
-
-    ```
+(defn hello
+  [req]
+  {:body    (->> [:html
+                  [:head
+                   [:title "Hello world!"]]
+                  [:body
+                   [:p {:style {:background-color "lightgeen"}} "Hello from HTML"]]]
+                 ;; hiccup2 by default generates xhtml.
+                 (h/html {:mode :html})
+                 ;; we need to manually prepend this to make the document valid
+                 (str "<!DOCTYPE html>\n"))
+   ;; we need this headers to talk to the browser that it's a HTML response
+   :headers {"Content-Type" "text/html"}
+   :status  200})
+;; rest of the file remains with no change
+    </pre>
+    <p>Ok, now back on REPL</p>
+    <pre>
+;; reload your changes
+(require 'clj-ssr-app.main :reload)
+nil
+;; restart the HTTP server (we will have hot-reload in a near future)
+(clj-ssr-app.main/dev-start)
+    </pre>
+    <p>now if you refresh your browser, you will see the message in HTML :)</p>
+</section>
+<section>
+    <h1>Interceptors</h1>
+    <p>Pedestal has the concept of "interceptor", that is similar to "middlewares": help you to transform
+        requests/responses.</p>
+    <p>Let's create a interceptor that handles HTML</p>
+    <pre>
 (def html-response
+  "If the response contains a key `:html`,
+     it take the value of these key,
+     turns into HTML via hiccup,
+     assoc this HTML in the body
+     and set the Content-Type of the response to text/html"
   {:name  ::html-response
    :leave (fn [{:keys [response]
                 :as   ctx}]
@@ -196,66 +196,64 @@ nil
                                          (assoc :body html-body)
                                          (assoc-in [:headers "Content-Type"] "text/html"))))
               ctx))})
-    ```
-   And add it to our route
-    ```
-    ;; the 3nth element can be:
-    ;; A- A function (let's call it handler) that receive a request and return a response
-    ;; B- An interceptor
-    ;; C- An array of interceptors, that may end on a handler function
-    (def routes
-      #{["/" :get [html-response hello] :route-name :hello]})
-    ```
+    </pre>
+    <p>Now we can add this interceptor to our route</p>
+    <pre>
+;; the 3nth element can be:
+;; A- A function (let's call it handler) that receive a request and return a response
+;; B- An interceptor
+;; C- An array of interceptors, that may end on a handler function
+(def routes
+  #{["/" :get [html-response hello] :route-name :hello]})
+    </pre>
+    <p>At this moment, if you reload/restart the http serve, everything should continue to work</p>
+    <p>But now we can simplify our handler</p>
+    <pre>
+(defn hello
+  [req]
+  {:html   [:html
+            [:head
+             [:title "Hello world!"
+              [:body
+               [:p {:style {:background-color "lightgeen"}}
+                   "Hello from HTML"]]]]]
+   :status 200})
+    </pre>
+    <p>After call again `require/reload/dev-main` stuff, you should see no difference on the browser</p>
+</section>
+<section>
+    <h1>Rotes</h1>
+    <p>Let's add a new route and links between them</p>
+    <pre>
+;; add [io.pedestal.route :as route] to your namespace
 
-    Now we can simplify our hello handler
+(defn hello
+  [req]
+  {:html [:html
+          [:head
+           [:title "Hello world!"
+            [:body
+             [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
+             ;; let's add a link to yellow page here
+             [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]
+            :status 200]]]})
 
-    ```
-    (defn hello
-      [req]
-      {:html [:html
-               [:head
-                 [:title "Hello world!"]]
-               [:body
-                [:p {:style {:background-color "lightgeen"}} "Hello from HTML"]]]
-       :status 200})
-    ```
-
-    After call that `require/reload/dev-main` stuff, you should see no difference.z
-
-    # Rotes
-
-    Let's add a new route and links between them
-    ```
-    ;; add [io.pedestal.route :as route] to your namespace
-
-    (defn hello
-      [req]
-      {:html [:html
-               [:head
-                 [:title "Hello world!"]]
-               [:body
-                [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
-                ;; let's add a link to yellow page here
-                [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]]
-       :status 200})
-
-    ;; Create this new handler
-    (defn hello-yellow
-      [req]
-      {:html [:html
-               [:head
-                 [:title "Hello world!"]]
-               [:body
-                [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
-                [:a {:href (route/url-for :hello)} "go to green"]]]
-       :status 200})
-    (def routes
-      #{["/" :get [html-response hello] :route-name :hello]
-        ;; and add to your routes
-        ["/yellow" :get [html-response hello-yellow] :route-name :hello-yellow]})
-    ```
-
-</pre>
+;; Create this new handler
+(defn hello-yellow
+  [req]
+  {:html [:html
+          [:head
+           [:title "Hello world!"
+            [:body
+             [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
+             [:a {:href (route/url-for :hello)} "go to green"]]
+            :status 200]]]})
+(def routes
+  #{["/" :get [html-response hello] :route-name :hello]
+    ;; and add to your routes
+    ["/yellow" :get [html-response hello-yellow] :route-name :hello-yellow]})
+    </pre>
+</section>
 <footer>
     <p>
         In case of doubts or errors,
