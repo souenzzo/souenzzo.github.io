@@ -32,6 +32,7 @@
           margin: auto;
         }
 
+
     </style>
 </head>
 <body>
@@ -55,8 +56,167 @@
     - io.pedestal/pedestal.jetty: the adaptor that expose the pedestal core into a jetty http interface
     - hiccup/hiccup: an cool way to generate HTML in clojure
 
+    # Start the REPL
 
-    
+    At this moment, we can start the REPL. Just type `clj` or use your editor to start one.
+
+    Then create recursively the dirs `src/clj_ssr_app`, then the file `src/clj_ssr_app/main.clj`
+
+    Let's write this `main.clj`
+
+    ```
+    (ns clj-ssr-app.main) ;; << this should match `clj_ssr_app/main.clj` inside `src` or `resources`
+
+    (defn dev-start
+      [& _]
+      (prn :hello-world))
+    ```
+
+    Now let's test it on REPL
+
+    ```
+    (require 'clj-ssr-app.main :reload)
+    nil
+    (clj-ssr-app.main/dev-start)
+    :hello-world
+    nil
+    ```
+    Ok, everything working.
+
+
+    # Setup pedestal
+
+    ```
+    (ns clj-ssr-app.main
+      (:require [io.pedestal.http :as http])
+
+    ;; our first handler
+    (defn hello
+      [req]
+      {:body "Hello world!"
+       :status 200})
+
+    ;; our route table
+    ;; each route is an array with the fileds
+    ;; - the path
+    ;; - the method
+    ;; - the handler function
+    ;; - the keyword :route-name (we will se more about this in a moment)
+    ;; - a unique name for this route
+    (def routes
+      #{["/" :get hello :route-name :hello]})
+    (defonce http-state (atom nil))
+    (defn dev-start
+      [& _]
+      (swap! http-state (fn [st]
+                          ;; if there is something running, stop it
+                          (some-> st http/stop)
+                          (-> {::http/routes routes
+                               ::http/port   8080
+                               ::http/join?  false
+                               ::http/type   :jetty}
+                              http/default-interceptors
+                              http/dev-interceptors
+                              http/create-server
+                              http/start))))
+    ```
+    Now back on our repl
+
+    ```
+    ;; reload your changes
+    (require 'clj-ssr-app.main :reload)
+    nil
+    ;; call start again
+    (clj-ssr-app.main/dev-start)
+    ```
+
+    Now, if you connect your browser on localhost:8080 your should see a "hello world" message.
+
+    # HTML response
+
+    Let's work on make `hello` function into a HTML response
+
+    ```
+    (ns clj-ssr-app.main
+      (:require [io.pedestal.http :as http]
+                ;; add hiccup
+                [hiccup2.core :as h])
+
+    (defn hello
+      [req]
+      {:body   (->> [:html
+                      [:head
+                        [:title "Hello world!"]]
+                      [:body
+                        [:p {:style {:background-color "lightgeen"}} "Hello from HTML"]]]
+                    ;; hiccup2 by default generates xhtml.
+                    (h/html {:mode :html})
+                    ;; we need to manually prepend this to make the document valid
+                    (str "<!DOCTYPE html>\n"))
+       ;; we need this headers to talk to the browser that it's a HTML response
+       :headers {"Content-Type" "text/html"}
+       :status 200})
+    ```
+
+    Ok, now back on REPL
+
+    ```
+    ;; reload your changes
+    (require 'clj-ssr-app.main :reload)
+    nil
+    ;; restart the HTTP server (we will have hot-reload in a near future)
+    (clj-ssr-app.main/dev-start)
+    ```
+
+    Then connect your browser into `https://localhost:8080`
+
+
+    # Interceptors
+
+    Pedestal has the concept of "interceptor", that is similar to "middlewares": help you to transform requests/responses.
+
+    Let's create a interceptor that handles HTML
+
+    ```
+(def html-response
+  {:name  ::html-response
+   :leave (fn [{:keys [response]
+                :as   ctx}]
+            (if (contains? response :html)
+              (let [html-body (->> response
+                                   :html
+                                   (h/html {:mode :html})
+                                   (str "<!DOCTYPE html>\n"))]
+                (assoc ctx :response (-> response
+                                         (assoc :body html-body)
+                                         (assoc-in [:headers "Content-Type"] "text/html"))))
+              ctx))})
+    ```
+   And add it to our route
+    ```
+    ;; the 3nth element can be:
+    ;; A- A function (let's call it handler) that receive a request and return a response
+    ;; B- An interceptor
+    ;; C- An array of interceptors, that may end on a handler function
+    (def routes
+      #{["/" :get [html-response hello] :route-name :hello]})
+    ```
+
+    Now we can simplify our hello handler
+
+    ```
+    (defn hello
+      [req]
+      {:html [:html
+               [:head
+                 [:title "Hello world!"]]
+               [:body
+                [:p {:style {:background-color "lightgeen"}} "Hello from HTML"]]]
+       :status 200})
+    ```
+
+    After call that `require/reload/dev-main` stuff, you should see no difference.
+
 </pre>
 <footer>
     <p>
