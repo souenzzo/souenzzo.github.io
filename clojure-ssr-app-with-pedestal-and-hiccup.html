@@ -26,59 +26,66 @@
           content="Clojure ssr app with Pedestal and Hiccup"/>
     <!-- https://jrl.ninja/etc/1 -->
     <style>
-        section {
-          max-width: 38em;
-          padding: 1em;
-          margin: auto;
-        }
+section {
+  max-width: 38em;
+  padding: 1em;
+  margin: auto;
+}
+code {
+  background-color: antiquewhite;
+}
     </style>
 </head>
 <body>
-<pre>
-    # Clojure ssr app with Pedestal and Hiccup
-
-    # Project setup
-    In an empty dir, create a `deps.edn` with these content:
-    ```
+<section>
+    <h1>Clojure ssr app with Pedestal and Hiccup</h1>
+    <p></p>
+</section>
+<section>
+    <h1>Project setup</h1>
+    <p>In an empty dir, create a <code>deps.edn</code> with this content:</p>
+    <pre>
 {:paths ["src" "resources"]
  :deps  {org.clojure/clojure          {:mvn/version "1.10.1"}
          io.pedestal/pedestal.service {:mvn/version "0.5.8"}
          io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
          hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}}}
-    ```
-    Let's understand these names:
-    - :paths: A list of dirs that will be availble on the JVM classpath. Read more about that here: ()
-    - :deps: A map of dependencies and it's versions
-    - org.clojure/clojure: the clojure that we will use
-    - io.pedestal/pedestal.service: the pedestal core
-    - io.pedestal/pedestal.jetty: the adaptor that expose the pedestal core into a jetty http interface
-    - hiccup/hiccup: an cool way to generate HTML in clojure
+    </pre>
+    <p>Let's understand these names:</p>
+    <ul>
+        <li><code>:paths</code>: a list of dirs that will be availble on the JVM classpath. <a
+                href="/creating-a-clojure-project.html">Learn more about it</a></li>
+        <li><code>:deps</code>: A map of dependencies and it's versions</li>
+        <li><code>org.clojure/clojure</code>: the clojure that we will use</li>
+        <li><code>io.pedestal/pedestal.service</code>: the pedestal core</li>
+        <li><code>io.pedestal/pedestal.jetty</code>: the adaptor that expose the pedestal core into a jetty http
+            interface
+        </li>
+        <li><code>hiccup/hiccup</code>: an cool way to generate HTML in clojure</li>
+    </ul>
+</section>
+<section>
+    <h1>Start the REPL</h1>
+    <p>At this moment, we can start the REPL. Just type `clj` or use your editor to start one.</p>
+    <p>Then create recursively the dirs `src/clj_ssr_app`, then the file `src/clj_ssr_app/main.clj`</p>
+    <p>Let's write this `main.clj`</p>
+    <pre>
+(ns clj-ssr-app.main) ;; << this should match `clj_ssr_app/main.clj` inside `src` or `resources`
 
-    # Start the REPL
-
-    At this moment, we can start the REPL. Just type `clj` or use your editor to start one.
-
-    Then create recursively the dirs `src/clj_ssr_app`, then the file `src/clj_ssr_app/main.clj`
-
-    Let's write this `main.clj`
-
-    ```
-    (ns clj-ssr-app.main) ;; << this should match `clj_ssr_app/main.clj` inside `src` or `resources`
-
-    (defn dev-start
-      [& _]
-      (prn :hello-world))
-    ```
-
-    Now let's test it on REPL
-
-    ```
-    (require 'clj-ssr-app.main :reload)
-    nil
-    (clj-ssr-app.main/dev-start)
-    :hello-world
-    nil
-    ```
+(defn dev-start
+  [& _]
+  (prn :hello-world))
+    </pre>
+    <p>Now let's test it on REPL</p>
+    <pre>
+(require 'clj-ssr-app.main :reload)
+nil
+(clj-ssr-app.main/dev-start)
+:hello-world
+nil
+    </pre>
+</section>
+<pre>
     Ok, everything working.
 
 
