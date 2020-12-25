@@ -66,11 +66,14 @@ code {
 </section>
 <section>
     <h1>Start the REPL</h1>
-    <p>At this moment, we can start the REPL. Just type `clj` or use your editor to start one.</p>
-    <p>Then create recursively the dirs `src/clj_ssr_app`, then the file `src/clj_ssr_app/main.clj`</p>
-    <p>Let's write this `main.clj`</p>
+    <p>At this moment, we can start the REPL. Just type <code>clj</code> or use your editor to start one.</p>
+    <p>
+        Then create recursively the dirs <code>src/clj_ssr_app</code>, then the
+        file <code>src/clj_ssr_app/main.clj</code>
+    </p>
+    <p>Let's write this <code>main.clj</code></p>
     <pre>
-(ns clj-ssr-app.main) ;; << this should match `clj_ssr_app/main.clj` inside `src` or `resources`
+(ns clj-ssr-app.main) ;; << this should match <code>clj_ssr_app/main.clj</code> inside <code>src</code> or <code>resources</code>
 
 (defn dev-start
   [& _]
@@ -139,7 +142,7 @@ nil
 </section>
 <section>
     <h1>HTML response</h1>
-    <p>Let's work on make `hello` function into a HTML response</p>
+    <p>Let's work on make <code>hello</code> function into a HTML response</p>
     <pre>
 (ns clj-ssr-app.main
   (:require [io.pedestal.http :as http]
@@ -179,7 +182,7 @@ nil
     <p>Let's create a interceptor that handles HTML</p>
     <pre>
 (def html-response
-  "If the response contains a key `:html`,
+  "If the response contains a key <code>:html</code>,
      it take the value of these key,
      turns into HTML via hiccup,
      assoc this HTML in the body
@@ -219,7 +222,7 @@ nil
                    "Hello from HTML"]]]]]
    :status 200})
     </pre>
-    <p>After call again `require/reload/dev-main` stuff, you should see no difference on the browser</p>
+    <p>After call again <code>require/reload/dev-main</code> stuff, you should see no difference on the browser</p>
 </section>
 <section>
     <h1>Routing</h1>
