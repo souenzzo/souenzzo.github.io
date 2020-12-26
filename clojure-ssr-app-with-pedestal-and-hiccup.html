@@ -34,6 +34,14 @@ section {
 code {
   background-color: antiquewhite;
 }
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -57,11 +65,15 @@ code {
                 href="/creating-a-clojure-project.html">Learn more about it</a></li>
         <li><code>:deps</code>: A map of dependencies and it's versions</li>
         <li><code>org.clojure/clojure</code>: the clojure that we will use</li>
-        <li><code>io.pedestal/pedestal.service</code>: the pedestal core</li>
-        <li><code>io.pedestal/pedestal.jetty</code>: the adaptor that expose the pedestal core into a jetty http
-            interface
+        <li><code>io.pedestal/pedestal.service</code>: the pedestal core library</li>
+        <li>
+            <code>io.pedestal/pedestal.jetty</code>: the adaptor that expose the pedestal core into a jetty http
+            interface (<a href="http://pedestal.io/">docs</a>)
         </li>
-        <li><code>hiccup/hiccup</code>: an cool way to generate HTML in clojure</li>
+        <li>
+            <code>hiccup/hiccup</code>: an cool way to generate HTML in clojure
+            (<a href="https://cljdoc.org/d/hiccup/hiccup/2.0.0-alpha2/doc/readme">docs</a>)
+        </li>
     </ul>
 </section>
 <section>
@@ -219,7 +231,7 @@ nil
              [:title "Hello world!"
               [:body
                [:p {:style {:background-color "lightgeen"}}
-                   "Hello from HTML"]]]]]
+                "Hello from HTML"]]]]]
    :status 200})
     </pre>
     <p>After call again <code>require/reload/dev-main</code> stuff, you should see no difference on the browser</p>
@@ -229,16 +241,18 @@ nil
     <p>Let's add a new route and links between them</p>
     <p>This section will be done in code comments</p>
     <pre>
-;; add [io.pedestal.route :as route] to your namespace
+;; add [io.pedestal.http.route :as route] to your namespace
 (defn hello
   [req]
   {:html   [:html
             [:head
              [:title "Hello world!"
               [:body
-               [:p {:style {:background-color "lightgeen"}} "Hello from HTML in green"]
+               [:p {:style {:background-color "lightgeen"}}
+                "Hello from HTML in green"]
                ;; let's add a link to yellow page here
-               [:a {:href (route/url-for :hello-yellow)} "go to yellow"]]]]]
+               [:a {:href (route/url-for :hello-yellow)}
+                "go to yellow"]]]]]
    :status 200})
 
 ;; Create this new handler for :hello-yellow page
@@ -248,8 +262,10 @@ nil
             [:head
              [:title "Hello world!"
               [:body
-               [:p {:style {:background-color "lightyellow"}} "Hello from HTML in yellow"]
-               [:a {:href (route/url-for :hello)} "go to green"]]]]]
+               [:p {:style {:background-color "lightyellow"}}
+                "Hello from HTML in yellow"]
+               [:a {:href (route/url-for :hello)}
+                "go to green"]]]]]
    :status 200})
 
 (def routes
