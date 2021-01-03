@@ -1,0 +1,8 @@
+{:deps     true
+ :dev-http {8080 ["classpath:public" "target"]}
+ :builds   {:drawing {:target     :browser
+                      :output-dir "target/drawing"
+                      :asset-path "/drawing"
+                      :modules    {:main {:entries [drawing.main]}}
+                      :devtools   {;; :preloads   [drawing.main]
+                                   :after-load drawing.main/after-load}}}}

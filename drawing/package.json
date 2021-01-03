@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "shadow-cljs watch drawing"
+  },
+  "devDependencies": {
+    "shadow-cljs": "2.11.11"
+  }
+}

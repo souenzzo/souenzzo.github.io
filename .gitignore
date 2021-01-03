@@ -5,4 +5,4 @@ _site/
 me_orig.jpg
 .jekyll-cache/
 .run/
-
+**/target/
