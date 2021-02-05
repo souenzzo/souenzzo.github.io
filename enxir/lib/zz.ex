@@ -2,10 +2,9 @@ defmodule ZZ do
   require Logger
 
   def accept() do
-    port = 8080
     {:ok, socket} =
       :gen_tcp.listen(
-        port,
+        8080,
         [
           :binary,
           packet: :line,
@@ -13,33 +12,23 @@ defmodule ZZ do
           reuseaddr: true
         ]
       )
-    Logger.info("Accepting connections on port #{port}")
     loop_acceptor(socket)
   end
 
-  defp loop_acceptor(socket) do
+  def loop_acceptor(socket) do
+    Logger.info("loop_acceptor")
     {:ok, client} = :gen_tcp.accept(socket)
-    serve(client)
+    spawn fn ->
+      serve(client)
+    end
     loop_acceptor(socket)
   end
-
-  defp serve(socket) do
-
-    x = read_line(socket)
-    Logger.info("read:")
-    Logger.info(x)
-    Logger.info(IEx.Info.info(x))
-    write_line(x, socket)
-    write_line(x, socket)
-    serve(socket)
-  end
-
-  defp read_line(socket) do
+  def serve(socket) do
+    Logger.info("serve")
     {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
-  end
-
-  defp write_line(line, socket) do
-    :gen_tcp.send(socket, line)
+    Logger.info(data)
+    Logger.info(IEx.Info.info(data))
+    :gen_tcp.send(socket, data)
+    serve(socket)
   end
 end
