@@ -34,4 +34,19 @@ defmodule EtfQueryLanguage do
       children: Enum.map(query, &element_to_node/1)
     }
   end
+  def node_to_query(node) do
+    key = if Map.has_key?(node, :params) do
+      [node.key, node.params]
+    else
+      node.key
+    end
+    if Map.has_key?(node, :children) do
+      %{key => ast_to_query(node)}
+    else
+      key
+    end
+  end
+  def ast_to_query(ast) do
+    Enum.map( ast.children, &node_to_query/1)
+  end
 end
