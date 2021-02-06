@@ -32,4 +32,39 @@ defmodule ExampleTest do
              ]
            }
   end
+  test "Simple param" do
+    assert EtfQueryLanguage.query_to_ast([[:a, %{v: 42}]])
+           == %{
+             type: :root,
+             children: [%{
+               type: :prop,
+               key: :a,
+               params: %{
+                 v: 42
+               }
+             }
+             ]
+           }
+  end
+  test "Simple join param" do
+    assert EtfQueryLanguage.query_to_ast([%{[:a, %{v: 42}] => [:b]}])
+           == %{
+             type: :root,
+             children: [
+               %{
+                 type: :join,
+                 key: :a,
+                 params: %{
+                   v: 42
+                 },
+                 children: [
+                   %{
+                     key: :b,
+                     type: :prop
+                   }
+                 ]
+               }
+             ]
+           }
+  end
 end
