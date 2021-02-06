@@ -1,8 +1,35 @@
 defmodule ExampleTest do
   use ExUnit.Case
-  doctest ZZ
+  doctest EtfQueryLanguage
 
-  test "greets the world" do
-    assert ZZ.hello() == :world
+  test "Simple atom" do
+    assert EtfQueryLanguage.query_to_ast([:a])
+           == %{
+             type: :root,
+             children: [
+               %{
+                 type: :prop,
+                 key: :a
+               }
+             ]
+           }
+  end
+  test "Simple join" do
+    assert EtfQueryLanguage.query_to_ast([%{a: [:b]}])
+           == %{
+             type: :root,
+             children: [
+               %{
+                 type: :join,
+                 key: :a,
+                 children: [
+                   %{
+                     type: :prop,
+                     key: :b
+                   }
+                 ]
+               }
+             ]
+           }
   end
 end
