@@ -31,4 +31,7 @@ defmodule ZZ do
     :gen_tcp.send(socket, data)
     serve(socket)
   end
+  def hello() do
+    :xx
+  end
 end
