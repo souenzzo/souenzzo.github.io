@@ -14,6 +14,18 @@ defmodule ExampleTest do
              ]
            }
   end
+  test "Simple atom raw rep" do
+    assert EtfQueryLanguage.query_to_ast([EtfQueryLanguage.Key1])
+           == %{
+             type: :root,
+             children: [
+               %{
+                 type: :prop,
+                 key: EtfQueryLanguage.Key1
+               }
+             ]
+           }
+  end
   test "Simple join" do
     assert EtfQueryLanguage.query_to_ast([%{a: [:b]}])
            == %{

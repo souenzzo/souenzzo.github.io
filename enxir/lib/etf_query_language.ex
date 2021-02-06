@@ -1,7 +1,6 @@
 defmodule EtfQueryLanguage do
   # require Logger
   ## Logger.info(IEx.Info.info(x))
-  EtfQueryLanguage.foo
   def element_to_node(element) when is_atom(element) do
     %{
       type: :prop,
@@ -48,6 +47,6 @@ defmodule EtfQueryLanguage do
     end
   end
   def ast_to_query(ast) do
-    Enum.map( ast.children, &node_to_query/1)
+    Enum.map(ast.children, &node_to_query/1)
   end
 end
