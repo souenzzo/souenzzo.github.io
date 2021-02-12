@@ -1,15 +1,32 @@
 (ns br.com.souenzzo.dvm
   (:import (java.io StringWriter Writer)))
 
+(set! *warn-on-reflection* true)
+
+;; https://html.spec.whatwg.org/#elements-2
+(def void-elements
+  #{:area :base :br :col :command :embed :hr :img :input
+    :keygen :link :meta :param :source :track :wbr})
+
+(def template-elements
+  #{:template})
+
+(def raw-text-elements
+  #{:style :script})
+
+(def rcdata-elements
+  #{:textarea :title})
+
 (defn render
   [^Writer w env element]
   (cond
     (and (coll? element)
          (keyword? (first element)))
     (let [[k v & vs] element
-          opts? (map? v)]
+          opts? (map? v)
+          kn (name k)]
       (.write w "<")
-      (.write w (name k))
+      (.write w kn)
       (when opts?
         (doseq [[k v] v]
           (.write w " ")
@@ -17,13 +34,14 @@
           (.write w "=")
           (.write w (pr-str v))))
       (.write w ">")
-      (doseq [el (if opts?
-                   vs
-                   (cons v vs))]
-        (render w env el))
-      (.write w "</")
-      (.write w (name (first element)))
-      (.write w ">"))
+      (when-not (void-elements k)
+        (doseq [el (if opts?
+                     vs
+                     (cons v vs))]
+          (render w env el))
+        (.write w "</")
+        (.write w kn)
+        (.write w ">")))
     (and (coll? element)
          (fn? (first element)))
     (let [[f & args] element]

@@ -31,4 +31,8 @@
                            [:p {} "oi"]
                            (for [i (range 2)]
                              [:p (str "oi" i)])])
-    => "<div><p>oi</p><p>oi0</p><p>oi1</p></div>"))
+    => "<div><p>oi</p><p>oi0</p><p>oi1</p></div>")
+  (fact
+    (dvm/render-to-string {}
+                          [:meta {:charset "utf-8"}])
+    => "<meta charset=\"utf-8\">"))
