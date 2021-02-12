@@ -1,29 +1,34 @@
 (ns br.com.souenzzo.dvm-test
   (:require [clojure.test :refer [deftest testing is]]
-            [br.com.souenzzo.dvm :as dvm :refer [el]]
-            [clojure.pprint :as pp]))
+            [br.com.souenzzo.dvm :as dvm]
+            [midje.sweet :refer [fact =>]]))
 
+(defn ui-sum
+  [{:keys [a]} {:keys [b]}]
+  (if b
+    [:ul
+     [:li [:p (str (+ a b))]]
+     [:li [ui-sum {}]]]
+    [:p a]))
 
-(deftest nested
-  (is (= "<div foo=42>hey<div foo=42>hey</div></div>"
-         (dvm/-render (el :div
-                          {:foo 42}
-                          "hey"
-                          (el :div
-                              {:foo 42}
-                              "hey"))
-
-                      {}))))
-
-(deftest with-function
-  (is (= "<div foo=42>hey<div>with-fn-42</div></div>"
-         (dvm/-render (el :div
-                          {:foo 42}
-                          "hey"
-                          (el (fn [ctx {:keys [foo]}]
-                                (el :div
-                                    {}
-                                    (str "with-fn-" foo)))
-                              {:foo 42}))
-
-                      {}))))
+(deftest hello-world
+  (fact
+    (dvm/render-to-string {} [:div "Hello World!"])
+    => "<div>Hello World!</div>")
+  (fact
+    (dvm/render-to-string {} [:div [:div "Hello"]])
+    => "<div><div>Hello</div></div>")
+  (fact
+    (dvm/render-to-string {} [:div {:id "42" :value 42} "Hello"])
+    => "<div id=\"42\" value=42>Hello</div>")
+  (fact
+    (dvm/render-to-string {:a 1}
+                          [:div [ui-sum {:b 2}]])
+    => "<div><ul><li><p>3</p></li><li><p>1</p></li></ul></div>")
+  (fact
+    (dvm/render-to-string {}
+                          [:div
+                           [:p {} "oi"]
+                           (for [i (range 2)]
+                             [:p (str "oi" i)])])
+    => "<div><p>oi</p><p>oi0</p><p>oi1</p></div>"))

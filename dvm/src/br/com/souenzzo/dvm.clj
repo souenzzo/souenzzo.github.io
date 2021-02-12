@@ -1,55 +1,40 @@
 (ns br.com.souenzzo.dvm
-  (:require [clojure.string :as string])
-  (:import (clojure.lang Fn Keyword)))
+  (:import (java.io StringWriter Writer)))
 
-(defprotocol IEl
-  :extend-via-metadata true
-  (-el [this opts]))
+(defn render
+  [^Writer w env element]
+  (cond
+    (and (coll? element)
+         (keyword? (first element)))
+    (let [[k v & vs] element
+          opts? (map? v)]
+      (.write w "<")
+      (.write w (name k))
+      (when opts?
+        (doseq [[k v] v]
+          (.write w " ")
+          (.write w (name k))
+          (.write w "=")
+          (.write w (pr-str v))))
+      (.write w ">")
+      (doseq [el (if opts?
+                   vs
+                   (cons v vs))]
+        (render w env el))
+      (.write w "</")
+      (.write w (name (first element)))
+      (.write w ">"))
+    (and (coll? element)
+         (fn? (first element)))
+    (let [[f & args] element]
+      (render w env (apply f env args)))
+    (coll? element)
+    (doseq [el element]
+      (render w env el))
+    :else (.write w (str element)))
+  w)
 
-(defprotocol IRender
-  :extend-via-metadata true
-  (-render [this ctx]))
-
-(extend-protocol IRender
-  String
-  (-render [this _]
-    this)
-  Fn
-  (-render [this ctx]
-    (-render (this ctx)
-             ctx)))
-
-
-(extend-protocol IEl
-  Keyword
-  (-el [this opts]
-    (-el (name this) opts))
-  String
-  (-el [this {::keys [children props]}]
-    (fn [ctx]
-      (str
-        "<" this (when-not (empty? props)
-                   (str " " (string/join " " (for [[k v] props]
-                                               (if (boolean? v)
-                                                 (name k)
-                                                 (str (name k) "=" (str v)))))))
-        ">"
-        (string/join (for [child children]
-                       (-render child ctx)))
-        "</" this ">")))
-  Fn
-  (-el [this {::keys [children props]}]
-    (fn [ctx]
-      (apply this ctx props children))))
-
-(defn el
-  ([op] (-el op {::op op}))
-  ([op props-or-el] (-el op (if (map? props-or-el)
-                              {::op    op
-                               ::props props-or-el}
-                              {::op       op
-                               ::children [props-or-el]})))
-  ([op props & children]
-   (-el op {::op       op
-            ::props    props
-            ::children children})))
+(defn render-to-string
+  [env element]
+  (with-open [w (StringWriter.)]
+    (str (render w env element))))
