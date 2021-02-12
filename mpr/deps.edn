@@ -5,6 +5,7 @@
              io.pedestal/pedestal.service {:mvn/version "0.5.8"}
              io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
              hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}
+             br.com.souenzzo/dvm          {:local/root "../dvm"}
              org.slf4j/slf4j-simple       {:mvn/version "2.0.0-alpha1"}
 
 

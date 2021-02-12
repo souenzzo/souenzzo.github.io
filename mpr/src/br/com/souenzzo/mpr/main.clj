@@ -2,6 +2,7 @@
   (:require [clojure.string :as string]
             [datomic.api :as d]
             [hiccup2.core :as h]
+            [br.com.souenzzo.dvm :as dvm]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.csrf :as csrf]
@@ -13,17 +14,21 @@
   (:import (java.nio.charset StandardCharsets)
            (java.util UUID)))
 
+(defn ui-std-head
+  [req opts]
+  [:head
+   [:meta {:charset (str StandardCharsets/UTF_8)}]
+   [:link {:rel "icon" :href "data:"}]
+   [:title "mpr"]])
+
 (defn index
-  [_]
+  [req]
   (let []
     {:body    (->> [:html
-                    [:head
-                     [:meta {:charset (str StandardCharsets/UTF_8)}]
-                     [:link {:rel "icon" :href "data:"}]
-                     [:title "mpr"]]
+                    [ui-std-head {}]
                     [:body
                      "hello"]]
-                   (h/html {:mode :html})
+                   (dvm/render-to-string req)
                    (conj ["<!DOCTYPE html>"])
                    (string/join "\n"))
      :headers {"Content-Type" (mime/default-mime-types "html")}
@@ -46,36 +51,37 @@
                   {"Location" next}))
      :status  303}))
 
-(defn login
+(defn ui-login-form
   [{::csrf/keys [anti-forgery-token]
-    :keys       [query-params]}]
+    :keys       [query-params]} opts]
   (let [{:keys [next]} query-params]
-    {:body    (->> [:html
-                    [:head
-                     [:meta {:charset (str StandardCharsets/UTF_8)}]
-                     [:link {:rel "icon" :href "data:"}]
-                     [:title "mpr"]]
-                    [:body
-                     [:form
-                      {:action (route/url-for :login!)
-                       :method "POST"}
-                      "login"
-                      [:label
-                       "email"
-                       [:input {:name "email"}]]
-                      [:input {:type "submit"}]
-                      [:input {:hidden true
-                               :name   csrf/anti-forgery-token-str
-                               :value  anti-forgery-token}]
-                      (when next
-                        [:input {:hidden true
-                                 :name   "next"
-                                 :value  next}])]]]
-                   (h/html {:mode :html})
-                   (conj ["<!DOCTYPE html>"])
-                   (string/join "\n"))
-     :headers {"Content-Type" (mime/default-mime-types "html")}
-     :status  200}))
+    [:form
+     {:action (route/url-for :login!)
+      :method "POST"}
+     "login"
+     [:label
+      "email"
+      [:input {:name "email"}]]
+     [:input {:type "submit"}]
+     [:input {:hidden true
+              :name   csrf/anti-forgery-token-str
+              :value  anti-forgery-token}]
+     (when next
+       [:input {:hidden true
+                :name   "next"
+                :value  next}])]))
+
+(defn login
+  [req]
+  {:body    (->> [:html
+                  [ui-std-head {}]
+                  [:body
+                   [ui-login-form {}]]]
+                 (dvm/render-to-string req)
+                 (conj ["<!DOCTYPE html>"])
+                 (string/join "\n"))
+   :headers {"Content-Type" (mime/default-mime-types "html")}
+   :status  200})
 
 (def auth
   {:name  ::auth
