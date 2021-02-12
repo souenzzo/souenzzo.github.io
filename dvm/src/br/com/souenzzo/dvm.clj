@@ -23,45 +23,42 @@
 
 (defn render
   [^Writer w env element]
-  (cond
-    (and (coll? element)
-         (keyword? (first element)))
-    (let [[tag-ident attributes & children] element
-          opts? (map? attributes)
-          ;; TODO: we should transform `:A` into `a`
-          ;; TODO: we should throw DOMException cases like `:>`
-          tag-name (name tag-ident)]
-      (.write w "<")
-      (.write w tag-name)
-      (when opts?
-        (doseq [[attribute-ident attribute-value] attributes]
-          (.write w " ")
-          ;; TODO: handle cases like `:>`
-          (.write w (name attribute-ident))
-          (.write w "=")
-          ;; TODO: handle true, false, "><>"...
-          (.write w (pr-str attribute-value))))
-      ;; TODO: For void tags, should we `/>` ?! It's HTML? XML?
-      (.write w ">")
-      (when-not (void-elements tag-ident)
-        (doseq [el (if opts?
-                     children
-                     (cons attributes children))]
-          (render w env el))
-        (.write w "</")
-        (.write w tag-name)
-        (.write w ">")))
-    (and (coll? element)
-         (fn? (first element)))
-    (let [[f & args] element]
-      (render w env (apply f env args)))
-    (coll? element)
-    (doseq [el element]
-      (render w env el))
-    :else (.write w (str element)))
-  w)
+  (if (coll? element)
+    (let [el-head (first element)]
+      (cond
+        (keyword? el-head)
+        (let [[tag-ident attributes & children] element
+              opts? (map? attributes)
+              ;; TODO: we should transform `:A` into `a`
+              ;; TODO: we should throw DOMException cases like `:>`
+              tag-name (name tag-ident)]
+          (.write w "<")
+          (.write w tag-name)
+          (when opts?
+            (doseq [[attribute-ident attribute-value] attributes]
+              (.write w " ")
+              ;; TODO: handle cases like `:>`
+              (.write w (name attribute-ident))
+              (.write w "=")
+              ;; TODO: handle true, false, "><>"...
+              (.write w (pr-str attribute-value))))
+          ;; TODO: For void tags, should we `/>` ?! It's HTML? XML?
+          (.write w ">")
+          (when-not (void-elements tag-ident)
+            (doseq [el (if opts?
+                         children
+                         (cons attributes children))]
+              (render w env el))
+            (.write w "</")
+            (.write w tag-name)
+            (.write w ">")))
+        (fn? el-head) (render w env (apply el-head env (rest element)))
+        :else (doseq [el element]
+                (render w env el))))
+    (.write w (str element))))
 
 (defn render-to-string
   [env element]
   (with-open [w (StringWriter.)]
-    (str (render w env element))))
+    (render w env element)
+    (str w)))
