@@ -3,6 +3,10 @@
 
 (set! *warn-on-reflection* true)
 
+;; TODO: These definitions are
+;; in https://github.com/weavejester/hiccup/blob/master/src/hiccup/compiler.clj#L65
+;; many https://github.com/fulcrologic/fulcro/blob/develop/src/main/com/fulcrologic/fulcro/dom_server.clj#L347
+;; repos. Could it be done in a simple "common html" package?
 ;; https://html.spec.whatwg.org/#elements-2
 (def void-elements
   #{:area :base :br :col :command :embed :hr :img :input
@@ -14,7 +18,7 @@
 (def raw-text-elements
   #{:style :script})
 
-(def rcdata-elements
+(def escapable-raw-text-elements
   #{:textarea :title})
 
 (defn render
@@ -22,25 +26,30 @@
   (cond
     (and (coll? element)
          (keyword? (first element)))
-    (let [[k v & vs] element
-          opts? (map? v)
-          kn (name k)]
+    (let [[tag-ident attributes & children] element
+          opts? (map? attributes)
+          ;; TODO: we should transform `:A` into `a`
+          ;; TODO: we should throw DOMException cases like `:>`
+          tag-name (name tag-ident)]
       (.write w "<")
-      (.write w kn)
+      (.write w tag-name)
       (when opts?
-        (doseq [[k v] v]
+        (doseq [[attribute-ident attribute-value] attributes]
           (.write w " ")
-          (.write w (name k))
+          ;; TODO: handle cases like `:>`
+          (.write w (name attribute-ident))
           (.write w "=")
-          (.write w (pr-str v))))
+          ;; TODO: handle true, false, "><>"...
+          (.write w (pr-str attribute-value))))
+      ;; TODO: For void tags, should we `/>` ?! It's HTML? XML?
       (.write w ">")
-      (when-not (void-elements k)
+      (when-not (void-elements tag-ident)
         (doseq [el (if opts?
-                     vs
-                     (cons v vs))]
+                     children
+                     (cons attributes children))]
           (render w env el))
         (.write w "</")
-        (.write w kn)
+        (.write w tag-name)
         (.write w ">")))
     (and (coll? element)
          (fn? (first element)))

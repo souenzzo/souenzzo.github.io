@@ -36,3 +36,10 @@
     (dvm/render-to-string {}
                           [:meta {:charset "utf-8"}])
     => "<meta charset=\"utf-8\">"))
+
+(comment
+  (dvm/render-to-string {} [:>])
+  => "Uncaught DOMException: String contains an invalid character"
+  (dvm/render-to-string {} [:a {:href (with-meta {:route-name ...}
+                                                 ...)}])
+  => [:a {:href (route/url-for ...)}])
