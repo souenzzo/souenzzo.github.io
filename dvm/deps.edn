@@ -1,10 +1,13 @@
 {:paths   ["src"]
- :deps    {org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}}
+ :deps    {}
  :aliases {:dev  {:extra-paths ["dev" "test"]
                   :extra-deps  {org.clojure/clojure          {:mvn/version "1.10.1"}
                                 io.pedestal/pedestal.service {:mvn/version "0.5.8"}
                                 io.pedestal/pedestal.jetty   {:mvn/version "0.5.8"}
                                 midje/midje                  {:mvn/version "1.9.9"}
+                                org.clojure/data.xml         {:mvn/version "0.2.0-alpha6"}
+                                nu.validator/validator       {:mvn/version "20.7.2"}
+
                                 hiccup/hiccup                {:mvn/version "2.0.0-alpha2"}}}
            :test {:extra-paths ["test"]
                   :extra-deps  {org.clojure/test.check {:mvn/version "1.0.0"}}}}}

@@ -42,4 +42,17 @@
   => "Uncaught DOMException: String contains an invalid character"
   (dvm/render-to-string {} [:a {:href (with-meta {:route-name ...}
                                                  ...)}])
-  => [:a {:href (route/url-for ...)}])
+  => [:a {:href (route/url-for ...)}]
+  (let
+    [baos (java.io.ByteArrayOutputStream.)
+     source-code (nu.validator.source.SourceCode.)
+     image-collector (nu.validator.servlet.imagereview.ImageCollector. source-code)
+     emitter (nu.validator.messages.TextMessageEmitter. baos false)
+     in (clojure.java.io/input-stream (.getBytes "<!DOCTYPE html><html><div></div></html>"))
+     error-handler (nu.validator.messages.MessageEmitterAdapter. #"." source-code false image-collector 0 false emitter)
+     validator (doto
+                 (nu.validator.validation.SimpleDocumentValidator.)
+                 (.setUpMainSchema "http://s.validator.nu/html5-rdfalite.rnc" (nu.validator.xml.SystemErrErrorHandler.))
+                 (.setUpValidatorAndParsers error-handler true false)
+                 (.checkHtmlInputSource (org.xml.sax.InputSource. in)))]
+    [(.getErrors error-handler) (str baos)]))
