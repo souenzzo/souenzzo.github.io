@@ -1,4 +1,5 @@
 (ns br.com.souenzzo.dvm
+  (:require [clojure.string :as string])
   (:import (java.io StringWriter Writer)))
 
 (set! *warn-on-reflection* true)
@@ -21,6 +22,11 @@
 (def escapable-raw-text-elements
   #{:textarea :title})
 
+(def html-cmap
+  ;; TODO: find the escape spec, complete this list and reference the link
+  {\< "&lt;"
+   \& "&amp;"})
+
 (defn render
   [^Writer w env element]
   (if (coll? element)
@@ -35,13 +41,15 @@
           (.write w "<")
           (.write w tag-name)
           (when opts?
-            (doseq [[attribute-ident attribute-value] attributes]
+            (doseq [[attribute-ident attribute-value] attributes
+                    :when attribute-value]
               (.write w " ")
               ;; TODO: handle cases like `:>`
               (.write w (name attribute-ident))
-              (.write w "=")
-              ;; TODO: handle true, false, "><>"...
-              (.write w (pr-str attribute-value))))
+              (when-not (true? attribute-value)
+                (.write w "=")
+                ;; TODO: handle escape
+                (.write w (pr-str (str attribute-value))))))
           ;; TODO: For void tags, should we `/>` ?! It's HTML? XML?
           (.write w ">")
           (when-not (void-elements tag-ident)
@@ -55,7 +63,8 @@
         (fn? el-head) (render w env (apply el-head env (rest element)))
         :else (doseq [el element]
                 (render w env el))))
-    (.write w (str element))))
+    (.write w (string/escape (str element)
+                             html-cmap))))
 
 (defn render-to-string
   [env element]

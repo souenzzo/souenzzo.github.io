@@ -37,22 +37,50 @@
                           [:meta {:charset "utf-8"}])
     => "<meta charset=\"utf-8\">"))
 
+
+(deftest true-and-false
+  (fact
+    (dvm/render-to-string {}
+                          [:p {:a true
+                               :b false
+                               :c nil
+                               :d ""
+                               :e 0}])
+    => "<p a d=\"\" e=\"0\"></p>"))
+
+
+(deftest escape
+  (fact
+    (dvm/render-to-string {} [:p "<"])
+    => "<p>&lt;</p>"))
+
 (comment
   (dvm/render-to-string {} [:>])
   => "Uncaught DOMException: String contains an invalid character"
   (dvm/render-to-string {} [:a {:href (with-meta {:route-name ...}
                                                  ...)}])
   => [:a {:href (route/url-for ...)}]
-  (let
-    [baos (java.io.ByteArrayOutputStream.)
-     source-code (nu.validator.source.SourceCode.)
-     image-collector (nu.validator.servlet.imagereview.ImageCollector. source-code)
-     emitter (nu.validator.messages.TextMessageEmitter. baos false)
-     in (clojure.java.io/input-stream (.getBytes "<!DOCTYPE html><html><div></div></html>"))
-     error-handler (nu.validator.messages.MessageEmitterAdapter. #"." source-code false image-collector 0 false emitter)
-     validator (doto
-                 (nu.validator.validation.SimpleDocumentValidator.)
-                 (.setUpMainSchema "http://s.validator.nu/html5-rdfalite.rnc" (nu.validator.xml.SystemErrErrorHandler.))
-                 (.setUpValidatorAndParsers error-handler true false)
-                 (.checkHtmlInputSource (org.xml.sax.InputSource. in)))]
-    [(.getErrors error-handler) (str baos)]))
+  (import '(nu.validator.validation SimpleDocumentValidator)
+          '(org.xml.sax ErrorHandler InputSource)
+          '(java.io StringReader))
+  (defn validation-errors
+    "
+    https://github.com/Be-Nice-Now/patterns/blob/51f6bdb2f0bdd260c5a7b3fcb3494fd4ed5af130/test/patterns/test_utils.clj
+    "
+    [html]
+    (let [errs (atom [])
+          error-handler (reify ErrorHandler
+                          (warning [_this ex]
+                            (swap! errs conj {:level :warning
+                                              :ex    ex}))
+                          (error [_this ex]
+                            (swap! errs conj {:level :error
+                                              :ex    ex}))
+                          (fatalError [_this ex]
+                            (swap! errs conj {:level :fatal
+                                              :ex    ex})))]
+      (doto (SimpleDocumentValidator.)
+        (.setUpMainSchema "http://s.validator.nu/html5-rdfalite.rnc" error-handler)
+        (.setUpValidatorAndParsers error-handler false false)
+        (.checkHtmlInputSource (-> html StringReader. InputSource.)))
+      @errs)))
