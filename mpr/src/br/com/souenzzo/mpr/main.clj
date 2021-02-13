@@ -12,7 +12,8 @@
             [ring.middleware.session.store :as session.store]
             [ring.util.mime-type :as mime])
   (:import (java.nio.charset StandardCharsets)
-           (java.util UUID)))
+           (java.util UUID)
+           (java.util.concurrent LinkedBlockingQueue)))
 
 (defn ui-std-head
   [req opts]
@@ -45,10 +46,9 @@
                         :mpr.session/authed?            true}
                        {:db/id              operator
                         :mpr.operator/email email}])
-    {:headers (merge
-                {}
-                (when next
-                  {"Location" next}))
+    {:headers (merge {}
+                     (when next
+                       {"Location" next}))
      :status  303}))
 
 (defn ui-login-form
@@ -114,33 +114,38 @@
                                    :msg    (ex-message ex)
                                    :status 500}))))})
 
+(defn conn-session-store
+  [conn]
+  (reify session.store/SessionStore
+    (read-session [this id]
+      (d/pull (d/db conn)
+              `[(:mpr.session/anti-forgery-token :as ~csrf/anti-forgery-token-str)]
+              [:mpr.session/id id]))
+    (write-session [this id* data]
+      (let [anti-forgery-token (get data csrf/anti-forgery-token-str)
+            ;; this key need to by crypto-safe
+            id (or id* (str (UUID/randomUUID)))
+            session (d/tempid :db.part/user)]
+        @(d/transact conn (concat [[:db/add session :mpr.session/id id]]
+                                  (when anti-forgery-token
+                                    [[:db/add session :mpr.session/anti-forgery-token anti-forgery-token]])))
+        id))))
+
 (defn routes
   [{::keys [conn]
     :as    env}]
-  (let [store (reify session.store/SessionStore
-                (read-session [this id]
-                  (d/pull (d/db conn)
-                          `[(:mpr.session/anti-forgery-token :as ~csrf/anti-forgery-token-str)]
-                          [:mpr.session/id id]))
-                (write-session [this id* data]
-                  (let [anti-forgery-token (get data csrf/anti-forgery-token-str)
-                        ;; this key need to by crypto-safe
-                        id (or id* (str (UUID/randomUUID)))
-                        session (d/tempid :db.part/user)]
-                    @(d/transact conn (concat [[:db/add session :mpr.session/id id]]
-                                              (when anti-forgery-token
-                                                [[:db/add session :mpr.session/anti-forgery-token anti-forgery-token]])))
-                    id)))
-        session (-> {:store       store
-                     :cookie-name "mpr"}
-                    middlewares/session)
-        csrf (-> {}
-                 csrf/anti-forgery)
+  (let [store (conn-session-store conn)
+        session (middlewares/session {:store       store
+                                      :cookie-name "mpr"})
+        csrf (csrf/anti-forgery {})
         entity-conn {:name  ::entity-conn
                      :enter (fn [ctx]
-                              (update ctx :request assoc
-                                      ::db (d/db conn)
-                                      ::conn conn))}
+                              (if (-> ctx :request :request-method #{:post})
+                                (update ctx :request assoc
+                                        ::db (d/db conn)
+                                        ::conn conn)
+                                (update ctx :request assoc
+                                        ::db (d/db conn))))}
         body-params (body-params/body-params)]
     (-> `#{["/" :get ~[ex-handler
                        session
