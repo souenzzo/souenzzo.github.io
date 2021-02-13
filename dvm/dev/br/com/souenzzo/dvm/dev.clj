@@ -5,21 +5,19 @@
             [ring.util.mime-type :as mime]))
 
 (defn body
-  [env props]
-  (dvm/el "div"
-          "body!"))
+  [env]
+  [:div "body!"])
 
 (def ui-hello
-  (dvm/el "html" {}
-          (dvm/el "head" {}
-                  (dvm/el "title" {}
-                          "hello!"))
-          (dvm/el "body" {}
-                  (dvm/el body))))
+  [:html
+   [:head
+    [:title "Hello!"]]
+   [:body
+    [body]]])
 
 (defn index
   [req]
-  {:body    (dvm/-render ui-hello req)
+  {:body    (dvm/render-to-string req ui-hello)
    :status  200
    :headers {"Content-Type" (mime/default-mime-types "html")}})
 
