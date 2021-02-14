@@ -27,6 +27,17 @@
   {\< "&lt;"
    \& "&amp;"})
 
+(defprotocol IRender
+  :extend-via-metadata true
+  (-render [this env]))
+
+(extend-protocol IRender
+  Object
+  (-render [this env]
+    (str this))
+  nil
+  (-render [this env] ""))
+
 (defn render
   [^Writer w env element]
   (if (coll? element)
@@ -35,8 +46,8 @@
         (keyword? el-head)
         (let [[tag-ident attributes & children] element
               opts? (map? attributes)
-              ;; TODO: we should transform `:A` into `a`
-              ;; TODO: we should throw DOMException cases like `:>`
+              ;; TODO: we should transform `:A` into `a` ?! document.createElement do that.
+              ;; TODO: we should throw DOMException cases like `:<` ?! document.createElement do that.
               tag-name (name tag-ident)]
           (.write w "<")
           (.write w tag-name)
@@ -49,7 +60,7 @@
               (when-not (true? attribute-value)
                 (.write w "=")
                 ;; TODO: handle escape
-                (.write w (pr-str (str attribute-value))))))
+                (.write w (pr-str (-render attribute-value env))))))
           ;; TODO: For void tags, should we `/>` ?! It's HTML? XML?
           (.write w ">")
           (when-not (void-elements tag-ident)
@@ -63,7 +74,7 @@
         (fn? el-head) (render w env (apply el-head env (rest element)))
         :else (doseq [el element]
                 (render w env el))))
-    (.write w (string/escape (str element)
+    (.write w (string/escape (-render element env)
                              html-cmap))))
 
 (defn render-to-string

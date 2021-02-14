@@ -5,18 +5,18 @@
             [com.wsscode.pathom3.connect.indexes :as pci]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.interface.eql :as p.eql]
-            [com.wsscode.pathom3.interface.smart-map :as psm]
             [io.pedestal.http :as http]
-            [io.pedestal.http.body-params :as body-params]
-            [br.com.souenzzo.hiete :as hiete]
-            [io.pedestal.http.csrf :as csrf]
-            [io.pedestal.http.ring-middlewares :as middlewares]
-            [io.pedestal.http.route :as route]))
+            [io.pedestal.http.route :as route]
+            [br.com.souenzzo.dvm :as dvm]
+            [clojure.string :as string]
+            [ring.util.mime-type :as mime])
+  (:import (java.nio.charset StandardCharsets)))
 
 (defn ui-head
   [_]
   [:head
-   [:meta {:charset hiete/utf-8}]
+   [:meta {:charset (str StandardCharsets/UTF_8)}]
+   [:link {:rel "icon" :href "data:"}]
    [:title "Conduit"]
    [:link {:href "https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
            :rel  "stylesheet"
@@ -29,18 +29,24 @@
 
 (defn ui-nav
   [req]
-  [:nav.navbar.navbar-light
-   [:div.container
-    [:a.navbar-brand {:href (hiete/href :conduit.page/home)}
+  [:nav
+   {:class "navbar navbar-light"}
+   [:div
+    {:class "container"}
+    [:a
+     {:class "navbar-brand"
+      :href  "#"}
      "conduit"]
-    [:ul.nav.navbar-nav.pull-xs-right
+    [:ul
+     {:class "nav navbar-nav pull-xs-right"}
      (for [[label route-name] [["Home" :conduit.page/home]
                                ["Sign in" :conduit.page/login]
                                ["Sign up" :conduit.page/register]]]
-       [:li.nav-item
-        {:class (when (= route-name (:route-name hiete/*route*))
-                  "active")}
-        [:a.nav-link {:href (hiete/href route-name)}
+       [:li
+        {:class "nav-item"}
+        [:a
+         {:class "nav-link"
+          :href  "#"}
          label]])
      #_[:li.nav-item
         [:a.nav-link {:href (hiete/href :conduit.page/editor)}
@@ -54,18 +60,23 @@
 (defn ui-footer
   [_]
   [:footer
-   [:div.container
-    [:a.logo-font {:href (hiete/href :conduit.page/home)}
+   [:div
+    {:class "container"}
+    [:a
+     {:class "logo-font"
+      :href  "#"}
      "conduit"]
-    [:span.attribution
+    [:span
+     {:class "attribution"}
      "An interactive learning project from"
-     [:a {:href "https://thinkster.io"} "Thinkster"]
+     [:a {:href "https://thinkster.io"}
+      "Thinkster"]
      ". Code &amp; design licensed under MIT."]]])
 
 (defn ui-register
   [req]
   {:html   [:html
-            (ui-head req)
+            [ui-head]
             [:body
              (ui-nav req)
              [:div.auth-page
@@ -130,61 +141,96 @@
 
 (defn ui-home
   [req]
-  (let [{:conduit.feed/keys [tags articles]} (psm/smart-map req)]
-    {:html   [:html
-              (ui-head req)
-              [:body
-               (ui-nav req)
-               [:div.home-page
-                [:div.banner
-                 [:div.container
-                  [:h1.logo-font "conduit"]
-                  [:p "A place to share your knowledge."]]]
-                [:div.container.page
-                 [:div.row
-                  [:div.col-md-9
-                   [:div.feed-toggle
-                    [:ul.nav.nav-pills.outline-active
-                     [:li.nav-item
-                      [:a.nav-link.disabled {:href (hiete/href :conduit.page/home)}
-                       "Your Feed"]]
-                     [:li.nav-item
-                      [:a.nav-link.active {:href (hiete/href :conduit.page/home)}
-                       "Global Feed"]]]]
-                   (for [{:conduit.article/keys [tags title description slug favorites-count
-                                                 author created-at]} articles
-                         :let [{:conduit.profile/keys [username image]} author]]
-                     [:div.article-preview
-                      [:div.article-meta
-                       [:a {:href (hiete/href :conduit.page/profile
-                                              :params {:username username})}
-                        [:img {:src image}]]
-                       [:div.info
-                        [:a.author {:href (hiete/href :conduit.page/profile
-                                                      :params {:username username})}
-                         username]
-                        [:span.date (str created-at)]]
-                       [:button.btn.btn-outline-primary.btn-sm.pull-xs-right
-                        [:i.ion-heart] favorites-count]]
-                      [:a.preview-link {:href (hiete/href :conduit.page/article
-                                                          :params {:slug slug})}
-                       [:h1 title]
-                       [:p description]
-                       [:span "Read more..."]
-                       [:ul.tag-list
-                        (for [{:conduit.tag/keys [tag]} tags]
-                          [:li.tag-default.tag-pill.tag-outline.ng-binding.ng-scope
-                           tag])]]])]
-                  [:div.col-md-3
-                   [:div.sidebar
-                    [:p "Popular Tags"]
-                    [:div.tag-list
-                     (for [{:conduit.tag/keys [tag]} tags]
-                       [:a.tag-pill.tag-default {:href (hiete/href :conduit.page/home
-                                                                   :params {:tag tag})}
-                        tag])]]]]]]
-               (ui-footer req)]]
-     :status 200}))
+  (let [{:conduit.feed/keys [tags articles]} {}
+        ui [:html
+            [ui-head]
+            [:body
+             [ui-nav]
+             [:div
+              {:class "home-page"}
+              [:div
+               {:class "banner"}
+               [:div
+                {:class "container"}
+                [:h1
+                 {:class "logo-font"}
+                 "conduit"]
+                [:p "A place to share your knowledge."]]]
+              [:div
+               {:class "container page"}
+               [:div
+                {:class "row"}
+                [:div
+                 {:class "col-md-9"}
+                 [:div
+                  {:class "feed-toggle"}
+                  [:ul
+                   {:class "nav nav-pills outline-active"}
+                   [:li
+                    {:class "nav-item"}
+                    [:a
+                     {:class " nav-link disabled"
+                      :href  "#"}
+                     "Your Feed"]]
+                   [:li
+                    {:class "nav-item"}
+                    [:a
+                     {:class "nav-link active"
+                      :href  "#"}
+                     "Global Feed"]]]]
+                 (for [{:conduit.article/keys [tags title description slug favorites-count
+                                               author created-at]} articles
+                       :let [{:conduit.profile/keys [username image]} author]]
+                   [:div
+                    {:class "article-preview"}
+                    [:div
+                     {:class "article-meta"}
+                     [:a {:href "#"}
+                      [:img {:src image}]]
+                     [:div
+                      {:class "info"}
+                      [:a
+                       {:class "author"
+                        :href  "#"}
+                       username]
+                      [:span
+                       {:class "date"}
+                       (str created-at)]]
+                     [:button
+                      {:class "btn btn-outline-primary btn-sm pull-xs-right"}
+                      [:i
+                       {:class "ion-heart"}]
+                      favorites-count]]
+                    [:a
+                     {:class "preview-link"
+                      :href  "#"}
+                     [:h1 title]
+                     [:p description]
+                     [:span "Read more..."]
+                     [:ul
+                      {:class "tag-list"}
+                      (for [{:conduit.tag/keys [tag]} tags]
+                        [:li
+                         {:class "tag-default tag-pill tag-outline ng-binding ng-scope"}
+                         tag])]]])]
+                [:div
+                 {:class "col-md-3"}
+                 [:div
+                  {:class "sidebar"}
+                  [:p "Popular Tags"]
+                  [:div
+                   {:class "tag-list"}
+                   (for [{:conduit.tag/keys [tag]} tags]
+                     [:a
+                      {:class "tag-pill tag-default"
+                       :href  "#"}
+                      tag])]]]]]]
+             [ui-footer]]]
+        html (dvm/render-to-string req ui)]
+    {:body    (string/join "\n" ["<!DOCTYPE html>"
+                                 html])
+     :headers {"Content-Type" (mime/default-mime-types "html")}
+     :status  200}))
 
 (pco/defresolver operation:GetArticles []
   {::pco/output [{:conduit.feed/articles [{:conduit.article/author [:conduit.profile/username
@@ -240,30 +286,12 @@
 
 (pco/defresolver routes [{::keys [operations]}]
   {::pco/output [::routes]}
-  (let [auth [(middlewares/session)
-              (csrf/anti-forgery {:read-token hiete/read-token})
-              (body-params/body-params)]
-
-        idx (pci/register operations)
+  (let [idx (pci/register operations)
         merge-env {:name  ::merge-env
                    :enter (fn [ctx]
                             (update ctx :request merge idx))}
-        routes #{["/" :get (conj auth merge-env hiete/render-hiccup ui-home)
-                  :route-name :conduit.page/home]
-                 ["/editor" :get (conj auth merge-env hiete/render-hiccup ui-home)
-                  :route-name :conduit.page/editor]
-                 ["/settings" :get (conj auth merge-env hiete/render-hiccup ui-home)
-                  :route-name :conduit.page/settings]
-                 ["/register" :get (conj auth merge-env hiete/render-hiccup ui-register)
-                  :route-name :conduit.page/register]
-                 ["/login" :get (conj auth merge-env hiete/render-hiccup ui-login)
-                  :route-name :conduit.page/login]
-                 ["/article/:slug" :get (conj auth merge-env hiete/render-hiccup ui-home)
-                  :route-name :conduit.page/article]
-                 ["/profile/:username" :get (conj auth merge-env hiete/render-hiccup ui-home)
-                  :route-name :conduit.page/profile]
-                 ["/api/*sym" :post (conj auth merge-env std-mutation)
-                  :route-name :conduit.api/mutation]}]
+        routes #{["/" :get [merge-env ui-home]
+                  :route-name :conduit.page/home]}]
     {::routes routes}))
 
 (pco/defresolver service [{::keys [operations]}]

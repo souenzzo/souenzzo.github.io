@@ -1,7 +1,6 @@
 (ns br.com.souenzzo.mpr.main
   (:require [clojure.string :as string]
             [datomic.api :as d]
-            [hiccup2.core :as h]
             [br.com.souenzzo.dvm :as dvm]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :as body-params]
@@ -12,8 +11,13 @@
             [ring.middleware.session.store :as session.store]
             [ring.util.mime-type :as mime])
   (:import (java.nio.charset StandardCharsets)
-           (java.util UUID)
-           (java.util.concurrent LinkedBlockingQueue)))
+           (java.util UUID)))
+
+(defn href [route-name & opts]
+  (let [{:as this} opts]
+    (with-meta (assoc this :route-name route-name)
+               `{dvm/-render ~(fn [_ _]
+                                (apply route/url-for route-name opts))})))
 
 (defn ui-std-head
   [req opts]
@@ -56,7 +60,7 @@
     :keys       [query-params]} opts]
   (let [{:keys [next]} query-params]
     [:form
-     {:action (route/url-for :login!)
+     {:action (href :login!)
       :method "POST"}
      "login"
      [:label

@@ -1,8 +1,9 @@
 (ns br.com.souenzzo.hiete
   (:require [io.pedestal.http.route :as route]
-            [hiccup2.core :as h]
+            [br.com.souenzzo.dvm :as dvm]
             [io.pedestal.http.csrf :as csrf]
-            [ring.util.mime-type :as mime])
+            [ring.util.mime-type :as mime]
+            [clojure.string :as string])
   (:import (java.nio.charset StandardCharsets)))
 
 (def ^String utf-8 (str (StandardCharsets/UTF_8)))
@@ -32,12 +33,12 @@
    :enter (fn [{:keys [route]
                 :as   ctx}]
             (assoc-in ctx [:bindings #'*route*] route))
-   :leave (fn [{:keys [response]
+   :leave (fn [{:keys [response request]
                 :as   ctx}]
             (if-let [body (:html response)]
               (-> ctx
-                  (assoc-in [:response :body] (->> body
-                                                   (h/html {:mode :html})
-                                                   (str "<!DOCTYPE html>\n")))
+                  (assoc-in [:response :body] (->> (dvm/render-to-string request body)
+                                                   (conj ["<!DOCTYPE html>"])
+                                                   (string/join "\n")))
                   (assoc-in [:response :headers "Content-Type"] (mime/default-mime-types "html")))
               ctx))})
