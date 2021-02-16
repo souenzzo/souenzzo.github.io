@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="data:">
@@ -23,65 +23,73 @@ main {
 
 
     </style>
+    <meta name="viewport">
+    <meta name="description"
+          content="7GUIs">
 </head>
 <body>
-<section>
-    <header>
-        Counter
-    </header>
-    <main>
-        <form onsubmit="event.preventDefault(); counter.value=parseInt(counter.value) + 1">
-            <input type="submit"
-                   value="+"/>
-            <output name="counter">0
-            </output>
-        </form>
-    </main>
-</section>
-<section>
-    <header>
-        TempConv
-    </header>
-    <main>
-        <form onsubmit="event.preventDefault()">
-            <label>
-                Celsius
-                <input onchange="fahrenheit.valueAsNumber = (celsius.valueAsNumber * (9 / 5)) + 32"
-                       name="celsius"
-                       step="any"
-                       type="number"/>
-            </label>
-            <label>
-                Fahrenheit
-                <input onchange="celsius.valueAsNumber = (fahrenheit.valueAsNumber - 32) * (5 / 9)"
-                       name="fahrenheit"
-                       step="any"
-                       type="number"/>
-            </label>
-        </form>
-    </main>
-</section>
-<section>
-    <header>
-        Book Flight
-    </header>
-    <main>
-        <form onsubmit="event.preventDefault()">
-            <label>
-                going
-                <input onchange="back.min = going.value"
-                       name="going"
-                       type="date"/>
-            </label>
-            <label>
-                back
-                <input onchange="going.max = back.value"
-                       name="back"
-                       type="date"/>
-            </label>
-            <input type="submit">
-        </form>
-    </main>
-</section>
+<header>
+    <a href="https://eugenkiss.github.io/7guis/tasks/">7GUIs challenge</a> in simple HTML
+</header>
+<main>
+    <section>
+        <header>
+            Counter
+        </header>
+        <main>
+            <form onsubmit="event.preventDefault(); counter.value=parseInt(counter.value) + 1">
+                <input type="submit"
+                       value="+"/>
+                <output name="counter">0
+                </output>
+            </form>
+        </main>
+    </section>
+    <section>
+        <header>
+            TempConv
+        </header>
+        <main>
+            <form onsubmit="event.preventDefault()">
+                <label>
+                    Celsius
+                    <input onchange="fahrenheit.valueAsNumber = (celsius.valueAsNumber * (9 / 5)) + 32"
+                           name="celsius"
+                           step="any"
+                           type="number"/>
+                </label>
+                <label>
+                    Fahrenheit
+                    <input onchange="celsius.valueAsNumber = (fahrenheit.valueAsNumber - 32) * (5 / 9)"
+                           name="fahrenheit"
+                           step="any"
+                           type="number"/>
+                </label>
+            </form>
+        </main>
+    </section>
+    <section>
+        <header>
+            Book Flight
+        </header>
+        <main>
+            <form onsubmit="event.preventDefault()">
+                <label>
+                    going
+                    <input onchange="back.min = going.value"
+                           name="going"
+                           type="date"/>
+                </label>
+                <label>
+                    back
+                    <input onchange="going.max = back.value"
+                           name="back"
+                           type="date"/>
+                </label>
+                <input type="submit">
+            </form>
+        </main>
+    </section>
+</main>
 </body>
 </html>
