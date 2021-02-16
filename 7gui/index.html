@@ -20,7 +20,6 @@ section {
 main {
   padding: 1em;
 }
-
     </style>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
@@ -86,19 +85,45 @@ main {
     </article>
     <article>
         <h4>Timer</h4>
-        <form onsubmit="event.preventDefault()">
+        <progress id="progress"
+                  max="100"
+                  value="0">
+        </progress>
+        <form onsubmit="event.preventDefault(); this.dataset.frame = requestAnimationFrame(progressAnimation('progress', duration))"
+              oninput="elapsed.value = `${duration.valueAsNumber}s`">
             <label>
                 Elapsed Time
-                <output name="elapsed">0s</output>
+                <output name="elapsed">0</output>
             </label>
             <label>
                 Duration
-                <input name="back"
+                <input name="duration"
                        type="range"/>
             </label>
             <input type="submit">
         </form>
     </article>
+    <script>
+let progressAnimation = (progressId, durationElement) => {
+  let progressElement = document.getElementById(progressId);
+  let instZero = new Date();
+  let animationFrame = () => {
+     let instFinal = new Date(instZero);
+
+     instFinal.setSeconds(instFinal.getSeconds() + durationElement.valueAsNumber);
+
+     let instCurrent = new Date();
+     if (instCurrent > instFinal) {
+       return
+     }
+     let total = instFinal - instZero
+     progressElement.max = total
+     progressElement.value = total - (instFinal - instCurrent)
+     requestAnimationFrame(animationFrame)
+  }
+  return animationFrame
+}
+    </script>
 </main>
 </body>
 </html>
