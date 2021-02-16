@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:">
+    <link rel="icon" href='data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="16" width="16">%3C/svg>'>
     <title>7GUIs</title>
     <style>
 body {
@@ -19,6 +19,8 @@ section {
 main {
   padding: 1em;
 }
+
+
     </style>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
@@ -31,62 +33,50 @@ main {
 </header>
 <main>
     <article>
-        <header>
-            Counter
-        </header>
-        <main>
-            <form onsubmit="event.preventDefault(); counter.value=parseInt(counter.value) + 1">
-                <input type="submit"
-                       value="+"/>
-                <output name="counter">0
-                </output>
-            </form>
-        </main>
+        <h4>Counter</h4>
+        <form onsubmit="event.preventDefault(); counter.value=parseInt(counter.value) + 1">
+            <input type="submit"
+                   value="+"/>
+            <output name="counter">0
+            </output>
+        </form>
     </article>
     <article>
-        <header>
-            TempConv
-        </header>
-        <main>
-            <form onsubmit="event.preventDefault()">
-                <label>
-                    Celsius
-                    <input onchange="fahrenheit.valueAsNumber = (celsius.valueAsNumber * (9 / 5)) + 32"
-                           name="celsius"
-                           step="any"
-                           type="number"/>
-                </label>
-                <label>
-                    Fahrenheit
-                    <input onchange="celsius.valueAsNumber = (fahrenheit.valueAsNumber - 32) * (5 / 9)"
-                           name="fahrenheit"
-                           step="any"
-                           type="number"/>
-                </label>
-            </form>
-        </main>
+        <h4>TempConv</h4>
+        <form onsubmit="event.preventDefault()">
+            <label>
+                Celsius
+                <input onchange="fahrenheit.valueAsNumber = (celsius.valueAsNumber * (9 / 5)) + 32"
+                       name="celsius"
+                       step="any"
+                       type="number"/>
+            </label>
+            <label>
+                Fahrenheit
+                <input onchange="celsius.valueAsNumber = (fahrenheit.valueAsNumber - 32) * (5 / 9)"
+                       name="fahrenheit"
+                       step="any"
+                       type="number"/>
+            </label>
+        </form>
     </article>
     <article>
-        <header>
-            Book Flight
-        </header>
-        <main>
-            <form onsubmit="event.preventDefault()">
-                <label>
-                    going
-                    <input onchange="back.min = going.value"
-                           name="going"
-                           type="date"/>
-                </label>
-                <label>
-                    back
-                    <input onchange="going.max = back.value"
-                           name="back"
-                           type="date"/>
-                </label>
-                <input type="submit">
-            </form>
-        </main>
+        <h4>Book Flight</h4>
+        <form onsubmit="event.preventDefault()">
+            <label>
+                going
+                <input onchange="back.min = going.value"
+                       name="going"
+                       type="date"/>
+            </label>
+            <label>
+                back
+                <input onchange="going.max = back.value"
+                       name="back"
+                       type="date"/>
+            </label>
+            <input type="submit">
+        </form>
     </article>
 </main>
 </body>
