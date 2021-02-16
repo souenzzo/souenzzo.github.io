@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href='data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="16" width="16">%3C/svg>'>
+    <link rel="icon"
+          href='data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="16" width="16">%3C/svg>'>
     <title>7GUIs</title>
     <style>
 body {
@@ -19,7 +20,6 @@ section {
 main {
   padding: 1em;
 }
-
 
     </style>
     <meta name="viewport"
@@ -63,17 +63,38 @@ main {
     <article>
         <h4>Book Flight</h4>
         <form onsubmit="event.preventDefault()">
+            <select onchange="back.disabled = (this.value == 'oneway')">
+                <option value="round">return flight</option>
+                <option value="oneway">one-way flight</option>
+            </select>
             <label>
                 going
                 <input onchange="back.min = going.value"
+                       required
                        name="going"
                        type="date"/>
             </label>
             <label>
                 back
                 <input onchange="going.max = back.value"
+                       required
                        name="back"
                        type="date"/>
+            </label>
+            <input type="submit">
+        </form>
+    </article>
+    <article>
+        <h4>Timer</h4>
+        <form onsubmit="event.preventDefault()">
+            <label>
+                Elapsed Time
+                <output name="elapsed">0s</output>
+            </label>
+            <label>
+                Duration
+                <input name="back"
+                       type="range"/>
             </label>
             <input type="submit">
         </form>
