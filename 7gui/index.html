@@ -6,20 +6,10 @@
           href='data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="16" width="16">%3C/svg>'>
     <title>7GUIs</title>
     <style>
-body {
-  display: flex;
-  flex-direction: column;
-}
-form {
-  display: flex;
-  flex-direction: column;
-}
-section {
+input {
   padding: 1em;
 }
-main {
-  padding: 1em;
-}
+
     </style>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
@@ -62,10 +52,13 @@ main {
     <article>
         <h4>Book Flight</h4>
         <form onsubmit="event.preventDefault()">
-            <select onchange="back.disabled = (this.value == 'oneway')">
-                <option value="round">return flight</option>
-                <option value="oneway">one-way flight</option>
-            </select>
+            <label>
+                Flight mode
+                <select onchange="back.disabled = (this.value == 'oneway')">
+                    <option value="round">return flight</option>
+                    <option value="oneway">one-way flight</option>
+                </select>
+            </label>
             <label>
                 going
                 <input onchange="back.min = going.value"
@@ -123,6 +116,7 @@ let progressAnimation = (progressId, durationElement) => {
   }
   return animationFrame
 }
+
     </script>
 </main>
 </body>
