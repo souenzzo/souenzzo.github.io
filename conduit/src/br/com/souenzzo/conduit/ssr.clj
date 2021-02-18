@@ -9,7 +9,9 @@
             [io.pedestal.http.route :as route]
             [br.com.souenzzo.dvm :as dvm]
             [clojure.string :as string]
-            [ring.util.mime-type :as mime])
+            [ring.util.mime-type :as mime]
+            [clojure.pprint :as pp]
+            [io.pedestal.http.body-params :as body-params])
   (:import (java.nio.charset StandardCharsets)))
 
 (defn href
@@ -83,7 +85,7 @@
      ". Code &amp; design licensed under MIT."]]])
 
 (defn ui-account-form
-  [req {:keys [fields label tips]}]
+  [req {:keys [fields label tips action]}]
   [:div
    {:class "auth-page"}
    [:div
@@ -103,7 +105,8 @@
       #_[:ul.error-messages
          [:li "That email is already taken"]]
       [:form
-       {}
+       {:action action
+        :method "POST"}
        (for [field fields]
          [:fieldset
           {:class "form-group"}
@@ -112,7 +115,12 @@
                   field)]])
        [:button
         {:class "btn btn-lg btn-primary pull-xs-right"}
-        "Sign in"]]]]]])
+        label]]]]]])
+
+(defn m-register
+  [{:keys [form-params]}]
+  (prn form-params)
+  {})
 
 (defn ui-register
   [req]
@@ -120,11 +128,16 @@
                   [ui-head]
                   [:body
                    [ui-nav]
-                   [ui-account-form {:fields [{:type        "text"
+                   [ui-account-form {:action (href ::mutation
+                                                   :params {:sym `m-register})
+                                     :fields [{:type        "text"
+                                               :name        "username"
                                                :placeholder "Username"}
                                               {:type        "email"
+                                               :name        "email"
                                                :placeholder "email"}
                                               {:type        "password"
+                                               :name        "password"
                                                :placeholder "Password"}]
                                      :label  "Sign on"
                                      :tips   {"Have an account?" (href :conduit.page/login)}}]
@@ -304,13 +317,15 @@
     {:conduit.feed/tags (for [tag tags]
                           {:conduit.tag/tag tag})}))
 
-(defn std-mutation
-  [{:keys []
-    :as   env}]
-  (let [tx []
-        result (p.eql/process env tx)]
+
+(defn mutation
+  [{:keys [form-params headers path-params]
+    :as   req}]
+  (when-let [f (some-> path-params :sym symbol requiring-resolve)]
+    (f req)
     {:status  303
-     :headers {"Location" "/"}}))
+     :headers {"Location" (get headers "referer" "/")}}))
+
 
 (pco/defresolver routes [{::keys [operations]}]
   {::pco/output [::routes]}
@@ -323,7 +338,11 @@
                  ["/login" :get [merge-env ui-login]
                   :route-name :conduit.page/login]
                  ["/register" :get [merge-env ui-register]
-                  :route-name :conduit.page/register]}]
+                  :route-name :conduit.page/register]
+                 ["/api/*sym" :post [(body-params/body-params)
+                                     merge-env
+                                     mutation]
+                  :route-name ::mutation]}]
     {::routes routes}))
 
 (pco/defresolver service [{::keys [operations]}]
