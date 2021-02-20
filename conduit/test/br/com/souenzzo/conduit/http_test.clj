@@ -4,7 +4,11 @@
             [io.pedestal.test :refer [response-for]]
             [io.pedestal.http.route :as route]
             [clojure.string :as string]
-            [midje.sweet :refer [fact =>]])
+            [midje.sweet :refer [fact =>]]
+            [io.pedestal.interceptor :as interceptor]
+            [io.pedestal.interceptor.chain :as chain]
+            [io.pedestal.http.route.map-tree :as map-tree]
+            [io.pedestal.http.route.router :as router])
   (:import (java.net.http HttpResponse HttpClient HttpRequest HttpResponse$BodyHandlers)
            (java.net URI)))
 
@@ -14,7 +18,6 @@
   [service-map]
   (let [{::http/keys [service-fn servlet]} (-> service-map
                                                http/create-servlet)]
-    #_(def __servlet servlet)
     (proxy [HttpClient] []
       (send [^HttpRequest request body-hanlder]
         (let [url (str (.uri request))
@@ -78,3 +81,28 @@
           (.statusCode))
       => 202)))
 
+(deftest custom-http-router
+  (let [router (map-tree/router [{:path          "/hello"
+                                  ::interceptors (->> [{:name  ::b
+                                                        :enter (fn [ctx]
+                                                                 (assoc ctx :response {:status 303}))}]
+                                                      (map interceptor/interceptor))}])
+        interceptors (->> [{:name  ::a
+                            :enter (fn [{:keys [request]
+                                         :as   ctx}]
+
+                                     (let [{::keys [interceptors]
+                                            :as    route} (router/find-route router request)]
+                                       (-> c
+                                           (assoc :request (merge request route))
+                                           (chain/enqueue interceptors))))}]
+                          (map interceptor/interceptor))
+        service-fn (-> {::http/interceptors interceptors}
+                       http/create-servlet
+                       ::http/service-fn)]
+    (fact
+      (response-for service-fn :get "/hello")
+      => {})
+    (fact
+
+      => {})))

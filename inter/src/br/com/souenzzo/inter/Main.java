@@ -129,6 +129,11 @@ abstract class AAccount implements IAccount {
     public abstract String getLastName();
 
     public String getFullName() {
+        throw new Throwable("a") implements IAccount () {
+            public String getFirstName(){
+                return "a";
+            }
+        };
         return String.join(" ", getFirstName(), getLastName());
     }
 }
