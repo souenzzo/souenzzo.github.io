@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <!-- Static Metadata -->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="data:"/>
+    <meta property="og:type" content="article"/>
+    <meta name="twitter:card" content="summary"/>
+    <!-- Metadata about me -->
+    <meta name="twitter:site" content="@souenzzo"/>
+    <meta name="twitter:creator" content="@souenzzo"/>
+    <meta name="author" content="Enzzo Cavallo">
+    <!-- Title metadata -->
+    <title>Reading and understanding clojure errors</title>
+    <meta property="og:title" content="Reading and understanding clojure errors"/>
+    <!-- Description metadata -->
+    <meta name="Description"
+          content="Tips to debug clojure reading errors and stacktraces"/>
+    <meta name="description"
+          content="Tips to debug clojure reading errors and stacktraces">
+    <meta property="og:description"
+          content="Tips to debug clojure reading errors and stacktraces"/>
+    <!-- https://jrl.ninja/etc/1 -->
+    <style>
+        section {
+          max-width: 38em;
+          padding: 1em;
+          margin: auto;
+        }
+        aside {
+          background-color: lightcyan;
+          padding: 1em;
+        }
+        code {
+          color: darkred;
+        }
+        pre {
+          color: darkred;
+        }
+
+
+    </style>
+</head>
+<body>
+<section>
+    <h1>Reading and understanding clojure errors</h1>
+    <p>Tips to debug clojure reading errors and stacktraces</p>
+    <main>
+        Let's start with a simple one:
+
+        <pre>
+;; A simple function that always throw an exception
+(defn my-throw-f [x]
+  (throw (ex-info (str "Invalid x: " x)
+                  {:x x})))
+=> #'user/my-throw-f
+;; Let's call it
+(my-throw-f "hello")
+Execution error (ExceptionInfo) at user/my-throw-f (REPL:2).
+Invalid x: hello
+        </pre>
+        What I can understand from this error? Let's split it in blocks:
+        <ul>
+            <li>
+                <code>Execution error</code>: Say with clojure
+                <a href="https://clojure.org/reference/repl_and_main#_error_printing">phases</a> it happend. We will
+                learn more about it later.
+            </li>
+            <li>
+                <code>ExceptionInfo</code>: The name of the class of the exception. ex-info
+                <a href="https://github.com/clojure/clojure/blob/master/src/clj/clojure/core.clj#L4776">internally</a>
+                creates an instance of clojure.lang.ExceptionInfo.
+            </li>
+            <li>
+                <code>user/my-throw-f</code>: The name of the function where the exception was thrown
+            </li>
+            <li>
+                <code>REPL:2</code>: The file name and the line of the file where this exception comes from. In that
+                case, we on REPL, so there is no file, but you can the that <code>(throw ...</code> is written on the
+                second line and it's reported.
+            </li>
+            <li>
+                <code>Invalid x: hello</code>: The message that you passed to <code>ex-info</code>
+            </li>
+        </ul>
+        Now let's try an exception that was not created by us
+        <pre>
+;; Calling my-throw-f, that need 1 argument, with zero args.
+(my-throw-f)
+Execution error (ArityException) at user/eval137 (REPL:1).
+Wrong number of args (0) passed to: user/my-throw-f
+        </pre>
+        Let's see the blocks:
+        <ul>
+            <li>
+                <code>Execution error</code>: Nothing changed here
+            </li>
+            <li>
+                <code>ArityException</code>: The name of the class of the exception. In that case, the full name is
+                <code>java.lang.ArithmeticException</code>
+            </li>
+            <li>
+                <code>user/eval137</code>: Here a wired one. Once we are at clojure repl, there is no function around
+                our exception. But here we can see an implementation detail: for every form evaluated in the REPL,
+                clojure internally creates a function, generating a name probably with <code>(gensym "eval")</code>,
+                then immediately executes it.
+            </li>
+            <li>
+                <code>REPL:1</code>: Nothing new in here.
+            </li>
+            <li>
+                <code>Wrong number of args (0) passed to: user/my-throw-f</code>: The message from the
+                <a href="https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/ArityException.java#L27">
+                    exception
+                </a>.
+            </li>
+        </ul>
+
+        Now let's do a trick: create an anonymous function with a name and immediately invoke it.
+        <pre>
+((fn my-context []
+   (my-throw-f)))
+Execution error (ArityException) at user/eval139$my-context (REPL:2).
+Wrong number of args (0) passed to: user/my-throw-f
+        </pre>
+        The context goes from <code>user/eval137</code>, that means basically nothing to
+        <code>user/eval139$my-context</code> that IMHO is way easier to find.
+        Let's use it to read our first stacktrace!
+        <pre>
+*e
+#error {
+ :cause "Wrong number of args (0) passed to: user/my-throw-f"
+ :via
+ [{:type clojure.lang.ArityException
+   :message "Wrong number of args (0) passed to: user/my-throw-f"
+   :at [clojure.lang.AFn throwArity "AFn.java" 429]}]
+ :trace
+ [[clojure.lang.AFn throwArity "AFn.java" 429]
+  [clojure.lang.AFn invoke "AFn.java" 28]
+  [user$eval139$my_context__140 invoke "NO_SOURCE_FILE" 2]
+  ...]}
+
+        </pre>
+        Once we created a context called <code>my-context</code> to our execution, anything before this context should
+        not be relevant.
+        Now let's try a harder one: an lazy stacktrace.
+        <pre>
+(map my-throw-f [1])
+Error printing return value (ExceptionInfo) at user/my-throw-f (NO_SOURCE_FILE:2).
+Invalid x: 1
+        </pre>
+        Here a new thing: <code>Error printing return value</code>. it's not a <code>Execution error</code> anymore.
+        The code was executed, and returns a value. <code>clojure.core/map</code> returns a lazy-seq, and when the
+        printer tryies to print the result, it throws.
+        Let's see the stacktrace
+        <pre>
+*e
+#error {
+ :cause "Invalid x: 1"
+ :data {:x 1}
+ :via
+ [{:type clojure.lang.ExceptionInfo
+   :message nil
+   :data #:clojure.error{:phase :print-eval-result}
+   :at [clojure.main$repl$read_eval_print__9112 invoke "main.clj" 442]}
+  {:type clojure.lang.ExceptionInfo
+   :message "Invalid x: 1"
+   :data {:x 1}
+   :at [user$my_throw_f invokeStatic "NO_SOURCE_FILE" 2]}]
+ :trace
+ [[user$my_throw_f invokeStatic "NO_SOURCE_FILE" 2]
+  [user$my_throw_f invoke "NO_SOURCE_FILE" 1]                      ;; [6]
+  [clojure.core$map$fn__5885 invoke "core.clj" 2757]               ;; [5]
+  [clojure.lang.LazySeq sval "LazySeq.java" 42]
+  [clojure.lang.LazySeq seq "LazySeq.java" 51]                     ;; [4]
+  [clojure.lang.RT seq "RT.java" 535]
+  [clojure.core$seq__5420 invokeStatic "core.clj" 139]
+  [clojure.core$print_sequential invokeStatic "core_print.clj" 53]
+  [clojure.core$fn__7331 invokeStatic "core_print.clj" 174]
+  [clojure.core$fn__7331 invoke "core_print.clj" 174]
+  [clojure.lang.MultiFn invoke "MultiFn.java" 234]                 ;; [3]
+  [clojure.core$pr_on invokeStatic "core.clj" 3662]
+  [clojure.core$pr invokeStatic "core.clj" 3665]
+  [clojure.core$pr invoke "core.clj" 3665]
+  [clojure.lang.AFn applyToHelper "AFn.java" 154]
+  [clojure.lang.RestFn applyTo "RestFn.java" 132]
+  [clojure.core$apply invokeStatic "core.clj" 667]
+  [clojure.core$prn invokeStatic "core.clj" 3702]
+  [clojure.core$prn doInvoke "core.clj" 3702]                      ;; [2]
+  [clojure.lang.RestFn invoke "RestFn.java" 408]
+  [clojure.main$repl$read_eval_print__9112 invoke "main.clj" 442]  ;; [1]
+  [clojure.main$repl$fn__9121 invoke "main.clj" 458]
+  [clojure.main$repl invokeStatic "main.clj" 458]
+  [clojure.main$repl_opt invokeStatic "main.clj" 522]
+  [clojure.main$main invokeStatic "main.clj" 667]
+  [clojure.main$main doInvoke "main.clj" 616]
+  [clojure.lang.RestFn invoke "RestFn.java" 397]
+  [clojure.lang.AFn applyToHelper "AFn.java" 152]
+  [clojure.lang.RestFn applyTo "RestFn.java" 132]
+  [clojure.lang.Var applyTo "Var.java" 705]
+  [clojure.main main "main.java" 40]]}
+        </pre>
+        I highlight some points of this stacktrace:
+        <ul>
+            <li>1: Where the <code>clojure.main</code> REPL start the
+                <a href="https://github.com/clojure/clojure/blob/master/src/clj/clojure/main.clj#L442">print</a>
+                process
+            </li>
+            <li>2: The <code>clojure.main</code> uses the <code>clojure.core/prn</code>. No magic in here.</li>
+            <li>3: <code>clojure.core/prn</code> uses <code>clojure.core/print-method</code>. multimethod are ugly at
+                stacktraces. Is good to know that.
+            </li>
+            <li>4: Here we are not printing anymore. The print methods invoked the method to evaluare the lazy seq.</li>
+            <li>5: We can see that this lazy was created inside <code>clojure.core/map</code></li>
+            <li>6: The lazy seq if finally calling <code>my-throw-f</code></li>
+
+        </ul>
+        Extra tips:
+        <ul>
+            <li>The process that converts `my-throw-f` into `my_throw_f` is called munge and you can play with it using
+                <code>clojure.core/munge</code>
+            </li>
+        </ul>
+    </main>
+</section>
+<footer>
+    <p>
+        In case of doubts or errors,
+        <a target="_blank"
+           rel="noreferrer noopener"
+           href="https://github.com/souenzzo/souenzzo.github.io/issues/new">report an issue</a>
+    </p>
+    <p>If you prefer <a target="_blank"
+                        rel="noreferrer noopener"
+                        href="https://t.me/souenzzo">talk directly with me</a></p>
+</footer>
+</body>
+</html>
