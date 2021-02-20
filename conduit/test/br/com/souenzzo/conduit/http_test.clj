@@ -93,7 +93,7 @@
 
                                      (let [{::keys [interceptors]
                                             :as    route} (router/find-route router request)]
-                                       (-> c
+                                       (-> ctx
                                            (assoc :request (merge request route))
                                            (chain/enqueue interceptors))))}]
                           (map interceptor/interceptor))
