@@ -41,6 +41,7 @@
         pre {
           color: darkred;
         }
+
     </style>
 </head>
 <body>
@@ -49,9 +50,9 @@
     <p>How to create a Clojure project, main files, paths and dirs</p>
     <main>
         <aside>
-            In this tutorial, I will suppose that you know the <a target="_blank"
-                                                                  rel="noreferrer noopener"
-                                                                  href="https://en.wikipedia.org/wiki/Unix_shell">Unix
+            In this tutorial, I'm assuming that you know the <a target="_blank"
+                                                                rel="noreferrer noopener"
+                                                                href="https://en.wikipedia.org/wiki/Unix_shell">Unix
             command-line.</a>
         </aside>
         <p>
@@ -61,11 +62,11 @@
             tool. You should be able to run <code>clj -M -e "(prn :hello-world!)"</code> anywhere.
         </p>
         <aside>
-            For didactic proposes, I will give a name for my example project.
+            For didactic purposes, I'll give a name for my example project.
             This project will be called <code>pinheiro</code>.
         </aside>
         <p>
-            Let's create a empty directory to work:
+            Let's create an empty directory:
         </p>
         <pre>
 ~ $ mkdir pinheiro
@@ -130,7 +131,7 @@
             Once you declared in <code>deps.edn</code> that <code>src</code> is where your <code>classpath</code>
             starts, we say that it's <code>pinheiro/main.clj</code> in your classpath.
         </p>
-        <p>At this moment you should have a structure like this:</p>
+        <p>At this point you should have a structure like this:</p>
         <pre>
 ~/pinheiro $ tree
 .
@@ -175,7 +176,7 @@ Downloading: org/clojure/core.specs.alpha/0.2.44/core.specs.alpha-0.2.44.jar fro
 </section>
 <section>
     <h1>APPENDIX: git</h1>
-    <p>These file/dirs you should not commit:</p>
+    <p>You should not commit these file/dirs:</p>
     <ul>
         <li><code>.cpcache</code>: Cache dir created by Clojure command-line tool</li>
         <li><code>*.iml</code>: Intellij config file</li>
