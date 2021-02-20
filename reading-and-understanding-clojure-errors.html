@@ -12,15 +12,15 @@
     <meta name="twitter:creator" content="@souenzzo"/>
     <meta name="author" content="Enzzo Cavallo">
     <!-- Title metadata -->
-    <title>Reading and understanding clojure errors</title>
-    <meta property="og:title" content="Reading and understanding clojure errors"/>
+    <title>Reading and understanding Clojure errors</title>
+    <meta property="og:title" content="Reading and understanding Clojure errors"/>
     <!-- Description metadata -->
     <meta name="Description"
-          content="Tips to debug clojure reading errors and stacktraces"/>
+          content="Tips to debug Clojure reading errors and stacktraces"/>
     <meta name="description"
-          content="Tips to debug clojure reading errors and stacktraces">
+          content="Tips to debug Clojure reading errors and stacktraces">
     <meta property="og:description"
-          content="Tips to debug clojure reading errors and stacktraces"/>
+          content="Tips to debug Clojure reading errors and stacktraces"/>
     <!-- https://jrl.ninja/etc/1 -->
     <style>
         section {
@@ -40,12 +40,13 @@
         }
 
 
+
     </style>
 </head>
 <body>
 <section>
-    <h1>Reading and understanding clojure errors</h1>
-    <p>Tips to debug clojure reading errors and stacktraces</p>
+    <h1>Reading and understanding Clojure errors</h1>
+    <p>Tips to debug Clojure reading errors and stacktraces</p>
     <main>
         Let's start with a simple one:
 
@@ -60,11 +61,11 @@
 Execution error (ExceptionInfo) at user/my-throw-f (REPL:2).
 Invalid x: hello
         </pre>
-        What I can understand from this error? Let's split it in blocks:
+        What I can understand from this error? Let's split it into blocks:
         <ul>
             <li>
-                <code>Execution error</code>: Say with clojure
-                <a href="https://clojure.org/reference/repl_and_main#_error_printing">phases</a> it happend. We will
+                <code>Execution error</code>: Say with Clojure
+                <a href="https://clojure.org/reference/repl_and_main#_error_printing">phases</a> it happened. We will
                 learn more about it later.
             </li>
             <li>
@@ -101,9 +102,9 @@ Wrong number of args (0) passed to: user/my-throw-f
                 <code>java.lang.ArithmeticException</code>
             </li>
             <li>
-                <code>user/eval137</code>: Here a wired one. Once we are at clojure repl, there is no function around
+                <code>user/eval137</code>: Here a wired one. Once we are at Clojure repl, there is no function around
                 our exception. But here we can see an implementation detail: for every form evaluated in the REPL,
-                clojure internally creates a function, generating a name probably with <code>(gensym "eval")</code>,
+                Clojure internally creates a function, generating a name probably with <code>(gensym "eval")</code>,
                 then immediately executes it.
             </li>
             <li>
@@ -205,7 +206,7 @@ Invalid x: 1
         <ul>
             <li>1: Where the <code>clojure.main</code> REPL start the
                 <a href="https://github.com/clojure/clojure/blob/master/src/clj/clojure/main.clj#L442">print</a>
-                process
+                parse
             </li>
             <li>2: The <code>clojure.main</code> uses the <code>clojure.core/prn</code>. No magic in here.</li>
             <li>3: <code>clojure.core/prn</code> uses <code>clojure.core/print-method</code>. multimethod are ugly at
