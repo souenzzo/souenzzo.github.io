@@ -9,6 +9,11 @@
 input {
   padding: 1em;
 }
+form {
+  display: flex;
+  flex-direction: column;
+}
+
 
     </style>
     <meta name="viewport"
@@ -82,7 +87,7 @@ input {
                   max="100"
                   value="0">
         </progress>
-        <form onsubmit="event.preventDefault(); this.dataset.frame = requestAnimationFrame(progressAnimation('progress', duration))"
+        <form onsubmit="event.preventDefault(); this.dataset.frame = requestAnimationFrame(progressAnimation(duration))"
               oninput="elapsed.value = `${duration.valueAsNumber}s`">
             <label>
                 Elapsed Time
@@ -91,33 +96,73 @@ input {
             <label>
                 Duration
                 <input name="duration"
+                       data-progress-id="progress"
                        type="range"/>
             </label>
             <input type="submit">
         </form>
     </article>
     <script>
-let progressAnimation = (progressId, durationElement) => {
-  let progressElement = document.getElementById(progressId);
+let progressAnimation = (duration) => {
+  let progressElement = document.getElementById(duration.dataset.progressId);
   let instZero = new Date();
+  let initSec = instFinal.getSeconds()
   let animationFrame = () => {
      let instFinal = new Date(instZero);
-
-     instFinal.setSeconds(instFinal.getSeconds() + durationElement.valueAsNumber);
-
+     instFinal.setSeconds(initSec + duration.valueAsNumber);
      let instCurrent = new Date();
-     if (instCurrent > instFinal) {
-       return
+     let total = instFinal - instZero;
+     progressElement.max = total;
+     progressElement.value = total - (instFinal - instCurrent);
+     if (instFinal > instCurrent) {
+       requestAnimationFrame(animationFrame)
      }
-     let total = instFinal - instZero
-     progressElement.max = total
-     progressElement.value = total - (instFinal - instCurrent)
-     requestAnimationFrame(animationFrame)
   }
   return animationFrame
 }
-
     </script>
+    <article>
+        <h4>CRUD</h4>
+        <form onsubmit="event.preventDefault()">
+            <label>
+                Filter
+                <input name="filter"
+                       onchange="let re = new RegExp(filter.value);for (el of accounts.children) {el.hidden = re.test(el.dataset.name) ? false : !re.test(el.dataset.surname)}"/>
+            </label>
+            <select name="accounts" size="5">
+                <option data-surname="Hans"
+                        data-name="Emil">Emil, Hans
+                </option>
+                <option data-surname="Mustermann"
+                        data-name="Max">Mustermann, Max
+                </option>
+                <option data-surname="Tisch"
+                        data-name="Roman">Tisch, Roman
+                </option>
+            </select>
+            <label>
+                Name
+                <input name="name2"/>
+            </label>
+            <label>
+                Surname
+                <input name="surname"/>
+            </label>
+            <button onclick="let el = document.createElement('option');
+                             el.dataset.name = name2.value
+                             el.dataset.surname = surname.value
+                             el.text = `${name2.value}, ${surname.value}`
+                             accounts.appendChild(el)">
+                Create
+            </button>
+            <button onclick="">
+                Update
+            </button>
+            <button onclick="for (el of accounts.children) { el.selected ? accounts.removeChild(el) : null }">
+                Delete
+            </button>
+        </form>
+    </article>
 </main>
 </body>
 </html>
