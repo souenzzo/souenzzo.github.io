@@ -64,8 +64,8 @@ Invalid x: hello
         What I can understand from this error? Let's split it into blocks:
         <ul>
             <li>
-                <code>Execution error</code>: Say with Clojure
-                <a href="https://clojure.org/reference/repl_and_main#_error_printing">phases</a> it happened. We will
+                <code>Execution error</code>: Say which Clojure
+                <a href="https://clojure.org/reference/repl_and_main#_error_printing">phase</a> it happened. We will
                 learn more about it later.
             </li>
             <li>
@@ -222,6 +222,7 @@ Invalid x: 1
             <li>The process that converts `my-throw-f` into `my_throw_f` is called munge and you can play with it using
                 <code>clojure.core/munge</code>
             </li>
+            <li>You can use <code>clojure.repl/pst</code> to get a nice looking stacktrace print</li>
         </ul>
     </main>
 </section>
