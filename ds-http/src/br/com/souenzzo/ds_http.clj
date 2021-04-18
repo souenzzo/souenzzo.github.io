@@ -1,9 +1,13 @@
 (ns br.com.souenzzo.ds-http
-  (:require [clojure.string :as string])
-  (:import (java.net ServerSocket SocketException Socket)
-           (java.io InputStream OutputStream)
-           (java.util.concurrent Executors)
-           (java.lang AutoCloseable)))
+  (:require [clojure.string :as string]
+            [io.pedestal.http :as http]
+            [io.pedestal.http.impl.servlet-interceptor :as servlet-interceptor]
+            [io.pedestal.interceptor :as interceptor]
+            [io.pedestal.interceptor.chain :as chain])
+  (:import (java.net ServerSocket Socket URI SocketException)
+           (java.io InputStream OutputStream Closeable)
+           (java.util.concurrent Executors ExecutorService)
+           (java.nio.charset StandardCharsets)))
 
 (set! *warn-on-reflection* true)
 
@@ -62,187 +66,192 @@
    504 "Gateway Timeout"
    505 "HTTP Version Not Supported"})
 
-(defprotocol IInputStream
-  (-read [this]))
+(def open-client
+  {:name  ::open-clinet
+   :enter (fn [{::keys [^Socket client]
+                :as    ctx}]
+            (assoc ctx
+              ::in (.getInputStream client)
+              ::out (.getOutputStream client)))
+   :leave (fn [{::keys [^Closeable in ^Closeable out]
+                :as    ctx}]
+            (.close in)
+            (.close out)
+            ctx)
+   :error (fn [{::keys [^Closeable in ^Closeable out]
+                :as    ctx}]
+            (.close in)
+            (.close out)
+            ctx)})
 
-(extend-protocol IInputStream
-  InputStream
-  (-read [this] (.read this)))
+(def parse-method
+  {:name  ::parse-method
+   :enter (fn [{::keys [^InputStream in]
+                :as    ctx}]
+            (let [method (str (loop [sb (StringBuffer.)
+                                     c (.read in)]
+                                ;; TODO: max-length?!
+                                #_(.length (StringBuffer.))
+                                (case c
+                                  -1 (throw (ex-info "Unexcpected end-of-file"
+                                                     {:cognitect.anomalies/category :cognitect.anomalies/interrupted}))
+                                  32 sb
+                                  (recur (.append sb (char c))
+                                         (.read in)))))]
+              (assoc-in ctx [:request :request-method] (keyword (string/lower-case method)))))})
 
-(defprotocol IOutputStream
-  (-write [this b]))
+(def parse-path
+  {:name  ::parse-path
+   :enter (fn [{::keys [^InputStream in]
+                :as    ctx}]
+            (let [path (str (loop [sb (StringBuffer.)
+                                   c (.read in)]
+                              ;; TODO: max-length?!
+                              #_(.length (StringBuffer.))
+                              (case c
+                                -1 (throw (ex-info "Unexcpected end-of-file"
+                                                   {:cognitect.anomalies/category :cognitect.anomalies/interrupted}))
+                                32 sb
+                                (recur (.append sb (char c))
+                                       (.read in)))))
+                  uri (URI/create path)]
+              (update ctx :request assoc
+                      :uri (.getPath uri)
+                      :query-string (.getQuery uri))))})
 
-(extend-protocol IOutputStream
-  OutputStream
-  (-write [this b]
-    (.write this (int b))
-    this))
+(def parse-version
+  {:name  ::parse-version
+   :enter (fn [{::keys [^InputStream in]
+                :as    ctx}]
+            (let [version (str (loop [sb (StringBuffer.)
+                                      c (.read in)]
+                                 ;; TODO: max-length?!
+                                 #_(.length (StringBuffer.))
+                                 (case c
+                                   13 (recur sb (.read in))
+                                   10 sb
+                                   -1 (throw (ex-info "Unexcpected end-of-file"
+                                                      {:cognitect.anomalies/category :cognitect.anomalies/interrupted}))
+                                   (recur (.append sb (char c))
+                                          (.read in)))))]
+              (assoc-in ctx [:request :protocol] version)))})
 
-(defn read-method
-  [is]
-  (keyword (string/lower-case (loop [m ""]
-                                (let [c (-read is)]
-                                  (if (== 32 c)
-                                    m
-                                    (recur (str m (char c)))))))))
+
+(def parse-headers
+  {:name  ::parse-headers
+   :enter (fn [{::keys [^InputStream in]
+                :as    ctx}]
+            (let [headers (persistent! (loop [sb (StringBuffer.)
+                                              headers (transient {})
+                                              current-key nil
+                                              c (.read in)]
+                                         ;; TODO: max-length?!
+                                         #_(.length (StringBuffer.))
+                                         (case c
+                                           13 (recur sb
+                                                     headers
+                                                     current-key
+                                                     (.read in))
+                                           58 (recur (StringBuffer.)
+                                                     headers
+                                                     (str sb)
+                                                     (.read in))
+                                           10 (if current-key
+                                                (recur (StringBuffer.)
+                                                       (assoc! headers current-key (string/triml (str sb)))
+                                                       nil
+                                                       (.read in))
+                                                headers)
+                                           -1 (throw (ex-info "Unexcpected end-of-file"
+                                                              {:cognitect.anomalies/category :cognitect.anomalies/interrupted}))
+                                           (recur (.append sb (if current-key
+                                                                (char c)
+                                                                (Character/toLowerCase (char c))))
+                                                  headers
+                                                  current-key
+                                                  (.read in)))))]
+              (assoc-in ctx [:request :headers] headers)))})
+
+(def write-body
+  {:name  ::write-body
+   :leave (fn [{::keys [^OutputStream out]
+                :keys  [response]
+                :as    ctx}]
+            (servlet-interceptor/write-body-to-stream (:body response) out)
+            ctx)})
+
+(def write-headers
+  {:name  ::write-headers
+   :leave (fn [{::keys [^OutputStream out]
+                :keys  [response]
+                :as    ctx}]
+            (doseq [[k v] (:headers response)]
+              (.write out (.getBytes (str k ": " v "\r\n")
+                                     StandardCharsets/UTF_8)))
+            (.write out (.getBytes "\r\n" StandardCharsets/UTF_8))
+            ctx)})
+
+(def write-status
+  {:name  ::write-status
+   :leave (fn [{::keys [^OutputStream out]
+                :keys  [response]
+                :as    ctx}]
+            (let [code (:status response)
+                  reason (code->reason code)]
+              (.write out (.getBytes (str code " " reason "\r\n")
+                                     StandardCharsets/UTF_8)))
+            ctx)})
+
+(def write-version
+  {:name  ::write-status
+   :leave (fn [{::keys [^OutputStream out]
+                :as    ctx}]
+            (.write out (.getBytes "HTTP/1.1 " StandardCharsets/UTF_8))
+            ctx)})
 
 
-(defn read-path
-  [is]
-  (loop [m ""]
-    (let [c (-read is)]
-      (if (== 32 c)
-        m
-        (recur (str m (char c)))))))
+(def base-interceptors
+  (map interceptor/interceptor
+       [open-client
+        write-body
+        write-headers
+        write-status
+        write-version
+        parse-method
+        parse-path
+        parse-version
+        parse-headers]))
 
-(defn read-protocol
-  [is]
-  (loop [m ""]
-    (let [c (-read is)]
-      (if (== 13 c)
-        (do
-          (-read is)
-          m)
-        (recur (str m (char c)))))))
+(defn http:type [{::http/keys [port interceptors]
+                  :as         service-map} _]
+  (let [*server (delay (ServerSocket. port))
+        *thread-pool (delay (Executors/newFixedThreadPool 4))]
+    (assoc service-map
+      ::start-fn (fn []
+                   (let [^ServerSocket server @*server
+                         ^ExecutorService thread-pool @*thread-pool
+                         ctx (-> service-map
+                                 (assoc ::server server
+                                        ::thread-pool thread-pool))]
+                     (.execute thread-pool
+                               (fn accept []
+                                 (try
+                                   (let [client (.accept server)]
+                                     (.execute thread-pool accept)
+                                     (-> ctx
+                                         (assoc ::client client)
+                                         (chain/execute (concat base-interceptors
+                                                                interceptors))))
+                                   (catch SocketException _ex))))))
+      ::stop-fn (fn []
+                  (let [^ServerSocket server @*server
+                        ^ExecutorService thread-pool @*thread-pool]
+                    (.close server)
+                    (.shutdown thread-pool))))))
 
-(defn read-header-key
-  [is]
-  (some-> (loop [s nil]
-            (let [c (-read is)]
-              (if (or (== 58 c)
-                      (== 13 c))
-                s
-                (recur (str s (char c))))))
-          string/lower-case))
-
-(defn read-header-value
-  [is]
-  (loop [s nil]
-    (let [c (-read is)]
-      (if (== 13 c)
-        (do
-          (-read is)
-          s)
-        (recur (str s (char c)))))))
-
-(defn read-headers
-  [is]
-  (loop [headers (transient {})]
-    (if-let [hk (read-header-key is)]
-      (recur
-        (assoc! headers hk
-                (if-let [current (get headers hk)]
-                  (str current (if (.equals "cookie" hk)
-                                 ";"
-                                 ",")
-                       (read-header-value is))
-                  (read-header-value is))))
-      (persistent! headers))))
-
-(defn stop
-  [{::keys [stop-fn]
-    :as    env}]
-  (stop-fn env))
-
-(defn in->request
-  [{::keys [in] :as env}]
-  (let [method (read-method in)
-        path (string/split (read-path in)
-                           #"\?")
-        protocol (read-protocol in)
-        headers (read-headers in)]
-    (assoc env
-      :ring.request/body in
-      :ring.request/headers headers
-      :ring.request/method method
-      :ring.request/path (first path)
-      :ring.request/protocol protocol
-      :ring.request/query (last path)
-      #_:ring.request/remote-addr
-      :ring.request/scheme :http
-      #_:ring.request/server-name
-      #_:ring.request/ssl-client-cert)))
-
-(defn response->out
-  [{::keys              [out]
-    :ring.response/keys [status body headers]}]
-  (reduce -write out (.getBytes (str "HTTP/1.1 " status " " (code->reason status) "\r\n")))
-  (reduce-kv
-    (fn [out k vs]
-      (doseq [v (if (coll? vs)
-                  vs [vs])]
-        (reduce -write out (.getBytes (str k ":" v "\r\n")))))
-    out headers)
-  (-write out (int \return))
-  (-write out (int \newline))
-  (cond
-    (fn? body) (body out)
-    (bytes? body) (reduce -write out body)
-    :else (reduce -write out (.getBytes (str body)))))
-
-(defprotocol ISocket
-  (^AutoCloseable -input-stream [this])
-  (^AutoCloseable -output-stream [this]))
-
-(extend-protocol ISocket
-  Socket
-  (-input-stream [this]
-    (.getInputStream this))
-  (-output-stream [this]
-    (.getOutputStream this)))
-
-(defn process
-  [{::keys [handler client] :as env}]
-  (with-open [in (-input-stream client)
-              out (-output-stream client)]
-    (-> env
-        (assoc ::in in ::out out)
-        in->request
-        handler
-        (assoc ::out out)
-        response->out)))
-
-(defn start
-  [{:ring.request/keys [server-port]
-    :as                env}]
-  (let [thread-pool (Executors/newFixedThreadPool 2)
-        server (ServerSocket. server-port)
-        env (assoc env ::thread-pool thread-pool
-                       ::server server)
-        a-server (agent env)]
-    (letfn [(stop-fn [_]
-              (.shutdown thread-pool)
-              (.close server))
-            (watch-accept [{::keys [^ServerSocket server]
-                            :as    env}]
-              (try
-                (let [client (.accept server)
-                      env (assoc env ::stop-fn stop-fn
-                                     ::client client)
-                      request (agent env)]
-                  (send-via thread-pool request #(try
-                                                   (process %)
-                                                   (finally
-                                                     (.close client))))
-                  (send-via thread-pool a-server watch-accept)
-                  env)
-                (catch SocketException _ex)
-                (catch Throwable ex
-                  (println ex))))]
-      (send-via thread-pool a-server watch-accept)
-      (assoc env ::stop-fn stop-fn))))
-
-(comment
-  (defonce http-state (atom nil))
-  (swap! http-state
-         (fn [st]
-           (some-> st stop)
-           (-> {:ring.request/server-port 8080
-                ::handler                 (fn [req]
-                                            (tap> req)
-                                            ;; (pp/pprint req)
-                                            (assoc req
-                                              :ring.response/body (.getBytes "ok")
-                                              :ring.response/headers {"foo" "42"}
-                                              :ring.response/status 200))}
-               start))))
+(defn http:chain-provider [{::http/keys [interceptors]
+                            :as         service-map}]
+  (assoc service-map
+    ::http/service-fn (servlet-interceptor/http-interceptor-service-fn
+                        interceptors
+                        service-map)))
