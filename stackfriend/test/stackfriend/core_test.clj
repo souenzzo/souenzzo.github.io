@@ -1,54 +1,21 @@
 (ns stackfriend.core-test
   (:require [clojure.test :refer [deftest]]
             [midje.sweet :refer [fact =>]]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
-            [com.rpl.specter :as sp]
-            [edamame.core :as eda]))
+            [stackfriend.helper :as sfh]
+            [stackfriend.core :as sf]))
 
-(defn stack
-  []
-  (ex-info "a" {:v 52}))
-
-(defn create-a-stack-trace-element
+(defn ^StackTraceElement create-a-stack-trace-element
   []
   (first (.getStackTrace (ex-info "" {}))))
 
-(defn parse-stack-trace-element
-  [ste]
-  (let [{:keys [className lineNumber]
-         :as   m} (bean ste)
-        class-parts (string/split className #"\$")
-        sym (apply symbol (map #(Compiler/demunge %)
-                               (take 2 class-parts)))
-        resource-name (str (string/join "/" (string/split (first class-parts)
-                                                          #"\."))
-                           ".clj")
-        form (first (for [form (eda/parse-string-all (slurp (io/resource resource-name))
-                                                     {:all true})
-                          :let [{:keys [row end-row]} (meta form)]
-                          :when (<= row lineNumber end-row)]
-                      form))
-        near-form (sp/select-first
-                    (sp/codewalker (fn [x]
-                                     (let [{:keys [row end-row]} (meta x)]
-                                       (== lineNumber row))))
-                    form)]
-    (-> m
-        (dissoc :class)
-        (assoc :sym sym
-               :form form
-               :near-form near-form
-               :resource-name resource-name))))
-
 (deftest simple
-  (let []
+  (let [ste (create-a-stack-trace-element)]
     (fact
-      (parse-stack-trace-element (create-a-stack-trace-element))
+      (dissoc  (sf/parse-stack-trace-element ste) :class-parts :lang)
       => {:classLoaderName nil
           :className       "stackfriend.core_test$create_a_stack_trace_element"
           :fileName        "core_test.clj"
-          :lineNumber      15
+          :lineNumber      9
           :form            '(defn
                               create-a-stack-trace-element
                               []
@@ -56,7 +23,83 @@
           :methodName      "invokeStatic"
           :moduleName      nil
           :moduleVersion   nil
+          :relative-path   "test/stackfriend/core_test.clj"
           :nativeMethod    false
           :near-form       '(first (.getStackTrace (ex-info "" {})))
           :resource-name   "stackfriend/core_test.clj"
-          :sym             'stackfriend.core-test/create-a-stack-trace-element})))
+          :sym             'stackfriend.core-test/create-a-stack-trace-element})
+    (fact
+      (mapv #(dissoc % :class-parts :lang)
+            (mapv sf/parse-stack-trace-element (.getStackTrace (sfh/simple-exception))))
+      => '[{:relative-path   "test/stackfriend/helper.clj"
+            :near-form       (ex-info "" {})
+            :classLoaderName nil
+            :fileName        "helper.clj"
+            :resource-name   "stackfriend/helper.clj"
+            :moduleVersion   nil
+            :nativeMethod    false
+            :className       "stackfriend.helper$create_exception"
+            :sym             stackfriend.helper/create-exception
+            :moduleName      nil
+            :form            (defn create-exception []
+                               (ex-info "" {}))
+            :lineNumber      6
+            :methodName      "invokeStatic"}
+           {:relative-path   "test/stackfriend/helper.clj"
+            :near-form       (defn create-exception []
+                               (ex-info "" {}))
+            :classLoaderName nil
+            :fileName        "helper.clj"
+            :resource-name   "stackfriend/helper.clj"
+            :moduleVersion   nil
+            :nativeMethod    false
+            :className       "stackfriend.helper$create_exception"
+            :sym             stackfriend.helper/create-exception
+            :moduleName      nil
+            :form            (defn create-exception [] (ex-info "" {}))
+            :lineNumber      4
+            :methodName      "invoke"}
+           {:relative-path   "test/stackfriend/helper.clj"
+            :near-form       (let [x (create-exception)] (deliver p x))
+            :classLoaderName nil
+            :fileName        "helper.clj",
+            :resource-name   "stackfriend/helper.clj"
+            :moduleVersion   nil
+            :nativeMethod    false
+            :className       "stackfriend.helper$simple_exception$fn__20261"
+            :sym             stackfriend.helper/simple-exception
+            :moduleName      nil
+            :form            (defn simple-exception
+                               []
+                               (let [p (promise)]
+                                 (.start (Thread. (fn []
+                                                    (let [x (create-exception)]
+                                                      (deliver p x)))))
+                                 (clojure.core/deref p)))
+            :lineNumber      12
+            :methodName      "invoke"}
+           {:near-form       nil
+            :classLoaderName "app"
+            :fileName        "AFn.java"
+            :resource-name   "clojure/lang/AFn.class"
+            :moduleVersion   nil
+            :nativeMethod    false
+            :className       "clojure.lang.AFn"
+            :sym             clojure.lang.AFn
+            :moduleName      nil
+            :form            nil
+            :lineNumber      22
+            :methodName      "run"}
+           {:near-form       nil
+            :classLoaderName nil
+            :fileName        "Thread.java"
+            :resource-name   "java/lang/Thread.class"
+            :moduleVersion   "16.0.1"
+            :nativeMethod    false
+            :className       "java.lang.Thread"
+            :sym             java.lang.Thread
+            :moduleName      "java.base"
+            :form            nil
+            :lineNumber      831
+            :methodName      "run"}])
+    (sf/explain (sfh/simple-exception))))

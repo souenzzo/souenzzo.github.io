@@ -211,16 +211,16 @@
 
 
 (def base-interceptors
-  (map interceptor/interceptor
-       [open-client
-        write-body
-        write-headers
-        write-status
-        write-version
-        parse-method
-        parse-path
-        parse-version
-        parse-headers]))
+  (mapv interceptor/interceptor
+        [open-client
+         write-body
+         write-headers
+         write-status
+         write-version
+         parse-method
+         parse-path
+         parse-version
+         parse-headers]))
 
 (defn http:type [{::http/keys [port interceptors]
                   :as         service-map} _]
@@ -236,7 +236,7 @@
                      (.execute thread-pool
                                (fn accept []
                                  (try
-                                   (let [client (.accept server)]
+                                   (with-open [client (.accept server)]
                                      (.execute thread-pool accept)
                                      (-> ctx
                                          (assoc ::client client)
@@ -246,8 +246,8 @@
       ::stop-fn (fn []
                   (let [^ServerSocket server @*server
                         ^ExecutorService thread-pool @*thread-pool]
-                    (.close server)
-                    (.shutdown thread-pool))))))
+                    (.shutdown thread-pool)
+                    (.close server))))))
 
 (defn http:chain-provider [{::http/keys [interceptors]
                             :as         service-map}]
