@@ -1,0 +1,8 @@
+{:deps   true
+ :builds {:sample {:target           :browser
+                   :output-dir       "target/sample"
+                   :asset-path       "/sample"
+                   :modules          {:client {:entries [sample.app]}}
+                   :compiler-options {:source-map true}
+                   :devtools         {:preloads   [sample.app]
+                                      :after-load sample.app/after-load}}}}
