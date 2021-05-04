@@ -3,6 +3,10 @@
             [cognitect.transit :as t]
             [edn-query-language.core :as eql]))
 
+(defprotocol IRemote
+  :extend-with-meta true
+  (transact [this tx]))
+deref
 (defn fetch
   [{::keys [query]}]
   (let [[{::keys [current-query
@@ -13,34 +17,39 @@
       (fn []
         (when fetch?
           (let [body (-> (t/writer :json)
-                         (t/write (if sym
-                                    `[{(~sym ~params) ~current-query}]
-                                    current-query)))
+                       (t/write (if sym
+                                  `[{(~sym ~params) ~current-query}]
+                                  current-query)))
                 fetch (js/fetch "/api"
-                                #js{:method "POST"
-                                    :body   body})]
+                        #js{:method "POST"
+                            :body   body})]
             (set-fetch? false)
             (-> fetch
-                (.then (fn [x] (.text x)))
-                (.then (fn [x]
-                         (let [v (-> (t/reader :json)
-                                     (t/read x))]
-                           (set-result (if (contains? v sym)
-                                         (get v sym)
-                                         v))))))))
+              (.then (fn [x] (.text x)))
+              (.then (fn [x]
+                       (let [v (-> (t/reader :json)
+                                 (t/read x))]
+                         (set-result (if (contains? v sym)
+                                       (get v sym)
+                                       v))))))))
         (fn []
           (prn :bye))))
-    [result (fn [query]
-              (let [ast (eql/query->ast query)
-                    {:keys [dispatch-key children params]} (-> ast
-                                                               :children
-                                                               first)]
-                (set-query (if (symbol? dispatch-key)
-                             {::current-query (if children
-                                                (eql/ast->query {:type     :root
-                                                                 :children children})
-                                                current-query)
-                              ::sym           dispatch-key
-                              ::params        params}
-                             {::current-query query}))
-                (set-fetch? true)))]))
+    (reify
+      IDeref
+      (-deref [this]
+        result)
+      IRemote
+      (transact [this tx]
+        (let [ast (eql/query->ast tx)
+              {:keys [dispatch-key children params]} (-> ast
+                                                       :children
+                                                       first)]
+          (set-query (if (symbol? dispatch-key)
+                       {::current-query (if children
+                                          (eql/ast->query {:type     :root
+                                                           :children children})
+                                          current-query)
+                        ::sym           dispatch-key
+                        ::params        params}
+                       {::current-query query}))
+          (set-fetch? true))))))
