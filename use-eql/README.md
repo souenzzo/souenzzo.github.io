@@ -4,6 +4,12 @@
 
 # Counter example
 
+Here a counter component.
+
+It should render an button with a number
+
+Every time that you click on the button, it should send a mutation to the server and re-fetch its state.
+
 ```clojure
 #_(require '[br.com.souenzzo.use-eql :as use-eql])
 (defn Counter
@@ -23,3 +29,9 @@
      {:on-click #(use-eql/transact conn `[(app.counter/current-number {})])}
      current-number]))
 ```
+
+To use this component, you should use "Functional Components", from reagent like this:
+
+`[:f> Counter]`
+
+Functional components are the way of use react hooks inside reagent.
