@@ -24,9 +24,9 @@ Every time that you click on the button, it should send a mutation to the server
     [:button
      ;; we can send mutations via conn
      ;; it will auto-join the original query on mutation, like this
-     ;; [{(app.counter/current-number {}) [:app.counter/current-number]}]
+     ;; [{(app.counter/increment {}) [:app.counter/current-number]}]
      ;; so it should auto-fetch any changes caused by your mutation
-     {:on-click #(use-eql/transact conn `[(app.counter/current-number {})])}
+     {:on-click #(use-eql/transact conn `[(app.counter/increment {})])}
      current-number]))
 ```
 
