@@ -35,3 +35,15 @@ To use this component, you should use "Functional Components", from reagent like
 `[:f> Counter]`
 
 Functional components are the way of use react hooks inside reagent.
+
+
+## Ideas
+
+keep `use-eql` agnostic
+```clojure
+[use-eql/provider {:value use-eql.pathom/parser}
+  [Counter]]
+  
+[use-eql/provider {:value use-eql.fetch/remote}
+  [Counter]]
+```
