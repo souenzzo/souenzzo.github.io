@@ -93,6 +93,7 @@
   (let [query (t/read (t/reader body :json))
         result (p.eql/process (merge request indexes)
                  query)]
+    (Thread/sleep 2000)
     (prn {:query  query
           :result result})
     {:body   (fn [out]

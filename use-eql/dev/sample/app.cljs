@@ -2,12 +2,16 @@
   (:require [goog.dom :as gdom]
             [reagent.dom :as rd]
             ["react" :as r]
-            [br.com.souenzzo.use-eql :as use-eql]))
+            [br.com.souenzzo.use-eql :as use-eql]
+            [br.com.souenzzo.use-eql.fetch :as use-eql.fetch]))
 
 (defn Counter
   []
-  (let [conn (use-eql/fetch {::use-eql/query [::current-count]})]
+  (let [conn (use-eql/impl {::use-eql/query [::current-count]})]
     [:div
+     (if (use-eql/loading? conn)
+       "loading ..."
+       "ok ...")
      [:pre (pr-str @conn)]
      [:button
       {:on-click (fn []
@@ -16,14 +20,17 @@
 
 (defn TodoApp
   []
-  (let [conn (use-eql/fetch {::use-eql/query [{:app.todo/todos
-                                               [:app.todo/id
-                                                :app.todo/text
-                                                :app.todo/done?]}]})
+  (let [conn (use-eql/impl {::use-eql/query [{:app.todo/todos
+                                              [:app.todo/id
+                                               :app.todo/text
+                                               :app.todo/done?]}]})
         {:app.todo/keys [todos]
          :as            tree} @conn
         [text set-text] (r/useState "")]
     [:div
+     (if (use-eql/loading? conn)
+       "loading ..."
+       "ok ...")
      [:ul
       (for [{:app.todo/keys [id text]} todos]
         [:li {:key id}
@@ -46,14 +53,16 @@
   []
   (let [[show? set-show?] (r/useState false)]
     [:div
-     [:button
-      {:onClick (fn []
-                  (set-show? (not show?)))}
-      (pr-str "toggle" [show?])]
-     (when show?
-       [:<>
-        [:f> Counter]
-        [:f> TodoApp]])]))
+     [:> (.-Provider use-eql/driver)
+      {:value use-eql.fetch/driver}
+      [:button
+       {:onClick (fn []
+                   (set-show? (not show?)))}
+       (pr-str "toggle" [show?])]
+      (when show?
+        [:<>
+         [:f> Counter]
+         [:f> TodoApp]])]]))
 
 (defn ^:export start
   [target]
