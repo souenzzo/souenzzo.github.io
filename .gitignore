@@ -7,3 +7,4 @@ me_orig.jpg
 .jekyll-cache/
 .run/
 **/target/
+ipfs/ipfs
