@@ -6,7 +6,9 @@ let desligar = async () => {
     await fetch("/desligar");
 }
 
-document.body.innerHTML = `
+window.addEventListener('load', (event) => {
+    document.body.innerHTML = `
 <button onclick="ligar()">Ligar</button>
 <button onclick="desligar()">Desligar</button>
 `
+});
