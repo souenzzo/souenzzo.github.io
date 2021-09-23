@@ -1,14 +1,12 @@
 (ns pa.core
   (:require [com.wsscode.pathom.core :as p]
-            [hiccup2.core :as h]
-            [clojure.java.io :as io]
             [clojure.string :as string])
-  (:import (java.net URI)
+  (:import (java.io InputStream)
+           (java.net URI)
            (java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers)
-           (org.jsoup Jsoup)
            (java.nio.charset StandardCharsets)
-           (org.jsoup.nodes Element Document)
-           (java.io InputStream)))
+           (org.jsoup Jsoup)
+           (org.jsoup.nodes Element Document)))
 
 (set! *warn-on-reflection* true)
 
@@ -32,26 +30,6 @@
                   :status (.statusCode res))
           env))
       ::p/continue)))
-
-(defn jsoup
-  []
-  (let [document (Jsoup/parse (->> [:html
-                                    [:head
-                                     [:title "Hello"]]
-                                    [:body
-                                     [:div "World"]]]
-                                (h/html {:mode :html})
-                                str
-                                .getBytes
-                                io/input-stream)
-                   (str StandardCharsets/UTF_8)
-                   "http://localhost")
-        node (string/join ""
-               (for [^Element el (.select document
-                                   "title")
-                     txt (.textNodes el)]
-                 (str txt)))]
-    node))
 
 (defn select-reader
   [{:keys    [ast]
