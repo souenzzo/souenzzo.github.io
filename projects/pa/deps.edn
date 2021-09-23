@@ -1,0 +1,12 @@
+{:paths   ["src"]
+ :deps    {com.wsscode/pathom              {:mvn/version "2.4.0"}
+           com.wsscode/pathom3             {:git/url "https://github.com/wilkerlucio/pathom3"
+                                            :sha     "1aec64d88ef915c9525ae54feffa60f3850faa96"}
+           com.walmartlabs/lacinia         {:mvn/version "0.39-alpha-11"}
+           hiccup/hiccup                   {:mvn/version "2.0.0-alpha2"}
+           com.github.kyleburton/clj-xpath {:mvn/version "1.4.11"}
+           hickory/hickory                 {:mvn/version "0.7.1"}}
+ :aliases {:dev {:extra-paths ["dev" "test"]
+                 :extra-deps  {org.clojure/clojure    {:mvn/version "1.10.3"}
+                               org.clojure/test.check {:mvn/version "1.1.0"}}}}}
+
