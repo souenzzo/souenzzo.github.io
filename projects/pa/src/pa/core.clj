@@ -1,31 +1,15 @@
 (ns pa.core
   (:require [com.wsscode.pathom.core :as p]
-            [clj-xpath.core :as xp])
+            [hiccup2.core :as h]
+            [clojure.java.io :as io]
+            [clojure.string :as string])
   (:import (java.net URI)
-           (java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers)))
+           (java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers)
+           (org.jsoup Jsoup)
+           (java.nio.charset StandardCharsets)
+           (org.jsoup.nodes Element Document)
+           (java.io InputStream)))
 
-"
-query {
-  g1:scraper(url: \"https://g1.globo.com\") {
-    title:    selectString(\"tr > div > h1\")
-    comments: selectString(\"tr > div > div:nth-child(5) > div\") {
-      name: selectString(\"h1\")
-      msg: selectString(\"div\")
-      twitter: scraper(url:\"https://twitter.com/%s\", selectParams: [\"main > div.twitter\"]) {
-        lastTweet: selectString(\"div > main > div\")
-      }
-    }
-  }
-}
-"
-`[{(:scraper/g1 {:url "https://g1.globo.com"})
-   [(:select/title {:xpath "tr > div > h1"})
-    {(:select/comments {:xpath "tr > div > div:nth-child(5) > div"})
-     [(:select/name {:xpath "h1"})
-      (:select/msg {:xpath "h1"})
-      {(:scraper/twitter {:params {:id "h1"}
-                          :url    "https://twitter.com/{id}"})
-       [(:select/last-tweet {:xpath "div > main > div"})]}]}]}]
 (set! *warn-on-reflection* true)
 
 (defn scraper-reader
@@ -35,16 +19,39 @@ query {
   (let [{:keys [dispatch-key params]} ast
         impl (some-> dispatch-key namespace keyword)]
     (if (contains? #{:scraper} impl)
-      (let [req (.build (HttpRequest/newBuilder
-                          (URI/create (str (:url params)))))
+      (let [url (str (:url params))
+            req (.build (HttpRequest/newBuilder (URI/create url)))
             res (.send http-client
                   req
-                  (HttpResponse$BodyHandlers/ofString))]
-        (p/join {:body    (.body res)
-                 :headers (into {} (.map (.headers res)))
-                 :status  (.statusCode res)}
+                  (HttpResponse$BodyHandlers/ofInputStream))
+            body ^InputStream (.body res)]
+        (p/join (assoc params
+                  :body body
+                  :document (Jsoup/parse body (str StandardCharsets/UTF_8) url)
+                  :headers (into {} (.map (.headers res)))
+                  :status (.statusCode res))
           env))
       ::p/continue)))
+
+(defn jsoup
+  []
+  (let [document (Jsoup/parse (->> [:html
+                                    [:head
+                                     [:title "Hello"]]
+                                    [:body
+                                     [:div "World"]]]
+                                (h/html {:mode :html})
+                                str
+                                .getBytes
+                                io/input-stream)
+                   (str StandardCharsets/UTF_8)
+                   "http://localhost")
+        node (string/join ""
+               (for [^Element el (.select document
+                                   "title")
+                     txt (.textNodes el)]
+                 (str txt)))]
+    node))
 
 (defn select-reader
   [{:keys    [ast]
@@ -52,10 +59,14 @@ query {
   (let [{:keys [dispatch-key params]} ast
         impl (some-> dispatch-key namespace keyword)]
     (if (contains? #{:select} impl)
-      (let [{:keys [body]} @entity
-            {:keys [xpath]} params]
-        (xp/$x:text xpath body))
+      (let [{:keys [^Document document]} @entity
+            {:keys [^String selector]} params]
+        (string/join ""
+          (for [^Element el (.select document selector)
+                txt (.textNodes el)]
+            (str txt))))
       ::p/continue)))
+
 (def process
   (p/parser {::p/env {::p/reader [scraper-reader
                                   select-reader]}}))
