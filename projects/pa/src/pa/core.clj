@@ -78,7 +78,7 @@
               (str txt)))]
     {::select v}))
 
-(defn sample-merge-attribute-wrapper
+(defn wrap-map-select-entry-as-plugin
   [original]
   (fn [env out v]
     (if-let [as (-> v :params :pathom/as)]
@@ -95,15 +95,12 @@
             :key as
             :dispatch-key as)))
       (original env out v))))
-(p.plugin/defplugin protect-attributes-plugin
+
+(p.plugin/defplugin pathom-as-plugin
   {:com.wsscode.pathom3.format.eql/wrap-map-select-entry
-   sample-merge-attribute-wrapper})
+   wrap-map-select-entry-as-plugin})
 
 (defn process2
   [env tx]
-  (let [env (merge env
-              (pci/register
-                (p.plugin/register protect-attributes-plugin)
-                [select scraper])
-              {::pcr/resolver-cache* nil})]
+  (let []
     (p.eql/process env tx)))
