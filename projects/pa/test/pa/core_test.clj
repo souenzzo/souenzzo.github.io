@@ -72,3 +72,34 @@ query {
           (doto pprint/pprint)
           (= {:scraper/g1 {:select/title       "Hello"
                            :select/description "\nWorld"}})))))
+
+(deftest hello2
+  (is (-> (pa/process2 {::pa/http-client (proxy [HttpClient] []
+                                           (send [req res]
+                                             (reify HttpResponse
+                                               (body [this]
+                                                 (->> [:html
+                                                       [:head
+                                                        [:title "Hello"]]
+                                                       [:body
+                                                        [:div "World"]]]
+                                                   (h/html {:mode :html})
+                                                   str
+                                                   .getBytes
+                                                   io/input-stream))
+                                               (headers [this] (HttpHeaders/of {}
+                                                                 (reify BiPredicate
+                                                                   (test [this a b]
+                                                                     true))))
+                                               (statusCode [this]
+                                                 200))))}
+            `[{(::pa/scraper {::pa/url   "https://g1.globo.com"
+                              :pathom/as :g1})
+               [(::pa/select {::pa/selector "head > title"
+                              :pathom/as    :title})
+                (::pa/select {::pa/selector "body > div"
+                              :pathom/as    :description})]}])
+        (doto pprint/pprint)
+        (= {:scraper/g1 {:select/title       "Hello"
+                         :select/description "\nWorld"}}))))
+
