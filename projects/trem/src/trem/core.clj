@@ -89,7 +89,8 @@
   :args (s/cat :server map?))
 
 (defn expand-draw-routes
-  [{::keys [routes-draw operations]}]
+  [{::keys [routes-draw operations]
+    :as    service-map}]
   (let [indexes (pci/register operations)
         routes (for [{::keys [view controller route-name]
                       :keys  [uri request-method]
@@ -108,27 +109,28 @@
                                                      (str "<!DOCTYPE html>\n"))
                                           :headers {"Content-Type" (mime/default-mime-types "html")}
                                           :status  200}))
-                  :route-name route-name])]
-    (route/expand-routes (set routes))))
+                  :route-name route-name])
+        expanded-routes (route/expand-routes (set routes))
+        index? (route/try-routing-for expanded-routes :map-tree "/" :get)]
+    (if index?
+      expanded-routes
+      (concat expanded-routes
+        (expand-draw-routes (assoc service-map
+                              ::routes-draw [{:request-method :get
+                                              :uri            "/"
+                                              ::route-name    ::welcome
+                                              ::view          (fn [_]
+                                                                [:h1 "Welcome to 🚂"])}]))))))
 
 (s/fdef expand-draw-routes
   :args (s/cat :service-map (s/keys :req [::routes-draw])))
 
 (defn start
   [service-map]
-  (let [routes (expand-draw-routes service-map)
-        index? (route/try-routing-for routes :map-tree "/" :get)]
+  (let [routes (expand-draw-routes service-map)]
     (-> {::http/type              :jetty
          ::http/join?             false
-         ::http/routes            (if index?
-                                    routes
-                                    (concat routes
-                                      (expand-draw-routes (assoc service-map
-                                                            ::routes-draw [{:request-method :get
-                                                                            :uri            "/"
-                                                                            ::route-name    ::welcome
-                                                                            ::view          (fn [_]
-                                                                                              [:h1 "Welcome to 🚂"])}]))))
+         ::http/routes            routes
          ::http/container-options {:context-configurator (fn [^ServletContextHandler context]
                                                            (let [gzip-handler (GzipHandler.)]
                                                              (.addIncludedMethods gzip-handler (make-array String 0))

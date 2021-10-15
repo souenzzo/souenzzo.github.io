@@ -1,5 +1,6 @@
 (ns br.com.souenzzo.blog
   (:require [trem.core :as trem]
+            [trem.dev]
             [clojure.string :as string]
             [com.wsscode.pathom3.connect.operation :as pco]
             [com.wsscode.pathom3.interface.eql :as p.eql]))
@@ -76,7 +77,7 @@
                          [:pre body]))})
 
 (defn start
-  []
+  [& _]
   (let [;; config/routes.rb
         routes [;; root "articles#index"
                 (assoc articles#index
@@ -93,15 +94,12 @@
                   ::trem/route-name ::article
                   :request-method :get
                   :uri "/articles/:id")]]
-    (-> {::trem/routes-draw routes
-         ::trem/operations  [article:pull
-                             articles:all]}
-      trem/start)))
+    {::trem/routes-draw routes
+     ::trem/operations  [article:pull
+                         articles:all]}))
 
 (defonce *state (atom nil))
 
 (defn -main
-  [& _]
-  (swap! *state (fn [st]
-                  (some-> st trem/stop)
-                  (start))))
+  [& args]
+  (trem.dev/watch `start args))
