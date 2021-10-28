@@ -45,6 +45,11 @@
   :args (s/cat :route-name ::route-name
           :params map?))
 
+(defn redirect
+  [route-name params]
+  (let [target (route/url-for route-name :params params)]
+    (throw (ex-info "Redirect" {::target target}))))
+
 (defn form-label
   [& _]
   [:label {:for ""}])
@@ -96,19 +101,31 @@
                       :keys  [uri request-method]
                       :or    {controller identity}}
                      routes-draw]
-                 [uri request-method (fn [req]
-                                       (let [body (-> req
-                                                    (merge indexes)
-                                                    (controller)
-                                                    (view))]
-                                         {:body    (->> [:html
-                                                         [:meta {:charset (str StandardCharsets/UTF_8)}]
-                                                         [:title "Trem 🚂"]
-                                                         [:body body]]
-                                                     (h/html {:mode :html})
-                                                     (str "<!DOCTYPE html>\n"))
-                                          :headers {"Content-Type" (mime/default-mime-types "html")}
-                                          :status  200}))
+                 [uri request-method [{:error (fn [ctx ex]
+                                                (let [{::keys [target]} (ex-data (ex-cause ex))]
+                                                  (if target
+                                                    (assoc ctx :response {:headers {"Location" target}
+                                                                          :status  303})
+                                                    (assoc ctx
+                                                      :io.pedestal.interceptor.chain/error ex))))}
+                                      (fn [req]
+                                        (if view
+                                          (let [body (-> req
+                                                       (merge indexes)
+                                                       (controller)
+                                                       (view))]
+                                            {:body    (->> [:html
+                                                            [:meta {:charset (str StandardCharsets/UTF_8)}]
+                                                            [:title "Trem 🚂"]
+                                                            [:body body]]
+                                                        (h/html {:mode :html})
+                                                        (str "<!DOCTYPE html>\n"))
+                                             :headers {"Content-Type" (mime/default-mime-types "html")}
+                                             :status  200})
+                                          (let [body (-> req
+                                                       (merge indexes)
+                                                       (controller))]
+                                            {:status 202})))]
                   :route-name route-name])
         expanded-routes (route/expand-routes (set routes))
         index? (route/try-routing-for expanded-routes :map-tree "/" :get)]
