@@ -1,6 +1,10 @@
 {:deps    {}
  :aliases {:dev {:extra-paths ["test" "dev"]
                  :extra-deps  {io.pedestal/pedestal.jetty   {:mvn/version "0.5.9"}
+                               org.clojure/core.async       {:mvn/version "1.3.622"}
+                               org.clojure/clojure          {:mvn/version "1.11.0-alpha2"}
+
+
                                org.slf4j/slf4j-simple       {:mvn/version "2.0.0-alpha5"}
 
                                io.pedestal/pedestal.service {:mvn/version "0.5.9"}}}}}
