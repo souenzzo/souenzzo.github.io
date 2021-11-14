@@ -8,3 +8,6 @@ me_orig.jpg
 .run/
 **/target/
 ipfs/ipfs
+*.iml
+.nrepl-port
+
