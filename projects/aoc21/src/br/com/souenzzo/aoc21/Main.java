@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Main {
-    static InputStream inputOfTheDay(Number d) throws IOException, InterruptedException {
+class aoc {
+    public static InputStream inputOfTheDay(Number d) throws IOException, InterruptedException {
         var target = new File("day/%d/input".formatted(d));
         if (!target.exists()) {
             var client = HttpClient.newHttpClient();
@@ -30,16 +30,20 @@ public class Main {
         return new FileInputStream(target);
 
     }
+}
 
-    static Stream<String> lines(InputStream in) {
+class Utils {
+    public static Stream<String> lines(InputStream in) {
         return (new BufferedReader(new InputStreamReader(in))).lines();
     }
+}
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+public class Main {
+    static String Answer01() throws IOException, InterruptedException {
         var result = new LinkedList<List<Long>>();
         var lastN = new AtomicLong();
         var initial = new AtomicBoolean(true);
-        lines(inputOfTheDay(1))
+        Utils.lines(aoc.inputOfTheDay(1))
                 .map(Long::parseLong)
                 .collect(Collectors.toList())
                 .forEach(el -> {
@@ -50,9 +54,12 @@ public class Main {
                     }
                     lastN.set(el);
                 });
-        var r = result.stream()
+        return String.valueOf(result.stream()
                 .mapToLong(el -> el.get(0) > el.get(1) ? 0 : 1)
-                .reduce(0, Long::sum);
-        System.out.println("ok!" + r);
+                .reduce(0, Long::sum));
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        System.out.printf("01: %s%n", Answer01());
     }
 }
