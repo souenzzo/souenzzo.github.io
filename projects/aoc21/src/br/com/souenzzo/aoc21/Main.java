@@ -38,13 +38,11 @@ class Utils {
 
     static <T> BiConsumer<T, Consumer<List<T>>> partition(Integer n) {
         var arr = new LinkedList<T>();
-        return new BiConsumer<T, Consumer<List<T>>>() {
-            public void accept(T el, Consumer<List<T>> consumer) {
-                arr.add(el);
-                if (arr.size() >= n) {
-                    consumer.accept(List.copyOf(arr));
-                    arr.removeFirst();
-                }
+        return (T el, Consumer<List<T>> consumer) -> {
+            arr.add(el);
+            if (arr.size() >= n) {
+                consumer.accept(List.copyOf(arr));
+                arr.removeFirst();
             }
         };
     }
@@ -60,6 +58,14 @@ public class Main {
                 .reduce(0, Long::sum);
         return String.valueOf(result);
     }
+    static String Answer01extra() throws IOException, InterruptedException {
+        var result = Utils.lines(aoc.inputOfTheDay(1))
+                .map(Long::parseLong)
+                .mapMulti(Utils.partition(3))
+                .mapToLong(el -> el.get(0) > el.get(1) ? 0 : 1)
+                .reduce(0, Long::sum);
+        return String.valueOf(result);
+    }
 
     static String Answer02() throws IOException, InterruptedException {
         aoc.inputOfTheDay(2);
@@ -68,6 +74,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.printf("01: %s%n", Answer01());
+        System.out.printf("01 - extra: %s%n", Answer01extra());
         System.out.printf("02: %s%n", Answer02());
     }
 }
