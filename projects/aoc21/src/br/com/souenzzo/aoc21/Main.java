@@ -35,13 +35,14 @@ class Utils {
     public static Stream<String> lines(InputStream in) {
         return (new BufferedReader(new InputStreamReader(in))).lines();
     }
-    static BiConsumer partition(Integer n) {
-        var arr = new LinkedList();
-        return new BiConsumer<Object, Consumer<Object>>() {
-            public void accept(Object el, Consumer<Object> consumer) {
+
+    static <T> BiConsumer<T, Consumer<List<T>>> partition(Integer n) {
+        var arr = new LinkedList<T>();
+        return new BiConsumer<T, Consumer<List<T>>>() {
+            public void accept(T el, Consumer<List<T>> consumer) {
                 arr.add(el);
                 if (arr.size() >= n) {
-                    consumer.accept(arr.clone());
+                    consumer.accept(List.copyOf(arr));
                     arr.removeFirst();
                 }
             }
@@ -55,10 +56,7 @@ public class Main {
         var result = Utils.lines(aoc.inputOfTheDay(1))
                 .map(Long::parseLong)
                 .mapMulti(Utils.partition(2))
-                .mapToLong(el -> {
-                    List<Long> arr = (List<Long>) el;
-                    return arr.get(0) > arr.get(1) ? 0 : 1;
-                })
+                .mapToLong(el -> el.get(0) > el.get(1) ? 0 : 1)
                 .reduce(0, Long::sum);
         return String.valueOf(result);
     }
