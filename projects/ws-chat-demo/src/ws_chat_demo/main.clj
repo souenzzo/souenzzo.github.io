@@ -5,9 +5,9 @@
             [clojure.core.async :as async]
             [ring.util.mime-type :as mime])
   (:import (org.eclipse.jetty.websocket.api WebSocketConnectionListener WebSocketListener RemoteEndpoint)
-           (org.eclipse.jetty.servlet ServletHolder)
+           (org.eclipse.jetty.servlet ServletHolder ServletContextHandler)
            (javax.servlet Servlet)))
-
+(set! *warn-on-reflection* true)
 
 (defonce state (atom nil))
 
@@ -15,7 +15,7 @@
   (atom {}))
 
 (defn context-configurator
-  [ctx]
+  [^ServletContextHandler ctx]
   (reset! ws-clients {})
   (let [servlet (ws/ws-servlet (fn [req response]
                                  (let [*ws-session (promise)]
