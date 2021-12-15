@@ -7,10 +7,13 @@
 <body>
 <div>Hello World!</div>
 <p id="lastMessage"></p>
-<form onsubmit="event.preventDefault(); window['mySocket'].send(this.msgInput.value)">
+<form onsubmit="event.preventDefault(); window['mySocket'].send(this.msgInput.value); this.msgInput.value=''">
     <label>
         Msg Input
         <input id="msgInput"
+               minlength=1
+               required
+               autocomplete="off"
                name="msgInput">
     </label>
 </form>

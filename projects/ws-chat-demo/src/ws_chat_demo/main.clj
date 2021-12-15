@@ -3,7 +3,10 @@
             [io.pedestal.http.jetty.websockets :as ws]
             [io.pedestal.log :as log]
             [clojure.core.async :as async]
-            [ring.util.mime-type :as mime]))
+            [ring.util.mime-type :as mime])
+  (:import (org.eclipse.jetty.websocket.api WebSocketConnectionListener WebSocketListener RemoteEndpoint)
+           (org.eclipse.jetty.servlet ServletHolder)
+           (javax.servlet Servlet)))
 
 
 (defonce state (atom nil))
@@ -14,34 +17,55 @@
 (defn context-configurator
   [ctx]
   (reset! ws-clients {})
-  (ws/add-ws-endpoints ctx
-    {"/ws" {:on-connect (ws/start-ws-connection
-                          (fn [ws-session send-ch]
-                            (log/info :msg "Connect Message!"
-                              :ws-session ws-session
-                              :send-ch send-ch)
-                            (async/put! send-ch "This will be a text message")
-                            (async/go
-                              (async/<! (async/timeout 1000))
-                              (async/put! send-ch "hello again")
-                              (async/<! (async/timeout 1000))
-                              (async/put! send-ch "once again"))
-                            (swap! ws-clients assoc ws-session send-ch)))
-            :on-text    (fn [msg]
-                          (log/info :msg "Text Message!"
-                            :text msg)
-                          (doseq [[ws-session send-ch] @ws-clients]
-                            (async/put! send-ch (str "Broadcast: " msg))))
-            :on-binary  (fn [payload offset length]
-                          (log/info :msg "Binary Message!"
-                            :binary payload))
-            :on-error   (fn [ex]
-                          (log/error :msg "WS Error happened"
-                            :exception ex))
-            :on-close   (fn [num-code reason-text]
-                          (log/info :msg "WS Closed:"
-                            :num-code num-code
-                            :reason reason-text))}}))
+  (let [servlet (ws/ws-servlet (fn [req response]
+                                 (let [*ws-session (promise)]
+                                   (reify
+                                     WebSocketConnectionListener
+                                     (onWebSocketConnect [this ws-session]
+                                       (deliver *ws-session ws-session)
+                                       (let [send-ch (async/chan 10)
+                                             remote ^RemoteEndpoint (.getRemote ws-session)]
+                                         ;; Let's process sends...
+                                         (async/thread
+                                           (loop []
+                                             (when-let [out-msg (and (.isOpen ws-session)
+                                                                  (async/<!! send-ch))]
+                                               (try
+                                                 (ws/ws-send out-msg remote)
+                                                 (catch Exception ex
+                                                   (log/error :msg "Failed on ws-send"
+                                                     :exception ex)))
+                                               (recur)))
+                                           (.close ws-session))
+                                         (log/info :msg "Connect Message!"
+                                           :ws-session ws-session
+                                           :send-ch send-ch)
+                                         (async/put! send-ch "This will be a text message")
+                                         (async/go
+                                           (async/<! (async/timeout 1000))
+                                           (async/put! send-ch "hello again")
+                                           (async/<! (async/timeout 1000))
+                                           (async/put! send-ch "once again"))
+                                         (swap! ws-clients assoc ws-session send-ch)))
+                                     (onWebSocketClose [this status-code reason]
+                                       (log/info :msg "WS Closed:"
+                                         :status-code status-code
+                                         :reason reason))
+                                     (onWebSocketError [this cause]
+                                       (log/error :msg "WS Error happened"
+                                         :exception cause))
+
+                                     WebSocketListener
+                                     (onWebSocketText [this msg]
+                                       (log/info :msg "Text Message!"
+                                         :text msg)
+                                       (doseq [[ws-session send-ch] @ws-clients]
+                                         (async/put! send-ch (str "Broadcast: " (hash this) msg))))
+                                     (onWebSocketBinary [this payload offset length]
+                                       (log/info :msg "Binary Message!"
+                                         :binary payload))))))]
+    (.addServlet ctx (ServletHolder. ^Servlet servlet) "/ws")))
+
 
 (defn dev-main
   [& _]
@@ -58,7 +82,8 @@
            ::http/resource-path     "public"}
         http/default-interceptors
         http/create-server
-        http/start))))
+        http/start)))
+  nil)
 
 (comment
   (dev-main))
