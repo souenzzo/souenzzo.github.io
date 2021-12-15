@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>ws-chat-demo</title>
+</head>
+<body>
+<div>Hello World!</div>
+<p id="lastMessage"></p>
+<form onsubmit="event.preventDefault(); window['mySocket'].send(this.msgInput.value)">
+    <label>
+        Msg Input
+        <input id="msgInput"
+               name="msgInput">
+    </label>
+</form>
+</body>
+<script>
+    let lastMessage = document.getElementById("lastMessage")
+    let msgInput = document.getElementById("msgInput")
+    let socket = new WebSocket(`ws://localhost:8080/ws`);
+    window["mySocket"] = socket
+    socket.addEventListener(`close`, event => console.log([`close`, event]));
+    socket.addEventListener(`error`, event => console.log([`error`, event]));
+    socket.addEventListener(`message`, ({data}) => lastMessage.innerText = data);
+    socket.addEventListener(`open`, event => console.log([`open`, event]));
+    console.log(socket);
+
+</script>
+</html>
