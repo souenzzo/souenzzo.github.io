@@ -7,27 +7,45 @@
 <body>
 <div>Hello World!</div>
 <p id="lastMessage"></p>
-<form onsubmit="event.preventDefault(); window['mySocket'].send(this.msgInput.value); this.msgInput.value=''">
-    <label>
-        Msg Input
-        <input id="msgInput"
-               minlength=1
-               required
-               autocomplete="off"
-               name="msgInput">
-    </label>
-</form>
-</body>
+<label>
+    Msg Input
+    <input id="colorPicker"
+           type="color">
+</label>
+
+<svg id="canvas"></svg>
 <script>
+    let canvas = document.getElementById("canvas")
     let lastMessage = document.getElementById("lastMessage")
-    let msgInput = document.getElementById("msgInput")
+    let colorPicker = document.getElementById("colorPicker")
+    let draw = ({offsetX, offsetY, color}) => {
+        let currentCircle = document.querySelector(`#canvas > .color${color.slice(1)}`)
+        if (currentCircle == null) {
+            currentCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            canvas.appendChild(currentCircle)
+            currentCircle.setAttribute("class", `color${color.slice(1)}`);
+            currentCircle.setAttribute("r", `3`);
+            currentCircle.setAttribute("fill", `${color}`);
+
+        }
+        currentCircle.setAttribute("cx", `${offsetX}`);
+        currentCircle.setAttribute("cy", `${offsetY}`);
+    }
     let socket = new WebSocket(`ws://localhost:8080/ws`);
     window["mySocket"] = socket
     socket.addEventListener(`close`, event => console.log([`close`, event]));
     socket.addEventListener(`error`, event => console.log([`error`, event]));
-    socket.addEventListener(`message`, ({data}) => lastMessage.innerText = data);
+    socket.addEventListener(`message`, ({data}) => {
+        lastMessage.innerText = data
+        draw(JSON.parse(data));
+    });
     socket.addEventListener(`open`, event => console.log([`open`, event]));
     console.log(socket);
-
+    canvas.addEventListener(`mousemove`, ({offsetX, offsetY}) => {
+        let point = {offsetX, offsetY, color: `${colorPicker.value}`}
+        socket.send(JSON.stringify(point))
+        draw(point)
+    })
 </script>
+</body>
 </html>

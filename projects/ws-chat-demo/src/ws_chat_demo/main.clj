@@ -58,7 +58,7 @@
         (log/info :msg "Text Message!"
           :text msg)
         (doseq [[ws-session send-ch] @ws-clients]
-          (async/put! send-ch (str "Broadcast: " (hash this) msg))))
+          (async/put! send-ch msg)))
       (onWebSocketBinary [this payload offset length]
         (log/info :msg "Binary Message!"
           :binary payload)))))
@@ -68,7 +68,6 @@
   (reset! ws-clients {})
   (let [servlet (ws/ws-servlet ws-handler)]
     (.addServlet ctx (ServletHolder. ^Servlet servlet) "/ws")))
-
 
 (defn dev-main
   [& _]
@@ -90,5 +89,3 @@
 
 (comment
   (dev-main))
-
-
