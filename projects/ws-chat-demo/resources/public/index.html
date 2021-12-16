@@ -37,9 +37,14 @@
     socket.addEventListener(`error`, event => console.log([`error`, event]));
     socket.addEventListener(`message`, ({data}) => {
         lastMessage.innerText = data
-        draw(JSON.parse(data));
+        let value = JSON.parse(data)
+        value.ping
+            ? draw(JSON.parse(value))
+            : socket.send(JSON.stringify({pong: new Date()}));
     });
-    socket.addEventListener(`open`, event => console.log([`open`, event]));
+    socket.addEventListener(`open`, event => {
+        console.log([`open`, event])
+    });
     console.log(socket);
     canvas.addEventListener(`mousemove`, ({offsetX, offsetY}) => {
         let point = {offsetX, offsetY, color: `${colorPicker.value}`}

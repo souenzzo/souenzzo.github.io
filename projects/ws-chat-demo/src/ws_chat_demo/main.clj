@@ -8,7 +8,7 @@
   (:import (org.eclipse.jetty.websocket.api WebSocketConnectionListener WebSocketListener RemoteEndpoint Session)
            (org.eclipse.jetty.servlet ServletHolder ServletContextHandler)
            (javax.servlet Servlet)
-           (java.util UUID)))
+           (java.util UUID Date)))
 (set! *warn-on-reflection* true)
 
 (defonce state (atom nil))
@@ -24,6 +24,10 @@
       (onWebSocketConnect [this ws-session]
         (let [send-ch (async/chan 10)
               remote ^RemoteEndpoint (.getRemote ws-session)]
+          (async/go-loop []
+            (async/<! (async/timeout 1000))
+            (when (async/>! send-ch {:ping (Date.)})
+              (recur)))
           (swap! *by-ws-id assoc ws-id {::ws-session ws-session
                                         ::ws-id      ws-id
                                         ::send-ch    send-ch})
@@ -58,9 +62,12 @@
       (onWebSocketText [this msg-text]
         (let [msg (assoc (json/read-str msg-text
                            :key-fn keyword)
-                    :from-ws-id ws-id)]
-          (doseq [[_ {::keys [ws-session send-ch]}] @*by-ws-id]
-            (async/put! send-ch msg)))
+                    :from-ws-id ws-id)
+              by-id @*by-ws-id
+              send-ch (get-in by-id [ws-id ::send-ch])]
+          (when-not (contains? msg :pong)
+            (doseq [[_ {::keys [ws-session send-ch]}] by-id]
+              (async/put! send-ch msg))))
         (log/info :msg "onWebSocketText"
           :ws-id ws-id
           :msg-text msg-text))
