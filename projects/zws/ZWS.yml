@@ -8,25 +8,33 @@
         dest: "{{ lookup('env', 'HOME') }}/zws/root"
         single_branch: yes
         version: "master"
-    - name: Recursively change ownership of a directory
-      ansible.builtin.file:
-        path: "{{ lookup('env', 'HOME') }}/.config/systemd/user"
-        state: "directory"
-        recurse: yes
-    - name: "Add ZWS unit file"
-      ansible.builtin.copy:
-        src: "zws.service"
-        dest: "{{ lookup('env', 'HOME') }}/.config/systemd/user/zws.service"
-    - name: "Bashrc"
-      ansible.builtin.copy:
-        src: ".bashrc"
-        dest: "{{ lookup('env', 'HOME') }}/.bashrc"
-    - name: "Reload configs"
-      ansible.builtin.systemd:
-        daemon_reload: yes
-        scope: "user"
-    - name: "Enable ZWS service"
-      ansible.builtin.systemd:
-        name: "zws.service"
-        scope: "user"
-        enabled: yes
+      register: gitclone
+    - name: "On git change"
+      when: gitclone.changed
+      block:
+        - name: Recursively change ownership of a directory
+          ansible.builtin.file:
+            path: "{{ lookup('env', 'HOME') }}/.config/systemd/user"
+            state: "directory"
+            recurse: yes
+
+        - name: "Add ZWS unit file"
+          ansible.builtin.copy:
+            src: "zws.service"
+            dest: "{{ lookup('env', 'HOME') }}/.config/systemd/user/zws.service"
+
+        - name: "Bashrc"
+          ansible.builtin.copy:
+            src: ".bashrc"
+            dest: "{{ lookup('env', 'HOME') }}/.bashrc"
+
+        - name: "Reload configs"
+          ansible.builtin.systemd:
+            daemon_reload: yes
+            scope: "user"
+
+        - name: "Enable ZWS service"
+          ansible.builtin.systemd:
+            name: "zws.service"
+            scope: "user"
+            enabled: yes
