@@ -1,0 +1,11 @@
+# ~/.config/systemd/user/zws.service
+
+[Unit]
+Description=ZWS
+
+[Service]
+WorkingDirectory=/home/souenzzo/zws/root/projects/zws
+ExecStart=/usr/bin/ls
+
+[Install]
+WantedBy=default.target

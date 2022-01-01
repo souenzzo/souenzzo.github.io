@@ -1,0 +1,29 @@
+---
+- name: "Configure ZWS: a self-replicant machine config"
+  hosts: "localhost"
+  tasks:
+    - name: "Clone remote code"
+      ansible.builtin.git:
+        repo: "https://github.com/souenzzo/souenzzo.github.io.git"
+        dest: "{{ lookup('env', 'HOME') }}/zws/root"
+        single_branch: yes
+        version: "master"
+    - name: Recursively change ownership of a directory
+      ansible.builtin.file:
+        path: "{{ lookup('env', 'HOME') }}/.config/systemd/user"
+        state: directory
+        recurse: yes
+    - name: "Add ZWS unit file"
+      ansible.builtin.copy:
+        src: zws.service
+        dest: "{{ lookup('env', 'HOME') }}/.config/systemd/user/zws.service"
+    - name: Just force systemd to reread configs (2.4 and above)
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        scope: user
+    - name: Reload service httpd, in all cases
+      ansible.builtin.systemd:
+        name: zws.service
+        scope: user
+        state: reloaded
+
