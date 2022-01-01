@@ -33,7 +33,3 @@ C_BLUE='\[\e[1;34m\]'
 C_WIPE='\[\e[0m\]'
 PS1="\n[\${PIPESTATUS[@]} $C_BLUE\$(git_branch)$C_RED\$(git_branch_MOD)$C_WIPE$C_GREEN\w$C_WIPE \t]\n"
 # PS1='[\u@\h \W]\$ '
-
-
-
-

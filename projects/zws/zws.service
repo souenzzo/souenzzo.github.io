@@ -5,7 +5,7 @@ Description=ZWS
 
 [Service]
 WorkingDirectory=/home/souenzzo/zws/root/projects/zws
-ExecStart=/usr/bin/env ansible-playbook ZWS.yml
+ExecStart=/home/souenzzo/zws/root/projects/zws/zws.sh
 
 [Install]
 WantedBy=default.target
