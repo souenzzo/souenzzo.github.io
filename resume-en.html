@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
     <style>
-body {
-  max-width: 38em;
-  padding: 1em;
-  margin: auto;
-}
+        body {
+            max-width: 38em;
+            padding: 1em;
+            margin: auto;
+        }
 
+        li {
+            padding: 20px;
+        }
     </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Resume - souenzzo</title>
     <link rel="icon"
           href="/me70.png"/>
@@ -16,6 +21,10 @@ body {
 <body>
 <header>
     <h1>Enzzo Pessanha Cavallo</h1>
+    <p>
+        I'm a developer with experience in security and networks, looking for hard problems to solve involving these
+        and potentially other areas.
+    </p>
     Contacts:
     <ul>
         <li><a href="mailto:souenzzo@gmail.com">souenzzo@gmail.com</a></li>
@@ -24,10 +33,6 @@ body {
     </ul>
 </header>
 <main>
-    <p>
-        I'm a developer with experience in security and networks, looking for hard problems to solve involving these
-        and potentially other areas.
-    </p>
     <p>
         I like to solve problems interactively with data-driven decision making.
     </p>
@@ -47,8 +52,19 @@ body {
             <h1>Professional Experience</h1>
         </header>
         <section>
+            <h2>Developer at Compute Software Inc</h2>
+            <code>2021 - 2022</code>
+            <!-- p> TODO:
+                Desenvolvimento e manutenção de um serviço "fullstack" que coleta dezenas de instancias de
+                serviços na AWS, Google Cloud e Azure, agregando as métricas e fazendo recomendações de
+                possiveis otimizações de preço ou performance. As intancias e recomendações eram armazenadas em
+                um Datomic Cloud, métricas no InfluxDB. As recomendações eram geradas periodicamente usando
+                timers do CloudWatch e filas SQS.
+            </p -->
+        </section>
+        <section>
             <h2>Developer at Moleque de Ideias</h2>
-            <code>2016 - current</code>
+            <code>2016 - 2021</code>
             <p>
                 Currently working on a software that aggregates and coordinates many services from the main
                 players of Brazilian e-Commerce and payment.
@@ -93,7 +109,8 @@ body {
                 Use of techs like Docker, Ansible, Bash and Python, doing "Infrastructure as Code" since 2014.
             </p>
             <p>
-                Manage an heterogeneous SO network with many OS's, like CentOS, Debian, Ubuntu, Arch, BSD's and others.
+                Manage an heterogeneous SO network with many OS's, like CentOS, Debian, Ubuntu, Arch, BSD's and
+                others.
             </p>
         </section>
         <section>
@@ -122,8 +139,10 @@ body {
             <h2>Open Source</h2>
             <code>2014 - current</code>
             <p>
-                Development and publication of small libs, mostly in <a href="https://github.com.br/souenzzo">GitHub</a>.
-                Contributions to software and libraries used in the projects that I work on, not only with code but with
+                Development and publication of small libs, mostly in <a
+                    href="https://github.com.br/souenzzo">GitHub</a>.
+                Contributions to software and libraries used in the projects that I work on, not only with code but
+                with
                 issues and feedbacks.
             </p>
         </section>
