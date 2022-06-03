@@ -194,7 +194,80 @@ Accept: */*
         Agora que já vimos como um cliente HTTP de verdade se comporta, podemos tentar nos passar por um cliente HTTP,
         para ver como um servidor HTTP se comporta.
     </p>
-    
+    <p>Vamos abrir um <code>nc souenzzo.com.br 80</code> e pedir pelo documento <code>mundo.txt</code></p>
+    <pre>$ nc souenzzo.com.br 80
+GET /mundo.txt HTTP/1.1
+Host: souenzzo.com.br
+
+
+    </pre>
+    <p><b>Atenção</b>: Nesse caso, vc vai escrever todas essas linhas no terminal, apertando <code>enter</code> ao final
+        de cada linha</p>
+    <p>Após dar 2 enters vazios no final, você deve receber a resposta do servidor:</p>
+    <pre>HTTP/1.1 200 OK
+Server: GitHub.com
+Content-Type: text/plain; charset=utf-8
+Last-Modified: Fri, 03 Jun 2022 15:14:17 GMT
+Access-Control-Allow-Origin: *
+ETag: "629a2549-6"
+expires: Fri, 03 Jun 2022 15:35:57 GMT
+Cache-Control: max-age=600
+x-proxy-cache: MISS
+X-GitHub-Request-Id: 7F80:3BE0:EC641:115EC0:629A2804
+Content-Length: 6
+Accept-Ranges: bytes
+Date: Fri, 03 Jun 2022 15:27:13 GMT
+Via: 1.1 varnish
+Age: 40
+Connection: keep-alive
+X-Served-By: cache-gig2250058-GIG
+X-Cache: HIT
+X-Cache-Hits: 1
+X-Timer: S1654270033.303962,VS0,VE0
+Vary: Accept-Encoding
+X-Fastly-Request-ID: ee74fd0cb473e4b31b05200fafbb3b37411ddbb7
+
+olá
+
+</pre>
+    <p>Vamos entender isso ai:</p>
+    <ul>
+        <li><code>HTTP/1.1</code>, novamente aquela constante que sempre aparece</li>
+        <li><code>200 OK</code> esse é o status do resultado da requisição. 200 quer dizer que ocorreu tudo certo. Você
+            pode consultar a lista de possiveis status na <a
+                    href="https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status">mdn </a></li>
+        <li>Depois novamente uma longa lista de chave valor separados por <code>:</code>. Nada de muito interessante
+        </li>
+        <li>O conteudo do arquivo: olá. Você pode ver o arquivo no
+            <a href="https://github.com/souenzzo/souenzzo.github.io/blob/main/mundo.txt">github</a></li>
+    </ul>
+    <p>
+        Agora que vimos na pratica como um cliente HTTP se comunica com um servidor HTTP, e que eles se comunicam por
+        texto, será que conseguimos fingir manualmente que somos um servidor HTTP?
+    </p>
+</section>
+<section>
+    <h1>Jogo da imitação</h1>
+    <p>
+        Vamos agora subir um servidor HTTP, conectar um cliente HTTP de verdade: firefox, e dar uma
+        resposta para ele, como se nós fossemos um servidor HTTP.
+    </p>
+    <p><b>Importante: use o firefox. O google chrome desiste muito rapido</b></p>
+    <p>Para isso, vamos começar subindo nosso <code>nc -l -p 8080</code></p>
+    <p>Depois, vamos conectar o browser em <code>http://localhost:8080</code></p>
+    <p>No terminal do netcat, vai aparecer a requisição grandona, como vimos acima.</p>
+    <p>Nesse mesmo terminal do netcat, agora vamos escrever uma resposta</p>
+    <pre>....                          ## Um monte de coisa que o firefox mandou
+Sec-Fetch-User: ?1
+                              ## Aqui a ultima linha do firefox
+HTTP/1.1 200 OK               ## Aqui vc escreve.
+                              ## Precisamos desse espaço vazio, lembra?
+Olá mundo!!!                  ## Pode por qualquer mensagem!
+                              ## Mais um espaço vazio, depois aperta CTRL+C
+    </pre>
+    <p>O <code>ctrl+c</code> no final serve para vc encerrar a conecção.</p>
+    <p>Quando vc apertar <code>ctrl+c</code>, a mensagem que vc escreveu deve aparecer no firefox</p>
+    <p>Parabens! Você acaba de se passar por um servidor HTTP!</p>
 </section>
 </body>
 </html>
