@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>01</title>
+    <meta charset="UTF-8">
+    <style>
+        section {
+            max-width: 38em;
+            margin: auto;
+            padding: 1em;
+        }
+
+        pre {
+            background-color: black;
+            color: limegreen;
+            padding: 1em;
+            overflow: auto;
+        }
+
+        details {
+            background-color: lightgoldenrodyellow;
+            padding: 1em;
+            border-radius: 1em;
+        }
+
+        code {
+            background-color: black;
+            color: limegreen;
+            padding-left: 0.3em;
+            padding-right: 0.3em;
+        }
+
+        body {
+            padding-bottom: 30em;
+        }
+    </style>
+</head>
+<body>
+<section>
+    Para esse bootcamp vou supor que você:
+    <ul>
+        <li>Tem acesso a um linux moderno</li>
+        <li>Conhece um minimo de shell (linha de comando)</li>
+    </ul>
+</section>
+<section>
+    <h1>Introdução sobre o HTTP</h1>
+    <p>HTTP é um protocolo de comunicação entre maquinas.</p>
+    <p>Desenvolvido inicialmente em 1991, é um protocolo baseado em texto e muito simples.</p>
+    <p>
+        Algumas referencias que vc pode consultar durante a execução desse tutorial:
+        <a href="https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Overview">mdn</a> ou
+        <a href="https://pt.wikipedia.org/wiki/Hypertext_Transfer_Protocol">wikipedia</a>
+    </p>
+</section>
+<section>
+    <h1>Requisitos de maquina</h1>
+    <p>Convira se seu computador possui os softwares necessários. Em um terminal execute:</p>
+    <pre>which nc curl telnet</pre>
+    <p>Esse comando deve gerar o resultado:</p>
+    <pre>$ which nc curl telnet
+/usr/bin/nc
+/usr/bin/telnet
+/usr/bin/curl
+</pre>
+    <p>Daqui para frente, sempre que a gente for usar o terminal, os comandos que você deve executar vão começar com o
+        <code>$</code>. As outras linhas serão de output .
+    </p>
+    <details>
+        <summary>Caso você veja uma mensagem como
+            <code>which: no curl in (/usr/local/bin:/usr/bin...)</code>
+        </summary>
+        Instale as dependencias necessárias:
+        <pre>$ sudo apt-get install nc telnet curl
+        </pre>
+    </details>
+    <section>
+        <h1>Trocando informações</h1>
+        <p>
+            Apesar do HTTP ser um protocolo de comunicação entre maquinas, nós estamos numa maquina só, então vamos
+            trocar informações com nossa propria maquina.
+        </p>
+        <p>
+            Vamos começar subindo um servidor na porta <code>8080</code>.
+            Para isso, abra um terminal e digite <code>nc -l -p 8080</code>
+        </p>
+        <details>
+            <summary>Entendendo o <code>nc</code></summary>
+            <p>
+                <code>nc</code> ou <code>netcat</code> é um utilitário de linha de comando. Desenvolvido por volta de
+                1995, ele pode ser usado de diversas maneiras para enviar/receber mensagens entre computadores.
+            </p>
+            <p>
+                Quando usado com <code>-l</code>, ele entra no modo <code>listening</code>, ou modo escutar em
+                portugues. Isso quer dizer que ele vai receber mensagens na porta especificada.
+            </p>
+            <p>
+                O <code>-p 8080</code> quer dizer que ele vai escutar a porta <code>8080</code>
+            </p>
+        </details>
+        <p>
+            Vamos agora conectar um cliente no nosso servidor. <b>Em um novo terminal</b>, execute <code>nc localhost
+            8080</code>.
+        </p>
+        <p>Agora, ambos os terminais estão conectados e trocando mensagens entre cliente e servidor.</p>
+        <p>
+            Digite <code>olá</code>em um terminal e aperte <code>enter</code>. A mensagem deve aparecer em ambos os
+            terminais
+        </p>
+        <p>
+            Faça o mesmo no terminal do servidor. Para sair, aperte <code>ctrl+c</code>
+        </p>
+    </section>
+    <section>
+        <h1>Descobrindo o protocolo</h1>
+        <p>
+            Conhecendo as ferramentas certas podemos explorar interativamente o protocolo e aprender ele simplesmente ao
+            observar "o que acontece".
+        </p>
+        <p>
+            Aprendemos a subir um servidor na porta 8080. Agora vamos ver o que acontece quando um cliente HTTP "de
+            verdade" conecta dele.
+        </p>
+        <p>
+            Novamente, abra novo terminal "limpo e vazio" e execute <code>nc -l -p 8080</code>
+        </p>
+        <p>
+            Agora, abra o Firefox/Google Chrome, e conecte no site <code>http://localhost:8080</code>
+        </p>
+        <p>Ao fazer isso, o Firefox/Google Chrome irá mandar uma mensagem para o servidor. Você deve ver algo como</p>
+        <pre>$ nc -l -p 8080
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="101"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+DNT: 1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: pt-BR,pt;q=0.9,en;q=0.8,en-US;q=0.7
+        </pre>
+    </section>
+    <p>
+        Os browsers (firefox/chrome) são clientes HTTP muito grandes/complexos, daqui para frente, vamos usar o <code>curl</code>,
+        que é um cliente HTTP muito mais simples.
+    </p>
+    <p>
+        Novamente, iniciando <code>nc -l -p 8080</code> em um terminal, e executando <code>curl localhost:8080</code> em
+        outro terminal, obtemos:
+    </p>
+    <pre>$ nc -l -p 8080
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/7.83.1
+Accept: */*
+
+
+    </pre>
+    <p>
+        A partir disso, podemos observar:
+    </p>
+    <ul>
+        <li>As requisições começam com <code>GET</code>.</li>
+        <li>
+            Após o <code>GET</code> vem uma <code>/</code>. Essa <code>/</code> é o documento que vc quer ver. Quando vc
+            navega em <code>souenzzo.com.br/blog</code>, o documento seria <code>/blog</code>
+        </li>
+        <li>Há um <code>HTTP/1.1</code>. Esse é constante, vamos sempre usar ele.</li>
+        <li>Depois há uma lista de pares de valores, sempre separados por <code>:</code></li>
+        <li>
+            Um dos elementos é o host. No caso de <code>souenzzo.com.br/blog</code> seria <code>souenzzo.com.br</code>
+        </li>
+        <li>Outro dos elementos é a identificação do cliente, o <code>User-Agent</code></li>
+        <li>
+            Outro dos elementos é o <code>Accept</code>, que é o tipo do documento que se espera de volta
+        </li>
+        <li>Há dois espaços vazios em baixo. Eles são importantes!!</li>
+    </ul>
+    <p>
+        De uma olhada nos campos <code>Host, Accept e User-Agent</code> da requisição do Chrome/firefox e veja a
+        diferença para o curl
+    </p>
+</section>
+<section>
+    <h1>Descobrindo o protocolo, pt2</h1>
+    <p>
+        Agora que já vimos como um cliente HTTP de verdade se comporta, podemos tentar nos passar por um cliente HTTP,
+        para ver como um servidor HTTP se comporta.
+    </p>
+    
+</section>
+</body>
+</html>
