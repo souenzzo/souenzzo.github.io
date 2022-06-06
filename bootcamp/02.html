@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>01</title>
+    <meta charset="UTF-8">
+    <style>
+        section {
+            max-width: 38em;
+            margin: auto;
+            padding: 1em;
+        }
+
+        pre {
+            background-color: black;
+            color: limegreen;
+            padding: 1em;
+            overflow: auto;
+        }
+
+        details {
+            background-color: lightgoldenrodyellow;
+            padding: 1em;
+            border-radius: 1em;
+        }
+
+        code {
+            background-color: black;
+            color: limegreen;
+            padding-left: 0.3em;
+            padding-right: 0.3em;
+        }
+
+        body {
+            padding-bottom: 30em;
+        }
+    </style>
+</head>
+<body>
+<section>
+    Para esse bootcamp vou supor que você:
+    <ul>
+        <li>Concluiu a <a href="/bootcamp/01.html">parte 01</a> com sucesso</li>
+        <li>Sabe o básico de programação em Python</li>
+    </ul>
+</section>
+<section>
+    <h1>Echo</h1>
+    <p>
+        Vamos começar implementando um servidor echo em python. Esse servidor deve receber uma mensagem e responder a
+        mesma coisa que respondeu.
+    </p>
+    <pre>import socket
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind(("", 8080))
+    s.listen(1)
+    while 1:
+        conn, addr = s.accept()
+        data = conn.recv(1024)
+        if not data: break
+        conn.sendall(data)
+        conn.close()
+</pre>
+    <p>
+        Salve esse código em um arquivo <code>echo.py</code> e execute o comando <code>python echo.py</code>
+    </p>
+    <p>
+        Em outro terminal, deve ser possível conectar nesse servidor usando <code>nc 127.0.0.1 8080</code>.
+    </p>
+    <p>
+        Nesse terminal do <code>nc</code> você pode escrever qualquer mensagem. Ela deve aparecer duplicada após o
+        enter.
+    </p>
+</section>
+<section>
+    <h1>
+        Respondendo requisições
+    </h1>
+    <p>
+        Já sabemos a estrutura de uma requisição HTTP. Sabemos também que elas terminam sempre com uma linha em branco.
+        Vamos usar isso a nosso favor agora.
+    </p>
+    <pre>import socket
+import pprint
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind(("", 8080))
+    s.listen(1)
+    while 1:
+        conn, addr = s.accept()
+        data = conn.recv(1024)
+        if not data: break
+        pprint.pprint(data.splitlines())
+        conn.sendall(b"HTTP/1.1 200 OK\r\n")
+        conn.sendall(b"Content-Type: text/plain\r\n")
+        conn.sendall(b"\r\n")
+        conn.sendall(b"Ola mundo!\r\n")
+        conn.close()
+</pre>
+
+</section>
+<footer>
+    <p>
+        Em caso de erros ou duvidas,
+        <a target="_blank"
+           rel="noreferrer noopener"
+           href="https://github.com/souenzzo/souenzzo.github.io/issues/new">reporte aqui</a>
+    </p>
+    <p>Ou se preferir <a target="_blank"
+                         rel="noreferrer noopener"
+                         href="https://t.me/souenzzo">fale diretamente comigo</a></p>
+</footer>
+</body>
+</html>
