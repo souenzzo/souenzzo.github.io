@@ -8,8 +8,21 @@
             padding: 2em 2em 20em;
         }
 
+        .compact ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .compact li {
+            padding: 0;
+        }
+
         li {
-            padding: 20px;
+            padding: 1em;
+        }
+
+        h2 {
+            font-size: 1.2em;
         }
     </style>
     <meta charset="UTF-8">
@@ -25,9 +38,6 @@
         I'm a developer with experience in security and networks.
         Looking for hard problems involving many knowledge areas to solve.
     </p>
-    <p>
-        I like to solve problems interactively with data-driven decision-making.
-    </p>
     Contacts:
     <ul>
         <li><a href="mailto:souenzzo@gmail.com">souenzzo@gmail.com</a></li>
@@ -36,21 +46,6 @@
     </ul>
 </header>
 <main>
-    <section>
-        <header>
-            <h1>Highlights</h1>
-        </header>
-        <ul>
-            <li>
-                6 years of experience in software developer using the main technologies in the market: JVM, AWS,
-                ReactNative and Web.
-            </li>
-            <li>
-                2 years of experience in infrastructure and security, working with a wide range of heterogeneous
-                technologies, like systemd, FreeNAS, LDAP, UNIX, Ansible, Xen, OpenMPI, and others.
-            </li>
-        </ul>
-    </section>
     <section>
         <header>
             <h1>Professional Experience</h1>
@@ -154,37 +149,28 @@
                 Contributions to software and libraries used in the projects that I work on, not only with code but
                 with issues, discussions, and feedbacks.
             </p>
+            <p>
+                Highlights:
+                <a href="https://github.com/pedestal/pedestal/commits?author=souenzzo">pedestal</a>,
+                <a href="https://github.com/clojure/clojurescript/commits?author=souenzzo">clojurescript</a>,
+                <a href="https://github.com/fulcrologic/fulcro/commits?author=souenzzo">fulcro</a>,
+                <a href="https://github.com/wilkerlucio/pathom3/commits?author=souenzzo">pathom3</a>,
+                <a href="https://github.com/babashka/babashka/blob/v0.8.156/examples/README.md#tiny-http-server">
+                    babashka(docs)
+                </a>,
+                <a href="https://github.com/lilactown/pyramid/blob/3.2.0/README.md#prior-art">lilactown/pyramid
+                    (inspiration, code)
+                </a>
+
+            <p>
         </section>
         <!-- section>
-            <h1>House services</h1>
+            <h2>House services</h2>
             <code>since I was ~13yo</code>
             <p>I ran services like remote login, file sharing, and automatic backups in my family house :)</p>
         </section -->
     </section>
     <!-- section>
-        <header>
-            <h1>Techs that I know, work with, or enjoy :)</h1>
-            <span>RDF</span>
-            <span>W3</span>
-            <span>ansible</span>
-            <span>JVM</span>
-            <span>clojure</span>
-            <span>android</span>
-            <span>unix</span>
-            <span>systemd</span>
-            <span>docker</span>
-            <span>linux</span>
-            <span>rust</span>
-            <span>dart</span>
-            <span>virtualization</span>
-            <span>ssh</span>
-            <span>wireguard</span>
-            <span>tcp</span>
-            <span>http</span>
-            <span>udp</span>
-        </header>
-    </section>
-    <section>
         <header>
             <h1>Formal education</h1>
         </header>
@@ -194,6 +180,110 @@
             <p>incomplete</p>
         </section>
     </section -->
+    <section class="compact">
+        <header>
+            <h1>Skills</h1>
+        </header>
+        <p>Extensive and exhaustive skill list. Use CTRL+F</p>
+        <p>Legend</p>
+        <ul>
+            <li><code>★★★</code> Know, understand, and has experience. Have opinions on it.</li>
+            <li><code>★★☆</code> Know, understand, but a few/no experiencie on it.</li>
+            <li><code>★☆☆</code> Used a few times.</li>
+        </ul>
+        <section>
+            <p>Languages</p>
+            <ul>
+                <li><code>★★★</code> Clojure</li>
+                <li><code>★★★</code> Clojurescript</li>
+                <li><code>★★★</code> Javascript</li>
+                <li><code>★★★</code> Shell(bash)</li>
+                <li><code>★★☆</code> Java</li>
+                <li><code>★★☆</code> C</li>
+                <li><code>★★☆</code> Go</li>
+                <li><code>★★☆</code> Rust</li>
+                <li><code>★★☆</code> Python</li>
+                <li><code>★☆☆</code> Elixir</li>
+                <li><code>★☆☆</code> Haskell</li>
+            </ul>
+        </section>
+        <section>
+            <p>Backend</p>
+            <ul>
+                <li><code>★★★</code> JVM</li>
+                <li><code>★★★</code> Logging (logback, slf4j)</li>
+                <li><code>★★★</code> Rest API's (OpenAPI, Swagger)</li>
+                <li><code>★★★</code> Graph API's (GraphQL, EQL)</li>
+                <li><code>★★★</code> Graph databases (datomic, xtdb)</li>
+                <li><code>★★☆</code> nodejs</li>
+                <li><code>★★☆</code> Redis</li>
+                <li><code>★★☆</code> Relational databases</li>
+                <li><code>★☆☆</code> RPC API's (gRPC)</li>
+            </ul>
+        </section>
+        <section>
+            <p>Frontend</p>
+            <ul>
+                <li><code>★★★</code> HTML</li>
+                <li><code>★★★</code> React</li>
+                <li><code>★★☆</code> CSS</li>
+                <li><code>★☆☆</code> Android</li>
+            </ul>
+        </section>
+        <section>
+            <p>Cloud</p>
+            <ul>
+                <li><code>★★★</code> AWS(EC2, ECS, ALB, NLB, CloudFront, APIG, lambda...)</li>
+                <li><code>★★★</code> Linux</li>
+                <li><code>★★★</code> Continuous Integration/Delivery (Jenkins, CircleCI, Github Actions)</li>
+                <li><code>★★☆</code> Docker</li>
+                <li><code>★☆☆</code> Infrastructure as code (pulumi)</li>
+            </ul>
+        </section>
+        <section>
+            <p>Misc</p>
+            <ul>
+                <li><code>★★★</code> git</li>
+                <li><code>★★★</code> ssh</li>
+                <li><code>★★★</code> Test Driven Development (TDD)</li>
+                <li><code>★★★</code> systemd</li>
+                <li><code>★★★</code> shell/unix/command line</li>
+                <li><code>★★★</code> network protocols (TPC, HTTP)</li>
+                <li><code>★★★</code> network debug tools (tcpdump, netcat, wireshark)</li>
+                <li><code>★★★</code> linux debug tools (dmesg, journalctl, strace, lsof)</li>
+            </ul>
+        </section>
+        <section>
+            <p>Clojure Ecosystem </p>
+            <ul>
+                <li><code>★★★</code> pedestal</li>
+                <li><code>★★★</code> datomic</li>
+                <li><code>★★★</code> core.async</li>
+                <li><code>★★★</code> JDK Libraries (java.time, java.net, ...)</li>
+                <li><code>★★★</code> pathom</li>
+                <li><code>★★★</code> transit</li>
+                <li><code>★★★</code> ring</li>
+                <li><code>★★★</code> aws-api</li>
+                <li><code>★★★</code> fulcro</li>
+                <li><code>★★★</code> re-frame/reagent</li>
+                <li><code>★★★</code> spec</li>
+                <li><code>★★★</code> lein</li>
+                <li><code>★★★</code> tools.deps (clojure command line)</li>
+                <li><code>★★★</code> tools.build</li>
+                <li><code>★★★</code> shadow-cljs</li>
+                <li><code>★★☆</code> native-image (GraalVM)</li>
+                <li><code>★★☆</code> kafka</li>
+                <li><code>★★☆</code> sci/babashka</li>
+                <li><code>★★☆</code> XTDB</li>
+                <li><code>★★☆</code> malli</li>
+                <li><code>★★☆</code> reitit</li>
+                <li><code>★★☆</code> Carmine (redis)</li>
+                <li><code>★★☆</code> java.jdbc/next.jdbc</li>
+                <li><code>★☆☆</code> protojure (gRPC)</li>
+
+            </ul>
+        </section>
+    </section>
 </main>
 </body>
 </html>
