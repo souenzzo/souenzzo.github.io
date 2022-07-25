@@ -104,3 +104,27 @@ public class Main {
 
     }
 }
+
+// package com.example;
+interface IGreet {
+    String greet();
+}
+
+class Main {
+    public static void main() {
+
+        // Criando uma implementação
+        var impl = new IGreet() {
+            @Override
+            public String greet() {
+                return "hello";
+            }
+        };
+
+        // Chamando a implementação
+        impl.greet();
+
+    }
+}
+
+
