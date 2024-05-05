@@ -33,6 +33,26 @@
             ]
         }
     </script>
+    <script type="module">
+        let randNth = (coll) => coll[Math.floor(Math.random() * coll.length)];
+
+        let titles = [
+            "Software Engineer", "Developer", "Hacker", "Data Architect", "Code Artist", "Bug Curator"
+        ];
+        let timeouts = [500, 800, 100, 200];
+
+        let els = document.querySelectorAll(".glitch");
+
+        setInterval(() => {
+            let title = randNth(titles)
+            for (let el of els) {
+                setTimeout(() => {
+                    el.innerText = title;
+                }, randNth(timeouts))
+            }
+        }, 8000)
+
+    </script>
 </head>
 <body>
 <header>
@@ -41,7 +61,11 @@
              alt="me">
     </figure>
     <h1>{{ site.title }}</h1>
-    <code>{{ site.description }}</code>
+    <div>
+        <pre class="glitch">{{ site.description }}</pre>
+        <pre class="glitch glitch-cyan">{{ site.description }}</pre>
+        <pre class="glitch glitch-magenta">{{ site.description }}</pre>
+    </div>
 </header>
 <main>
     <p>networks</p>
