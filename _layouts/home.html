@@ -35,26 +35,47 @@
     </script>
     <script type="module">
         let randNth = (coll) => coll[Math.floor(Math.random() * coll.length)];
+        let titles = [...document.getElementById("titles").options].map(el => el.value)
 
-        let titles = [
-            "Software Engineer", "Developer", "Hacker", "Data Architect", "Code Artist", "Bug Curator"
-        ];
-        let timeouts = [500, 800, 100, 200];
+        let timeouts = [500, 800, 1000, 200];
 
         let els = document.querySelectorAll(".glitch");
+        let lastUpdate = new Date();
 
-        setInterval(() => {
-            let title = randNth(titles)
+        let swapTitle = () => {
+            lastUpdate = new Date();
+            let currentTitle = els[0].innerText
+            let title = randNth(titles.filter(title => title !== currentTitle))
             for (let el of els) {
                 setTimeout(() => {
                     el.innerText = title;
                 }, randNth(timeouts))
+            }
+        }
+
+        for (let el of els) {
+            el.onclick = swapTitle
+        }
+
+        setInterval(() => {
+            if (5000 < (new Date() - lastUpdate)) {
+                swapTitle()
             }
         }, 8000)
 
     </script>
 </head>
 <body>
+<datalist id="titles">
+    <option value="Software Engineer"></option>
+    <option value="Software Developer"></option>
+    <option value="Hacker"></option>
+    <option value="Data Architect"></option>
+    <option value="Data Artist"></option>
+    <option value="Code Artist"></option>
+    <option value="Bug Curator"></option>
+    <option value="Stacktrace interpreter"></option>
+</datalist>
 <header>
     <figure>
         <img src="/me.jpg"
